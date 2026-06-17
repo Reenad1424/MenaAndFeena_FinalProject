@@ -1,6 +1,7 @@
 package org.example.menaandfeena_finalproject.Model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -33,13 +34,15 @@ public class MayorProfile {
     @NotNull(message = "End date cannot be null")
     private LocalDate endDate;
 
-//    @OneToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
-//
-//    @OneToOne
-//    @JoinColumn(name = "neighborhood_id")
-//    private Neighborhood neighborhood;
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User user;
+
+    @OneToOne
+    @JoinColumn(name = "neighborhood_id")
+    @JsonIgnore
+    private Neighborhood neighborhood;
 
 
 

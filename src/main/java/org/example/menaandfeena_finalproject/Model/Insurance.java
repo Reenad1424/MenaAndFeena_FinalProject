@@ -1,5 +1,6 @@
 package org.example.menaandfeena_finalproject.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,5 +26,6 @@ public class Insurance {
 
     @OneToOne
     @JoinColumn(name = "order_id", referencedColumnName = "id")
+    @JsonIgnore
     private Orders orders;
 }

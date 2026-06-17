@@ -1,5 +1,6 @@
 package org.example.menaandfeena_finalproject.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,11 +19,11 @@ public class MayorVote {
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime createdAt;
 
-    /*
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JsonIgnore
     private User user;
-    */
+
 
     @ManyToOne
     @JoinColumn(name = "mayor_candidate_id", referencedColumnName = "id")

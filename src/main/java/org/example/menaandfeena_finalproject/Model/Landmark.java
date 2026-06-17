@@ -1,5 +1,6 @@
 package org.example.menaandfeena_finalproject.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -34,5 +35,6 @@ public class Landmark {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "neighborhood_id", nullable = false)
+    @JsonIgnore
     private Neighborhood neighborhood;
 }

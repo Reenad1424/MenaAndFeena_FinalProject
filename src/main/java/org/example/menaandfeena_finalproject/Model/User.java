@@ -1,8 +1,11 @@
 package org.example.menaandfeena_finalproject.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -41,7 +44,7 @@ public class User {
     @Column(unique = true)
     private String nationalId;
 
-    private Date birthDate;
+    private LocalDate birthDate;
 
     @Column
     @Pattern(regexp = "MALE|FEMALE", message = "Gender must be either MALE or FEMALE only")
@@ -55,7 +58,7 @@ public class User {
 
     private Boolean isVerified = false;
 
-    private Date createdAt = new Date();
+    private LocalDate createdAt =  LocalDate.now();
 
     // علاقة أفراد العائلة (One User to Many Family Members)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -70,10 +73,25 @@ public class User {
     @OneToMany(mappedBy = "reporter", cascade = CascadeType.ALL)
     private List<IssueReport> issueReports;
 
-    // دالة احتساب العمر تلقائياً في الجافا من تاريخ الميلاد
-    public Integer getAge() {
-        if (this.birthDate == null) return null;
-        long timeInMilli = new Date().getTime() - this.birthDate.getTime();
-        return (int) (timeInMilli / (1000L * 60 * 60 * 24 * 365));
-    }
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore // لحماية الحساب من طباعة جميع الطلبات تلقائياً
+    private List<Orders> orders;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<EventRegistration> eventRegistrations;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<InitiativeParticipation> initiativeParticipations;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Review> reviews;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<MayorVote> votes;
+
+
 }

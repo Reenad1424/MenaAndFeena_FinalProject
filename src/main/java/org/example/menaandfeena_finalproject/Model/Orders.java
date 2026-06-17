@@ -1,5 +1,6 @@
 package org.example.menaandfeena_finalproject.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,11 +37,11 @@ public class Orders {
     @JoinColumn(name = "marketplace_item_id", referencedColumnName = "id")
     private MarketPlaceItem marketPlaceItem;
 
-    /*
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JsonIgnore
     private User user;
-    */
+
 
     @OneToOne(mappedBy = "orders", cascade = CascadeType.ALL)
     private Payment payment;

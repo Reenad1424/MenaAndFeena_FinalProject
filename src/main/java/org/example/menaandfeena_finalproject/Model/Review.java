@@ -1,6 +1,7 @@
 package org.example.menaandfeena_finalproject.Model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -37,17 +38,20 @@ public class Review {
     @Max(value = 5, message = "Rating must be at most 5")
     private Integer rating;
 
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "event_id")
-//    private Event event;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "initiative_id")
-//    private Initiative initiative;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    @JsonIgnore
+    private Event event;
+
+    @ManyToOne
+    @JoinColumn(name = "initiative_id")
+    @JsonIgnore
+    private Initiative initiative;
 
 
 

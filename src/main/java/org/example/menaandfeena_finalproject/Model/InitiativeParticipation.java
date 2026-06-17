@@ -1,6 +1,7 @@
 package org.example.menaandfeena_finalproject.Model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -31,14 +32,15 @@ public class InitiativeParticipation {
 
 
 
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "initiative_id")
-//    private Initiative initiative;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonIgnore 
+    private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "initiative_id")
+    @JsonIgnore
+    private Initiative initiative;
 
 
 

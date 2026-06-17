@@ -41,11 +41,12 @@ public class Announcement {
     @NotNull(message = "Created date cannot be null")
     private LocalDate createdAt;
 
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-
-
+    @ManyToOne
+    @JoinColumn(name = "neighborhood_id", nullable = false)
+    private Neighborhood neighborhood;
 
 }

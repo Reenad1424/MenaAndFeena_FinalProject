@@ -1,5 +1,6 @@
 package org.example.menaandfeena_finalproject.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -33,14 +34,13 @@ public class Neighborhood {
     @Min(value = 0, message = "Population cannot be negative")
     private Integer registeredPopulation;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt = new Date();
 
-    // ربط علاقة الحي بالمستخدمين
     @OneToMany(mappedBy = "neighborhood", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<User> residents;
 
-    // ربط علاقة الحي بالمعالم السكنية
     @OneToMany(mappedBy = "neighborhood", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Landmark> landmarks;
 }

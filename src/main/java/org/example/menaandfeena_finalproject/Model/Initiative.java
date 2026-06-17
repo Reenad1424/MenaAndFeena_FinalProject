@@ -1,6 +1,7 @@
 package org.example.menaandfeena_finalproject.Model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -41,6 +43,15 @@ public class Initiative {
     @Pattern(regexp = "ACTIVE|COMPLETED|CANCELLED", message = "Status must be ACTIVE, COMPLETED, or CANCELLED")
     @Column(columnDefinition = "varchar(20) not null")
     private String status;
+
+    @OneToMany(mappedBy = "initiative", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Set<InitiativeParticipation> participations;
+
+    @OneToMany(mappedBy = "initiative", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Set<Review> reviews;
+
 
 
 

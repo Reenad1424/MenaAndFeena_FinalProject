@@ -1,5 +1,6 @@
 package org.example.menaandfeena_finalproject.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -29,4 +30,10 @@ public class AIModeration {
     @Min(value = 0, message = "Score must be at least 0.0")
     @Max(value = 1, message = "Score cannot exceed 1.0")
     private Double confidenceScore;
+
+    @OneToOne
+    @JoinColumn(name = "issue_report_id")
+    @JsonIgnore
+    private IssueReport issueReport;
+
 }

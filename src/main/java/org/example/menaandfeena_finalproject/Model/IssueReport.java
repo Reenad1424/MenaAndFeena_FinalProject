@@ -1,5 +1,6 @@
 package org.example.menaandfeena_finalproject.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -51,5 +52,10 @@ public class IssueReport {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User reporter; // الجار المبلّغ
+
+    @OneToOne(mappedBy = "issueReport", cascade = CascadeType.ALL)
+    private AIModeration aiModeration;
+
 }

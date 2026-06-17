@@ -27,6 +27,7 @@ public class MayorCandidate {
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JsonIgnore
     private User user;
 
 
@@ -36,5 +37,6 @@ public class MayorCandidate {
 
     @ManyToOne
     @JoinColumn(name = "election_round_id", referencedColumnName = "id")
+    @JsonIgnore
     private ElectionRound electionRound;
 }
