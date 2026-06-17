@@ -24,11 +24,11 @@ public class MayorCandidate {
     @Column(columnDefinition = "varchar(10) not null")
     private String status;
 
-    /*
+
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
-    */
+
 
     @OneToMany(mappedBy = "mayorCandidate", cascade = CascadeType.ALL)
     @JsonIgnore

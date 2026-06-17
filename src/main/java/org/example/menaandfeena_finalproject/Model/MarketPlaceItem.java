@@ -42,11 +42,11 @@ public class MarketPlaceItem {
     @Column(columnDefinition = "int not null")
     private Integer quantity;
 
-    /*
+
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
-    */
+
 
     @OneToMany(mappedBy = "marketPlaceItem", cascade = CascadeType.ALL)
     @JsonIgnore
