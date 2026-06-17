@@ -1,0 +1,48 @@
+package org.example.menaandfeena_finalproject.Controller;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.example.menaandfeena_finalproject.Api.ApiResponse;
+import org.example.menaandfeena_finalproject.Model.InitiativeParticipation;
+import org.example.menaandfeena_finalproject.Service.InitiativeParticipationService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/initiative-participation")
+@RequiredArgsConstructor
+public class InitiativeParticipationController {
+    private final InitiativeParticipationService initiativeParticipationService;
+
+    @GetMapping("/get")
+    public ResponseEntity getAllInitiativeParticipations() {
+        return ResponseEntity.status(200).body(initiativeParticipationService.getAllInitiativeParticipations());
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity addInitiativeParticipation(
+            @Valid @RequestBody InitiativeParticipation initiativeParticipation) {
+
+        initiativeParticipationService.addInitiativeParticipation(initiativeParticipation);
+
+        return ResponseEntity.status(200).body(new ApiResponse("Initiative participation added successfully"));
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity updateInitiativeParticipation(
+            @PathVariable Integer id,
+            @Valid @RequestBody InitiativeParticipation initiativeParticipation) {
+
+        initiativeParticipationService.updateInitiativeParticipation(id, initiativeParticipation);
+
+        return ResponseEntity.status(200).body(new ApiResponse("Initiative participation updated successfully"));
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity deleteInitiativeParticipation(@PathVariable Integer id) {
+
+        initiativeParticipationService.deleteInitiativeParticipation(id);
+
+        return ResponseEntity.status(200).body(new ApiResponse("Initiative participation deleted successfully"));
+    }
+}
