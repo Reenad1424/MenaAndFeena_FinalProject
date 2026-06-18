@@ -38,4 +38,27 @@ public class EventRegistrationControlle {
         eventRegistrationService.deleteEventRegistration(id);
         return ResponseEntity.status(200).body(new ApiResponse("Event registration deleted successfully"));
     }
+
+    @PostMapping("/register/{userId}/{eventId}")
+    public ResponseEntity registerToEvent(@PathVariable Integer userId, @PathVariable Integer eventId) {
+        eventRegistrationService.registerToEvent(userId, eventId);
+        return ResponseEntity.status(200).body(new ApiResponse("Registered successfully"));
+    }
+
+
+    @PostMapping("/register-family/{familyMemberId}/{eventId}")
+    public ResponseEntity registerFamilyMember(@PathVariable Integer familyMemberId, @PathVariable Integer eventId) {
+        eventRegistrationService.registerFamilyMember(familyMemberId, eventId);
+        return ResponseEntity.status(200).body(new ApiResponse("Family member registered successfully"));
+    }
+
+
+
+
+
+
+
+
+
+
 }

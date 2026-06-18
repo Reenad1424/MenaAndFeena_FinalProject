@@ -9,6 +9,7 @@ import org.example.menaandfeena_finalproject.Service.EventService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -40,4 +41,26 @@ public class EventController {
         eventService.deleteEvent(id);
         return ResponseEntity.status(200).body(new ApiResponse("Event deleted successfully"));
     }
+
+    @GetMapping("/upcoming")
+    public ResponseEntity getUpcomingEvents() {
+        return ResponseEntity.status(200).body(eventService.getUpcomingEvents());
+    }
+    @GetMapping("/previous")
+    public ResponseEntity getPreviousEvents() {
+        return ResponseEntity.status(200).body(eventService.getPreviousEvents());
+    }
+
+
+    @GetMapping("/date/{date}")
+    public ResponseEntity getEventsByDate(@PathVariable LocalDate date) {
+        return ResponseEntity.status(200).body(eventService.getEventsByDate(date));
+    }
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity getEventById(@PathVariable Integer id) {
+        return ResponseEntity.status(200).body(eventService.getEventById(id));
+    }
+
 }

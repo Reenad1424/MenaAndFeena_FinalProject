@@ -6,6 +6,7 @@ import org.example.menaandfeena_finalproject.Model.Initiative;
 import org.example.menaandfeena_finalproject.Repository.InitiativeRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -46,4 +47,30 @@ public class InitiativeService {
 
         initiativeRepository.delete(initiative);
     }
+
+
+// Walaa
+    public List<Initiative> getInitiativesByCategory(String category) {
+        return initiativeRepository.findInitiativesByCategory(category);
+    }
+
+// Walaa
+public List<Initiative> getUpcomingInitiatives() {
+    return initiativeRepository.findInitiativesByDateAfter(LocalDate.now());
+}
+
+// Walaa
+public Initiative getInitiativeById(Integer id) {
+    Initiative initiative = initiativeRepository.findInitiativeById(id);
+    if (initiative == null) {
+        throw new ApiException("Initiative not found");
+    }
+    return initiative;
+
+}
+
+
+
+
+
 }

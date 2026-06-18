@@ -38,6 +38,32 @@ public class AnnouncementController {
     public ResponseEntity deleteAnnouncement(@PathVariable Integer id) {
         announcementService.deleteAnnouncement(id);
         return ResponseEntity.status(200).body(new ApiResponse("Announcement deleted successfully"));
+    }
+
+
+    @PostMapping("/create/{userId}")
+    public ResponseEntity createAnnouncement(@PathVariable Integer userId, @Valid @RequestBody Announcement announcement) {
+        announcementService.createAnnouncement(userId, announcement);
+        return ResponseEntity.status(200).body(new ApiResponse("Announcement created successfully"));
 
     }
+
+
+    @GetMapping("/search")
+    public ResponseEntity searchAnnouncements(@RequestParam String keyword) {
+        return ResponseEntity.status(200).body(announcementService.searchAnnouncements(keyword));
+    }
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity getAnnouncementById(@PathVariable Integer id) {
+        return ResponseEntity.status(200).body(announcementService.getAnnouncementById(id));
+    }
+
+
+    @GetMapping("/contact-publisher/{announcementId}")
+    public ResponseEntity getPublisherContact(@PathVariable Integer announcementId) {
+        return ResponseEntity.status(200).body(announcementService.getPublisherContact(announcementId));
+    }
+
 }

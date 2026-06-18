@@ -40,4 +40,26 @@ public class InitiativeController {
         return ResponseEntity.status(200).body(new ApiResponse("Initiative deleted successfully"));
     }
 
+    @GetMapping("/category/{category}")
+    public ResponseEntity getInitiativesByCategory(@PathVariable String category) {
+        return ResponseEntity.status(200).body(initiativeService.getInitiativesByCategory(category));
+    }
+
+
+    @GetMapping("/upcoming")
+    public ResponseEntity getUpcomingInitiatives() {
+        return ResponseEntity.status(200).body(initiativeService.getUpcomingInitiatives());
+    }
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity getInitiativeById(@PathVariable Integer id) {
+        return ResponseEntity.status(200).body(initiativeService.getInitiativeById(id));
+
+    }
+
+
+
+
+
 }
