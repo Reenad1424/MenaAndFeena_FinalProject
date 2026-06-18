@@ -2,6 +2,8 @@ package org.example.menaandfeena_finalproject.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,12 +27,14 @@ public class Orders {
     private String status;
 
     @Column(columnDefinition = "int not null")
-    private double totalAmount;
+    @NotNull(message = "Total amount cannot be null")
+    @Positive(message = "Total amount must be positive")
+    private Integer totalAmount;
 
-    @Column(columnDefinition = "date not null")
+    @Column(columnDefinition = "date")
     private LocalDate startDate;
 
-    @Column(columnDefinition = "date not null")
+    @Column(columnDefinition = "date")
     private LocalDate endDate;
 
     @ManyToOne

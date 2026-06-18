@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-import java.util.Date;
+import org.hibernate.annotations.CurrentTimestamp;
+
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -27,15 +29,17 @@ public class IssueReport {
     @NotBlank(message = "Description cannot be null")
     private String description;
 
-    @Column(nullable = false)
-    @NotBlank(message = "Type cannot be null")
-    @Pattern(regexp = "INFRASTRUCTURE|CLEANLINESS|OTHER", message = "Type must be INFRASTRUCTURE, CLEANLINESS or OTHER only")
-    private String type;
-
+    // Category and priority are assigned by AI based on title and description.
     @Column(nullable = false)
     @NotBlank(message = "Category cannot be null")
-    @Pattern(regexp = "URGENT|NON_URGENT|PERIODIC", message = "Category must be URGENT, NON_URGENT or PERIODIC only")
+    @Pattern(regexp = "LIGHTING|ROADS|CLEANLINESS|VISUAL_POLLUTION|PARKS|WATER_AND_SEWAGE|ANIMALS|SAFETY|OTHER", message = "Category must be LIGHTING, ROADS, CLEANLINESS, VISUAL_POLLUTION, PARKS, WATER_AND_SEWAGE, ANIMALS, SAFETY or OTHER only")
     private String category;
+
+    // Category and priority are assigned by AI based on title and description.
+    @Column(nullable = false)
+    @NotBlank(message = "Priority cannot be null")
+    @Pattern(regexp = "URGENT|NON_URGENT|PERIODIC", message = "Priority must be URGENT, NON_URGENT or PERIODIC only")
+    private String priority;
 
     @Column(nullable = false)
     @NotBlank(message = "Status cannot be null")
@@ -48,7 +52,21 @@ public class IssueReport {
     @NotNull(message = "Longitude cannot be null")
     private Double longitude;
 
-    private Date createdAt = new Date();
+    @CurrentTimestamp
+    private LocalDateTime createdAt;
+
+    @Column
+    private String detectedDistrictName;
+
+    @Column
+    private String detectedStreetName;
+
+    @Column
+    private String imageUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "report_neighborhood_id", nullable = false)
+    private Neighborhood reportNeighborhood;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

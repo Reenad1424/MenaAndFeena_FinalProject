@@ -33,8 +33,8 @@ public class MayorProfileService {
         oldMayorProfile.setStatus(mayorProfile.getStatus());
         oldMayorProfile.setStartDate(mayorProfile.getStartDate());
         oldMayorProfile.setEndDate(mayorProfile.getEndDate());
-       // oldMayorProfile.setUser(mayorProfile.getUser());
-     //   oldMayorProfile.setNeighborhood(mayorProfile.getNeighborhood());
+        oldMayorProfile.setUser(mayorProfile.getUser());
+        oldMayorProfile.setNeighborhood(mayorProfile.getNeighborhood());
 
         mayorProfileRepository.save(oldMayorProfile);
     }

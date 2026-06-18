@@ -11,8 +11,9 @@ public class MarketPlaceItemOutDTO {
     private String description;
     private String type;
     private String status;
-    private double price;
-    private double rentPrice;
-    private double depositAmount;
+    private Integer price;
+    private Integer rentPrice;
+    private Integer depositAmount;
     private Integer quantity;
+    private Integer userId;
 }

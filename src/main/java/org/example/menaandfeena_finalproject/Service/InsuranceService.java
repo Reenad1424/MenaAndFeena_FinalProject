@@ -32,6 +32,9 @@ public class InsuranceService {
         insurance.setDepositAmount(insuranceInDTO.getDepositAmount());
         insurance.setRefundedAmount(insuranceInDTO.getRefundedAmount());
         insurance.setStatus(insuranceInDTO.getStatus());
+        insurance.setHeldAt(insuranceInDTO.getHeldAt());
+        insurance.setRefundedAt(insuranceInDTO.getRefundedAt());
+        insurance.setRefundTransactionId(insuranceInDTO.getRefundTransactionId());
 
         insuranceRepository.save(insurance);
     }
@@ -46,6 +49,9 @@ public class InsuranceService {
         oldInsurance.setDepositAmount(insuranceInDTO.getDepositAmount());
         oldInsurance.setRefundedAmount(insuranceInDTO.getRefundedAmount());
         oldInsurance.setStatus(insuranceInDTO.getStatus());
+        oldInsurance.setHeldAt(insuranceInDTO.getHeldAt());
+        oldInsurance.setRefundedAt(insuranceInDTO.getRefundedAt());
+        oldInsurance.setRefundTransactionId(insuranceInDTO.getRefundTransactionId());
 
         insuranceRepository.save(oldInsurance);
     }
@@ -61,6 +67,6 @@ public class InsuranceService {
     }
 
     private InsuranceOutDTO toOutDTO(Insurance insurance) {
-        return new InsuranceOutDTO(insurance.getId(), insurance.getDepositAmount(), insurance.getRefundedAmount(), insurance.getStatus());
+        return new InsuranceOutDTO(insurance.getId(), insurance.getDepositAmount(), insurance.getRefundedAmount(), insurance.getStatus(), insurance.getHeldAt(), insurance.getRefundedAt(), insurance.getRefundTransactionId());
     }
 }

@@ -3,17 +3,17 @@ package org.example.menaandfeena_finalproject.DTO.Out;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-public class OrderOutDTO {
+public class InquiryOutDTO {
     private Integer id;
-    private String type;
+    private String subject;
     private String status;
-    private Integer totalAmount;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDateTime createdAt;
+    private Integer requesterId;
+    private Integer targetUserId;
     private Integer marketPlaceItemId;
-    private Integer userId;
+    private Integer announcementId;
 }

@@ -101,4 +101,17 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
     private MayorProfile mayorProfile;
+    @OneToMany(mappedBy = "requester", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Inquiry> requestedInquiries;
+
+    @OneToMany(mappedBy = "targetUser", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Inquiry> receivedInquiries;
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<InquiryMessage> inquiryMessages;
+
+
 }

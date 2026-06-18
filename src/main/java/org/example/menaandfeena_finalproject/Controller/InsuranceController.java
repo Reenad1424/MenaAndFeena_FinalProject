@@ -1,5 +1,6 @@
 package org.example.menaandfeena_finalproject.Controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.InsuranceInDTO;
@@ -20,13 +21,13 @@ public class InsuranceController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<?> addInsurance(@RequestBody InsuranceInDTO insuranceInDTO) {
+    public ResponseEntity<?> addInsurance(@RequestBody @Valid InsuranceInDTO insuranceInDTO) {
         insuranceService.addInsurance(insuranceInDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Insurance added"));
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateInsurance(@PathVariable Integer id, @RequestBody InsuranceInDTO insuranceInDTO) {
+    public ResponseEntity<?> updateInsurance(@PathVariable Integer id, @RequestBody @Valid InsuranceInDTO insuranceInDTO) {
         insuranceService.updateInsurance(id, insuranceInDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Insurance updated"));
     }

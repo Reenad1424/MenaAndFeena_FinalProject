@@ -1,5 +1,6 @@
 package org.example.menaandfeena_finalproject.DTO.In;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,9 +11,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderInDTO {
-    private String type;
-    private String status;
-    private double totalAmount;
+    @NotNull(message = "User id cannot be null")
+    private Integer userId;
+
     private LocalDate startDate;
+
     private LocalDate endDate;
 }

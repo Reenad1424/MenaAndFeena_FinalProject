@@ -2,9 +2,15 @@ package org.example.menaandfeena_finalproject.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
@@ -15,14 +21,27 @@ public class Insurance {
     private Integer id;
 
     @Column(columnDefinition = "int not null")
-    private double depositAmount;
+    @NotNull(message = "Deposit amount cannot be null")
+    @PositiveOrZero(message = "Deposit amount must be zero or positive")
+    private Integer depositAmount;
 
     @Column(columnDefinition = "int not null")
-    private double refundedAmount;
+    @NotNull(message = "Refunded amount cannot be null")
+    @PositiveOrZero(message = "Refunded amount must be zero or positive")
+    private Integer refundedAmount;
 
     // HELD, REFUNDED, DEDUCTED
-    @Column(columnDefinition = "varchar(10) not null")
+    @Column(columnDefinition = "varchar(20) not null")
+    @NotBlank(message = "Status cannot be blank")
+    @Pattern(regexp = "HELD|REFUNDED|DEDUCTED", message = "Status must be HELD, REFUNDED, or DEDUCTED")
     private String status;
+
+    private LocalDateTime heldAt;
+
+    private LocalDateTime refundedAt;
+
+    @Column(columnDefinition = "varchar(100)")
+    private String refundTransactionId;
 
     @OneToOne
     @JoinColumn(name = "order_id", referencedColumnName = "id")

@@ -1,9 +1,11 @@
 package org.example.menaandfeena_finalproject.Controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
-import org.example.menaandfeena_finalproject.DTO.In.PaymentInDTO;
+import org.example.menaandfeena_finalproject.DTO.In.PaymentRequestDTO;
 import org.example.menaandfeena_finalproject.Service.PaymentService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,21 +16,21 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    @PostMapping("/card")
+    public ResponseEntity<?> processPayment(@RequestBody @Valid PaymentRequestDTO paymentRequest) {
+        return paymentService.processPayment(paymentRequest);
+    }
+
+    @GetMapping("/get-status/{id}")
+    public ResponseEntity<?> getPaymentStatus(@PathVariable String id) {
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(paymentService.getPaymentStatus(id));
+    }
+
     @GetMapping("/get")
     public ResponseEntity<?> getAllPayments() {
         return ResponseEntity.status(200).body(paymentService.getAllPayments());
-    }
-
-    @PostMapping("/add")
-    public ResponseEntity<?> addPayment(@RequestBody PaymentInDTO paymentInDTO) {
-        paymentService.addPayment(paymentInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Payment added"));
-    }
-
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updatePayment(@PathVariable Integer id, @RequestBody PaymentInDTO paymentInDTO) {
-        paymentService.updatePayment(id, paymentInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Payment updated"));
     }
 
     @DeleteMapping("/delete/{id}")

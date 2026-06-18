@@ -26,6 +26,7 @@ public class MayorVote {
 
 
 
+
     @ManyToOne
     @JoinColumn(name = "mayor_candidate_id", referencedColumnName = "id")
     private MayorCandidate mayorCandidate;
