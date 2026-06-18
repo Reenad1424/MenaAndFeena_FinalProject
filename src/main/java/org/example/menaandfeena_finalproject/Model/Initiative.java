@@ -42,6 +42,10 @@ public class Initiative {
     @Column(columnDefinition = "varchar(20) not null")
     private String status;
 
-
+    @NotEmpty(message = "Category cannot be empty")
+    @Pattern(regexp = "ENVIRONMENTAL|VOLUNTEERING|EDUCATIONAL|HEALTH|SPORTS", message = "Category must be ENVIRONMENTAL, "
+            + "VOLUNTEERING, EDUCATIONAL, HEALTH, or SPORTS")
+    @Column(columnDefinition = "varchar(30) not null")
+    private String category;
 
 }

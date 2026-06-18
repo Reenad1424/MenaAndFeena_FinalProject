@@ -31,13 +31,13 @@ public class InitiativeParticipation {
 
 
 
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "initiative_id")
-//    private Initiative initiative;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "initiative_id")
+    private Initiative initiative;
 
 
 

@@ -28,7 +28,7 @@ public class Review {
     @Column(columnDefinition = "varchar(500) not null")
     private String comment;
 
-    @NotNull(message = "Created date cannot be null")
+    //@NotNull(message = "Created date cannot be null")
     private LocalDate createdAt;
 
 
@@ -37,19 +37,17 @@ public class Review {
     @Max(value = 5, message = "Rating must be at most 5")
     private Integer rating;
 
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "event_id")
-//    private Event event;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "initiative_id")
-//    private Initiative initiative;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
 
+    @ManyToOne
+    @JoinColumn(name = "initiative_id")
+    private Initiative initiative;
 
 
 }

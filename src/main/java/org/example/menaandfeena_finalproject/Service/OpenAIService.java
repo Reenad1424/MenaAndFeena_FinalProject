@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
-@Service
+//@Service
 @RequiredArgsConstructor
 public class OpenAIService {
 

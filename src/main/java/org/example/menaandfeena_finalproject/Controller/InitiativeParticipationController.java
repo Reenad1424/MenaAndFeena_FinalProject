@@ -45,4 +45,37 @@ public class InitiativeParticipationController {
 
         return ResponseEntity.status(200).body(new ApiResponse("Initiative participation deleted successfully"));
     }
+
+
+    @PostMapping("/join/{userId}/{initiativeId}")
+    public ResponseEntity joinInitiative(@PathVariable Integer userId, @PathVariable Integer initiativeId) {
+        initiativeParticipationService.joinInitiative(userId, initiativeId);
+        return ResponseEntity.status(200).body(new ApiResponse("Joined successfully"));
+    }
+
+
+
+    @PostMapping("/join-family/{familyMemberId}/{initiativeId}")
+    public ResponseEntity joinFamilyMember(@PathVariable Integer familyMemberId, @PathVariable Integer initiativeId) {
+        initiativeParticipationService.joinFamilyMember(familyMemberId, initiativeId);
+        return ResponseEntity.status(200).body(new ApiResponse("Family member joined successfully"));
+    }
+
+
+
+
+    @GetMapping("/{initiativeId}/participants")
+    public ResponseEntity getParticipants(@PathVariable Integer initiativeId) {
+        return ResponseEntity.status(200).body(initiativeParticipationService.getParticipants(initiativeId));
+    }
+
+
+
+
+
+
+
+
+
+
 }

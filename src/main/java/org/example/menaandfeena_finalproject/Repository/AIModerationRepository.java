@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AIModerationRepository extends JpaRepository<AIModeration, Integer>
-{ AIModeration findAIModerationById(Integer id); }
+{
+    AIModeration findAIModerationById(Integer id);
+}

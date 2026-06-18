@@ -2,16 +2,27 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
+import org.example.menaandfeena_finalproject.Model.Event;
 import org.example.menaandfeena_finalproject.Model.EventRegistration;
+import org.example.menaandfeena_finalproject.Model.FamilyMember;
+import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.EventRegistrationRepository;
+import org.example.menaandfeena_finalproject.Repository.EventRepository;
+import org.example.menaandfeena_finalproject.Repository.FamilyMemberRepository;
+import org.example.menaandfeena_finalproject.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class EventRegistrationService {
     private final EventRegistrationRepository eventRegistrationRepository;
+    private final UserRepository userRepository;
+    private final EventRepository eventRepository;
+    private final FamilyMemberRepository familyMemberRepository;
+
 
     public List<EventRegistration> getAllEventRegistrations() {
         return eventRegistrationRepository.findAll();
@@ -47,4 +58,60 @@ public class EventRegistrationService {
 
         eventRegistrationRepository.delete(eventRegistration);
     }
+
+   // Walaa
+   public void registerToEvent(Integer userId, Integer eventId) {
+       User user = userRepository.findUserById(userId);
+       if (user == null) {
+           throw new ApiException("User not found");
+       }
+
+       Event event = eventRepository.findEventById(eventId);
+
+       if (event == null) {
+           throw new ApiException("Event not found");
+       }
+
+       EventRegistration registration = new EventRegistration();
+
+       registration.setUser(user);
+       registration.setEvent(event);
+       registration.setStatus("CONFIRMED");
+       registration.setRegisteredAt(LocalDate.now());
+
+       eventRegistrationRepository.save(registration);
+   }
+
+
+   // Walaa
+
+    public void registerFamilyMember(Integer familyMemberId, Integer eventId) {
+
+        FamilyMember familyMember = familyMemberRepository.findFamilyMemberById(familyMemberId);
+
+        if (familyMember == null) {
+            throw new ApiException("Family member not found");
+        }
+
+        Event event = eventRepository.findEventById(eventId);
+
+        if (event == null) {
+            throw new ApiException("Event not found");
+        }
+        EventRegistration registration = new EventRegistration();
+        registration.setUser(familyMember.getUser());
+        registration.setEvent(event);
+        registration.setStatus("CONFIRMED");
+        registration.setRegisteredAt(LocalDate.now());
+        eventRegistrationRepository.save(registration);
+
+    }
+
+
+
+
+
+
+
+
 }
