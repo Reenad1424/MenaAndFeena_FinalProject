@@ -4,50 +4,99 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.ElectionRoundInDTO;
+import org.example.menaandfeena_finalproject.DTO.Out.ElectionRoundDetailsDTO;
 import org.example.menaandfeena_finalproject.Service.ElectionRoundService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/election-round")
+@RequestMapping("/api/v1/election-rounds")
 @RequiredArgsConstructor
 public class ElectionRoundController {
 
     private final ElectionRoundService electionRoundService;
 
-    @GetMapping("/get")
+
+    // =========================
+    // GET ALL ELECTION ROUNDS
+    // =========================
+
+    @GetMapping
     public ResponseEntity<?> getAllElectionRounds() {
-        return ResponseEntity.status(200).body(electionRoundService.getAllElectionRounds());
+
+        return ResponseEntity.ok(
+                electionRoundService.getAllElectionRounds()
+        );
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<ApiResponse> addElectionRound(@RequestBody @Valid ElectionRoundInDTO electionRoundInDTO) {
-        electionRoundService.addElectionRound(electionRoundInDTO);
-        return ResponseEntity.status(201).body(new ApiResponse("Election round added successfully"));
+
+    // =========================
+    // GET ELECTION ROUND DETAILS
+    // also closes round and selects winner if expired
+    // =========================
+
+    @GetMapping("/{roundId}/details")
+    public ResponseEntity<ElectionRoundDetailsDTO> getElectionRoundDetails(
+            @PathVariable Integer roundId
+    ) {
+
+        return ResponseEntity.ok(
+                electionRoundService.getElectionRoundDetails(roundId)
+        );
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<ApiResponse> updateElectionRound(@PathVariable Integer id, @RequestBody @Valid ElectionRoundInDTO electionRoundInDTO) {
-        electionRoundService.updateElectionRound(id, electionRoundInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Election round updated successfully"));
+
+    // =========================
+    // CREATE ELECTION ROUND
+    // =========================
+
+    @PostMapping
+    public ResponseEntity<ApiResponse> createElectionRound(
+            @RequestBody @Valid ElectionRoundInDTO electionRoundInDTO
+    ) {
+
+        electionRoundService.createElectionRound(electionRoundInDTO);
+
+        return ResponseEntity.status(201).body(
+                new ApiResponse("تم إنشاء جولة انتخابية جديدة بنجاح")
+        );
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ApiResponse> deleteElectionRound(@PathVariable Integer id) {
-        electionRoundService.deleteElectionRound(id);
-        return ResponseEntity.status(200).body(new ApiResponse("Election round deleted successfully"));
+
+    // =========================
+    // UPDATE ELECTION ROUND
+    // =========================
+
+    @PutMapping("/{roundId}")
+    public ResponseEntity<ApiResponse> updateElectionRound(
+            @PathVariable Integer roundId,
+            @RequestBody @Valid ElectionRoundInDTO electionRoundInDTO
+    ) {
+
+        electionRoundService.updateElectionRound(
+                roundId,
+                electionRoundInDTO
+        );
+
+        return ResponseEntity.ok(
+                new ApiResponse("تم تحديث الجولة الانتخابية بنجاح")
+        );
     }
 
-    //Reenad
-    @GetMapping("/get-all-rounds")
-    public ResponseEntity<?> getAllRounds() {
-        return ResponseEntity.status(200).body(electionRoundService.getAllRounds());
-    }
 
-    @GetMapping("/details/{id}")
-    public ResponseEntity<ApiResponse> getRoundDetails(@PathVariable Integer id) {
-        String content = electionRoundService.checkAndGetRoundDetailsString(id);
+    // =========================
+    // DELETE ELECTION ROUND
+    // =========================
 
-        return ResponseEntity.status(200).body(new ApiResponse(content));
+    @DeleteMapping("/{roundId}")
+    public ResponseEntity<ApiResponse> deleteElectionRound(
+            @PathVariable Integer roundId
+    ) {
+
+        electionRoundService.deleteElectionRound(roundId);
+
+        return ResponseEntity.ok(
+                new ApiResponse("تم حذف الجولة الانتخابية بنجاح")
+        );
     }
 }

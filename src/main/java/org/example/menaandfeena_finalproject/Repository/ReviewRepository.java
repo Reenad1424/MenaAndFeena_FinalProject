@@ -13,5 +13,10 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     List<Review> findByEvent_Id(Integer eventId);
     List<Review> findByInitiative_Id(Integer initiativeId);
 
+    List<Review> findByUserId(Integer userId);
 
+    List<Review> findByTargetUserId(Integer userId);
+
+    Integer countByUser_Neighborhood_Id(Integer neighborhoodId);
+    List<Review> findByUser_Neighborhood_Id(Integer neighborhoodId);
 }

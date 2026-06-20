@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
@@ -37,6 +38,7 @@ public class Orders {
     @Column(columnDefinition = "date")
     private LocalDate endDate;
 
+    private LocalDateTime createdAt;
     @ManyToOne
     @JoinColumn(name = "marketplace_item_id", referencedColumnName = "id")
     private MarketPlaceItem marketPlaceItem;
@@ -52,4 +54,8 @@ public class Orders {
 
     @OneToOne(mappedBy = "orders", cascade = CascadeType.ALL)
     private Insurance insurance;
+
+    @ManyToOne
+    @JoinColumn(name = "seller_id")
+    private User seller;
 }

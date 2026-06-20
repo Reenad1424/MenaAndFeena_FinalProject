@@ -54,6 +54,8 @@ public class Review {
     private Initiative initiative;
 
 
-
+    @ManyToOne
+    @JoinColumn(name = "target_user_id")
+    private User targetUser;
 
 }

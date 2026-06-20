@@ -5,10 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.ContactRequestDto;
 import org.example.menaandfeena_finalproject.DTO.In.UserRegisterRequestDto;
-import org.example.menaandfeena_finalproject.DTO.Out.ResidentResponseDto;
-import org.example.menaandfeena_finalproject.DTO.Out.UserActivityResponseDto;
-import org.example.menaandfeena_finalproject.DTO.Out.UserProfileResponseDto;
-import org.example.menaandfeena_finalproject.DTO.Out.UserRegisterResponseDto;
+import org.example.menaandfeena_finalproject.DTO.Out.*;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -17,110 +14,187 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
-    // ================= CRUD الأساسي =================
 
-    @GetMapping("/get-all")
-    public ResponseEntity<List<User>> getAll() {
-        return ResponseEntity.status(200).body(userService.getAll());
+    // =========================
+    // USER CRUD
+    // =========================
+
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<ApiResponse> add(@RequestBody @Valid User user) {
-        userService.add(user);
-        return ResponseEntity.status(201).body(new ApiResponse("User added successfully"));
+    @PostMapping
+    public ResponseEntity<ApiResponse> createUser(
+            @RequestBody @Valid User user
+    ) {
+        userService.createUser(user);
+        return ResponseEntity.status(201).body(
+                new ApiResponse("User added successfully")
+        );
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<ApiResponse> update(@PathVariable Integer id, @RequestBody @Valid User user) {
-        userService.update(id, user);
-        return ResponseEntity.status(200).body(new ApiResponse("User updated successfully"));
+    @PutMapping("/{userId}")
+    public ResponseEntity<ApiResponse> updateUser(
+            @PathVariable Integer userId,
+            @RequestBody @Valid User user
+    ) {
+        userService.updateUser(userId, user);
+        return ResponseEntity.ok(
+                new ApiResponse("User updated successfully")
+        );
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ApiResponse> delete(@PathVariable Integer id) {
-        userService.delete(id);
-        return ResponseEntity.status(200).body(new ApiResponse("User deleted successfully"));
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<ApiResponse> deleteUser(
+            @PathVariable Integer userId
+    ) {
+        userService.deleteUser(userId);
+        return ResponseEntity.ok(
+                new ApiResponse("User deleted successfully")
+        );
     }
 
 
-    //Reenad
+    // =========================
+    // PUBLIC INFO
+    // =========================
+
     @GetMapping("/welcome")
-    public ResponseEntity<ApiResponse> getWelcomeScreen() {
-        String welcomeString = "العنوان: منا وفينا\n"
-                + "العنوان الفرعي: مجتمع واحد .. هدف واحد\n"
-                + "الوصف: نُسهم معًا في بناء مجتمع متكافل ومستدام من خلال مبادرات نوعية وشراكات مجتمعية فاعلة داخل الحي، مدعومة بتقنيات الذكاء الاصطناعي لتعزيز المشاركة المجتمعية ورفع جودة الحياة";
-
-        return ResponseEntity.status(200).body(new ApiResponse(welcomeString));
+    public ResponseEntity<WelcomeDTO> getWelcomeScreen() {
+        return ResponseEntity.ok(userService.getWelcomeScreen());
     }
 
-    @GetMapping("/info")
-    public ResponseEntity<ApiResponse> getAboutInfo() {
-        String infoString = "من نحن: منصة مجتمعية ولدت من قلب الحي، تسعى لتعزيز الروابط الإنسانية وبناء بيئة تكافلية ومستدامة بين الجيران.\n"
-                + "الرؤية: أن نكون النموذج الرائد عالمياً في تحويل الأحياء السكنية إلى مجتمعات حيوية، مترابطة، وذكية تدعم جودة الحياة رفاهية الجميع.\n"
-                + "الرسالة: تفعيل دور الأفراد من خلال مبادرات نوعية وشراكات فاعلة تساهم في تبادل الخبرات، الدعم المتبادل، وحماية البيئة المحيطة بنا.\n"
-                + "القيم: المبادرة، الاستدامة، التكافل";
-
-        return ResponseEntity.status(200).body(new ApiResponse(infoString));
+    @GetMapping("/about")
+    public ResponseEntity<AboutInfoDTO> getAboutInfo() {
+        return ResponseEntity.ok(userService.getAboutInfo());
     }
 
     @PostMapping("/contact")
-    public ResponseEntity<ApiResponse> sendContactMessage(@RequestBody @Valid ContactRequestDto dto) {
-        System.out.println("📩 [رسالة جديدة من تواصل معنا عبر الـ Body]:");
-        System.out.println("الاسم: " + dto.getName() + " | البريد: " + dto.getEmail());
-        System.out.println("الرسالة: " + dto.getMessage());
+    public ResponseEntity<ApiResponse> sendContactMessage(
+            @RequestBody @Valid ContactRequestDto dto
+    ) {
+        userService.sendContactMessage(dto);
 
-        return ResponseEntity.status(200).body(new ApiResponse("تم إرسال رسالتك بنجاح، وسيتواصل معك فريق الدعم قريباً"));
+        return ResponseEntity.ok(
+                new ApiResponse("تم إرسال رسالتك بنجاح، وسيتواصل معك فريق الدعم قريباً")
+        );
     }
+
+
+    // =========================
+    // REGISTER
+    // =========================
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse> register(@Valid @RequestBody UserRegisterRequestDto dto) {
-        UserRegisterResponseDto response = userService.registerUser(dto);
+    public ResponseEntity<ApiResponse> registerUser(
+            @RequestBody @Valid UserRegisterRequestDto dto
+    ) {
+        UserRegisterResponseDto response =
+                userService.registerUser(dto);
 
-        String welcomeShortString = "هلا والله " + response.getFullName() + " في حي " + response.getDetectedNeighborhoodName();
+        String message =
+                "هلا والله "
+                        + response.getFullName()
+                        + " في حي "
+                        + response.getDetectedNeighborhoodName();
 
-        return ResponseEntity.status(201).body(new ApiResponse(welcomeShortString));
+        return ResponseEntity.status(201).body(
+                new ApiResponse(message)
+        );
     }
 
 
-    /*@PostMapping("/login")
-    public ResponseEntity<ApiResponse> login(@RequestParam String email, @RequestParam String password) {
-        UserProfileResponseDto response = userService.loginUser(email, password);
+    // =========================
+    // NEIGHBORHOOD RESIDENTS
+    // =========================
 
-        String loginString = "تم تسجيل الدخول بنجاح\n"
-                + "المعرف: " + response.getId() + "\n"
-                + "الاسم الكامل: " + response.getFullName() + "\n"
-                + "الحي الحالي: " + response.getNeighborhoodName();
-
-        return ResponseEntity.status(200).body(new ApiResponse("تم تسجيل الدخول ينجاح"));
-    }*/
-
-    @GetMapping("/profile/{userId}")
-    public ResponseEntity<ApiResponse> getProfile(@PathVariable Integer userId) {
-        String content = userService.getUserProfile(userId);
-        return ResponseEntity.status(200).body(new ApiResponse(content));
+    @GetMapping("/{userId}/neighborhood-residents")
+    public ResponseEntity<List<NeighborhoodResidentDTO>> getNeighborhoodResidents(
+            @PathVariable Integer userId
+    ) {
+        return ResponseEntity.ok(
+                userService.getNeighborhoodResidents(userId)
+        );
     }
 
-    @GetMapping("/residents/{userId}")
-    public ResponseEntity<ApiResponse> getResidents(@PathVariable Integer userId) {
-        String content = userService.getNeighborhoodResidents(userId);
-        return ResponseEntity.status(200).body(new ApiResponse(content));
+
+    // =========================
+    // USER ACTIVITY LOG
+    // =========================
+
+    @GetMapping("/{userId}/activity-log")
+    public ResponseEntity<UserActivityLogDTO> getUserActivityLog(
+            @PathVariable Integer userId
+    ) {
+        return ResponseEntity.ok(
+                userService.getUserActivityLog(userId)
+        );
     }
 
-    @GetMapping("/activity/{userId}")
-    public ResponseEntity<ApiResponse> getActivityLog(@PathVariable Integer userId) {
-        String content = userService.getUserActivityLog(userId);
-        return ResponseEntity.status(200).body(new ApiResponse(content));
+
+    // =========================
+    // USER PROFILES
+    // =========================
+
+    @GetMapping("/{userId}/profile/full")
+    public ResponseEntity<UserProfileDetailsDTO> getFullProfile(
+            @PathVariable Integer userId
+    ) {
+        return ResponseEntity.ok(
+                userService.getUserProfileDetails(userId)
+        );
     }
 
+    @GetMapping("/{userId}/profile/basic")
+    public ResponseEntity<UserBasicInfoDTO> getBasicProfile(
+            @PathVariable Integer userId
+    ) {
+        return ResponseEntity.ok(
+                userService.getBasicProfile(userId)
+        );
+    }
+
+    @GetMapping("/{userId}/profile/community")
+    public ResponseEntity<UserProfileCommunityDTO> getCommunityProfile(
+            @PathVariable Integer userId
+    ) {
+        return ResponseEntity.ok(
+                userService.getCommunityProfile(userId)
+        );
+    }
+
+    @GetMapping("/{userId}/profile/activities")
+    public ResponseEntity<UserProfileActivitiesDTO> getActivitiesProfile(
+            @PathVariable Integer userId
+    ) {
+        return ResponseEntity.ok(
+                userService.getActivitiesProfile(userId)
+        );
+    }
+
+    @GetMapping("/{userId}/profile/reputation")
+    public ResponseEntity<UserProfileReputationDTO> getReputationProfile(
+            @PathVariable Integer userId
+    ) {
+        return ResponseEntity.ok(
+                userService.getReputationProfile(userId)
+        );
+    }
+
+    @GetMapping("/{userId}/profile/marketplace")
+    public ResponseEntity<UserProfileMarketplaceDTO> getMarketplaceProfile(
+            @PathVariable Integer userId
+    ) {
+        return ResponseEntity.ok(
+                userService.getMarketplaceProfile(userId)
+        );
+    }
 }
-
-
-

@@ -6,7 +6,6 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -63,7 +62,6 @@ public class User {
     @JoinColumn(name = "neighborhood_id")
     private Neighborhood neighborhood;
 
-    // بقية العلاقات الحالية للمستخدم (مبسطة وبدون تغيير في المسميات)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FamilyMember> familyMembers;
 
@@ -112,6 +110,13 @@ public class User {
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<InquiryMessage> inquiryMessages;
+
+
+    private LocalDate createdAt =  LocalDate.now();
+
+    private LocalDate mayorStartDate;
+    private LocalDate mayorEndDate;
+    private Boolean mayorActive;
 
 
 }

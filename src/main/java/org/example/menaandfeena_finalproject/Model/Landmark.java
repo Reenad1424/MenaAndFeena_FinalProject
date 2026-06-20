@@ -31,7 +31,6 @@ public class Landmark {
     @NotNull(message = "Longitude cannot be null")
     private Double longitude;
 
-    // 🌟 تم تفعيل وربط المعلم بالحي التابع له بشكل صريح ومبسط
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "neighborhood_id")
     @JsonIgnore

@@ -60,4 +60,11 @@ public class Initiative {
     @Column(columnDefinition = "varchar(30) not null")
     private String category;
 
+    @ManyToOne
+    @JoinColumn(name = "neighborhood_id")
+    private Neighborhood neighborhood;
+
+    @ManyToOne
+    @JoinColumn(name = "creator_id")
+    private User creator;
 }

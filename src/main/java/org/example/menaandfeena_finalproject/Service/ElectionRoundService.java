@@ -3,101 +3,377 @@ package org.example.menaandfeena_finalproject.Service;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
 import org.example.menaandfeena_finalproject.DTO.In.ElectionRoundInDTO;
+import org.example.menaandfeena_finalproject.DTO.Out.ElectionRoundDetailsDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.ElectionRoundOutDTO;
 import org.example.menaandfeena_finalproject.Model.ElectionRound;
-import org.example.menaandfeena_finalproject.Repository.ElectionRoundRepository;
+import org.example.menaandfeena_finalproject.Model.MayorCandidate;
+import org.example.menaandfeena_finalproject.Model.MayorProfile;
+import org.example.menaandfeena_finalproject.Model.User;
+import org.example.menaandfeena_finalproject.Repository.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class ElectionRoundService {
 
     private final ElectionRoundRepository electionRoundRepository;
+    private final UserRepository userRepository;
+    private final MayorCandidateRepository mayorCandidateRepository;
+    private final MayorVoteRepository mayorVoteRepository;
+    private final MayorProfileRepository mayorProfileRepository;
+    private final EmailService emailService;
 
     //Reenad
-    public String checkAndGetRoundDetailsString(Integer id) {
-        ElectionRound round = electionRoundRepository.findElectionRoundById(id);
-        if (round == null) {
-            throw new ApiException("الجولة الانتخابية غير موجودة");
-        }
-
-        LocalDate today = LocalDate.now();
-
-        if (round.getStatus().equalsIgnoreCase("ACTIVE") && today.isAfter(round.getEndDate())) {
-            round.setStatus("CLOSED");
-            electionRoundRepository.save(round);
-        }
-
-        long daysRemaining = 0;
-        if (round.getStatus().equalsIgnoreCase("ACTIVE") && !today.isAfter(round.getEndDate())) {
-            daysRemaining = ChronoUnit.DAYS.between(today, round.getEndDate());
-        }
-
-        String roundStatusArabic = round.getStatus().equalsIgnoreCase("ACTIVE") ? "نشطة ومتاحة للتصويت والترشح" : "مغلقة ومنتهية";
-
-        return "🗳️ تفاصيل الجولة الانتخابية الحالية للحي:\n"
-                + "🆔 رقم الدورة الانتخابية: " + round.getId() + "\n"
-                + "📅 تاريخ البدء: " + round.getStartDate() + " | تاريخ الإغلاق: " + round.getEndDate() + "\n"
-                + "📌 حالة الجولة الحالية: " + roundStatusArabic + "\n"
-                + "===================================\n"
-                + "⏳ الوقت المتبقي لإغلاق الصناديق: " + (round.getStatus().equalsIgnoreCase("ACTIVE") ? daysRemaining + " أيام متبقية فعلياً" : "انتهت فترة التصويت");
-    }
+    // =========================
+    // GET ALL ELECTION ROUNDS
+    // =========================
 
     public List<ElectionRoundOutDTO> getAllElectionRounds() {
+
         List<ElectionRoundOutDTO> electionRoundOutDTOS = new ArrayList<>();
+
         for (ElectionRound electionRound : electionRoundRepository.findAll()) {
-            if (electionRound.getStatus().equalsIgnoreCase("ACTIVE") && LocalDate.now().isAfter(electionRound.getEndDate())) {
-                electionRound.setStatus("CLOSED");
-                electionRoundRepository.save(electionRound);
-            }
+
+            closeRoundAndSelectWinnerIfNeeded(electionRound);
+
             electionRoundOutDTOS.add(toOutDTO(electionRound));
         }
+
         return electionRoundOutDTOS;
     }
 
-    public void addElectionRound(ElectionRoundInDTO electionRoundInDTO) {
+
+    // =========================
+    // GET ELECTION ROUND DETAILS
+    // =========================
+
+    public ElectionRoundDetailsDTO getElectionRoundDetails(Integer roundId) {
+
+        ElectionRound round = getRoundOrThrow(roundId);
+
+        closeRoundAndSelectWinnerIfNeeded(round);
+
+        openNewRoundIfMayorTermExpired(round);
+
+        return buildElectionRoundDetails(round);
+    }
+
+
+    // =========================
+    // CREATE ELECTION ROUND
+    // =========================
+
+    public void createElectionRound(ElectionRoundInDTO electionRoundInDTO) {
+
         ElectionRound electionRound = new ElectionRound();
+
         electionRound.setStartDate(electionRoundInDTO.getStartDate());
         electionRound.setEndDate(electionRoundInDTO.getEndDate());
-
-        if (LocalDate.now().isAfter(electionRoundInDTO.getEndDate())) {
-            electionRound.setStatus("CLOSED");
-        } else {
-            electionRound.setStatus(electionRoundInDTO.getStatus());
-        }
+        electionRound.setStatus("ACTIVE");
 
         electionRoundRepository.save(electionRound);
     }
 
-    public void updateElectionRound(Integer id, ElectionRoundInDTO electionRoundInDTO) {
-        ElectionRound oldElectionRound = electionRoundRepository.findElectionRoundById(id);
-        if (oldElectionRound == null) {
-            throw new ApiException("Election round not found");
-        }
+
+    // =========================
+    // UPDATE ELECTION ROUND
+    // =========================
+
+    public void updateElectionRound(Integer roundId,
+                                    ElectionRoundInDTO electionRoundInDTO) {
+
+        ElectionRound oldElectionRound = getRoundOrThrow(roundId);
+
         oldElectionRound.setStartDate(electionRoundInDTO.getStartDate());
         oldElectionRound.setEndDate(electionRoundInDTO.getEndDate());
         oldElectionRound.setStatus(electionRoundInDTO.getStatus());
+
         electionRoundRepository.save(oldElectionRound);
     }
 
-    public void deleteElectionRound(Integer id) {
-        ElectionRound electionRound = electionRoundRepository.findElectionRoundById(id);
-        if (electionRound == null) {
-            throw new ApiException("Election round not found");
-        }
+
+    // =========================
+    // DELETE ELECTION ROUND
+    // =========================
+
+    public void deleteElectionRound(Integer roundId) {
+
+        ElectionRound electionRound = getRoundOrThrow(roundId);
+
         electionRoundRepository.delete(electionRound);
     }
 
-    private ElectionRoundOutDTO toOutDTO(ElectionRound electionRound) {
-        return new ElectionRoundOutDTO(electionRound.getId(), electionRound.getStartDate(), electionRound.getEndDate(), electionRound.getStatus());
+
+    // =========================
+    // PRIVATE HELPERS
+    // =========================
+
+    private ElectionRound getRoundOrThrow(Integer roundId) {
+
+        ElectionRound round =
+                electionRoundRepository.findElectionRoundById(roundId);
+
+        if (round == null) {
+            throw new ApiException("الجولة الانتخابية غير موجودة");
+        }
+
+        return round;
     }
 
-    public List<ElectionRound> getAllRounds() {
-        return electionRoundRepository.findAll();
+
+
+    private void closeRoundAndSelectWinnerIfNeeded(ElectionRound round) {
+
+        LocalDate today = LocalDate.now();
+
+        if ("ACTIVE".equalsIgnoreCase(round.getStatus())) {
+
+            if (today.isBefore(round.getEndDate())) {
+                return;
+            }
+
+            round.setStatus("CLOSED");
+            electionRoundRepository.save(round);
+        }
+
+        if (!"CLOSED".equalsIgnoreCase(round.getStatus())) {
+            return;
+        }
+
+        List<MayorCandidate> candidates =
+                mayorCandidateRepository.findByElectionRoundId(round.getId());
+
+        if (candidates == null || candidates.isEmpty()) {
+            return;
+        }
+
+        boolean alreadyHasWinner = false;
+
+        for (MayorCandidate candidate : candidates) {
+            if ("WINNER".equalsIgnoreCase(candidate.getStatus())) {
+                alreadyHasWinner = true;
+                break;
+            }
+        }
+
+        if (alreadyHasWinner) {
+            return;
+        }
+
+        MayorCandidate winnerCandidate = null;
+        int maxVotes = -1;
+
+        for (MayorCandidate candidate : candidates) {
+
+            int voteCount =
+                    mayorVoteRepository.countByMayorCandidateId(candidate.getId());
+
+            if (voteCount > maxVotes) {
+                maxVotes = voteCount;
+                winnerCandidate = candidate;
+            }
+        }
+
+        if (winnerCandidate == null) {
+            return;
+        }
+
+        updateCandidateStatuses(candidates, winnerCandidate);
+
+        assignMayor(winnerCandidate);
+    }
+
+
+    private void updateCandidateStatuses(List<MayorCandidate> candidates,
+                                         MayorCandidate winnerCandidate) {
+
+        for (MayorCandidate candidate : candidates) {
+
+            if (candidate.getId().equals(winnerCandidate.getId())) {
+                candidate.setStatus("WINNER");
+            } else {
+                candidate.setStatus("NOT_SELECTED");
+            }
+
+            mayorCandidateRepository.save(candidate);
+        }
+    }
+
+
+    private void assignMayor(MayorCandidate winnerCandidate) {
+
+        User winningUser = winnerCandidate.getUser();
+
+        winningUser.setStatus("MAYOR");
+        userRepository.save(winningUser);
+
+        boolean hasActiveMayorProfile =
+                mayorProfileRepository.existsByUserIdAndStatus(
+                        winningUser.getId(),
+                        "ACTIVE"
+                );
+
+        if (hasActiveMayorProfile) {
+            return;
+        }
+
+        MayorProfile mayorProfile = new MayorProfile();
+
+        mayorProfile.setUser(winningUser);
+        mayorProfile.setStartDate(LocalDate.now());
+        mayorProfile.setEndDate(LocalDate.now().plusYears(1));
+        mayorProfile.setNeighborhood(winningUser.getNeighborhood());
+        mayorProfile.setStatus("ACTIVE");
+
+        MayorProfile savedMayorProfile =
+                mayorProfileRepository.save(mayorProfile);
+
+        int winnerVotes =
+                mayorVoteRepository.countByMayorCandidateId(
+                        winnerCandidate.getId()
+                );
+
+        emailService.sendMayorAppointmentEmail(
+                winningUser,
+                savedMayorProfile,
+                winnerVotes
+        );
+    }
+
+
+    private void openNewRoundIfMayorTermExpired(ElectionRound round) {
+
+        if (round.getNeighborhood() == null) {
+            return;
+        }
+
+        LocalDate today = LocalDate.now();
+
+        MayorProfile currentMayorProfile =
+                mayorProfileRepository
+                        .findTopByNeighborhoodIdAndStatusOrderByStartDateDesc(
+                                round.getNeighborhood().getId(),
+                                "ACTIVE"
+                        );
+
+        if (currentMayorProfile == null) {
+            return;
+        }
+
+        if (!today.isAfter(currentMayorProfile.getEndDate())) {
+            return;
+        }
+
+        boolean hasActiveRoundNow =
+                electionRoundRepository.existsByStatusAndNeighborhoodId(
+                        "ACTIVE",
+                        currentMayorProfile.getNeighborhood().getId()
+                );
+
+        if (hasActiveRoundNow) {
+            return;
+        }
+
+        User oldMayor = currentMayorProfile.getUser();
+
+        oldMayor.setStatus("RESIDENT");
+        userRepository.save(oldMayor);
+
+        currentMayorProfile.setStatus("INACTIVE");
+        mayorProfileRepository.save(currentMayorProfile);
+
+        ElectionRound nextRound = new ElectionRound();
+
+        nextRound.setStartDate(today);
+        nextRound.setEndDate(today.plusDays(1));
+        nextRound.setStatus("ACTIVE");
+        nextRound.setNeighborhood(currentMayorProfile.getNeighborhood());
+
+        electionRoundRepository.save(nextRound);
+    }
+
+
+    private ElectionRoundDetailsDTO buildElectionRoundDetails(ElectionRound round) {
+
+        String winnerName = null;
+        Integer winnerVotes = null;
+
+        List<MayorCandidate> roundCandidates =
+                mayorCandidateRepository.findByElectionRoundId(round.getId());
+
+        int totalCandidates = roundCandidates.size();
+
+        int totalVotes = 0;
+
+        for (MayorCandidate candidate : roundCandidates) {
+
+            int candidateVotes =
+                    mayorVoteRepository.countByMayorCandidateId(candidate.getId());
+
+            totalVotes += candidateVotes;
+
+            if ("WINNER".equalsIgnoreCase(candidate.getStatus())) {
+                winnerName = candidate.getUser().getFullName();
+                winnerVotes = candidateVotes;
+            }
+        }
+
+        Long daysRemaining = 0L;
+
+        LocalDate today = LocalDate.now();
+
+        if ("ACTIVE".equalsIgnoreCase(round.getStatus())
+                && !today.isAfter(round.getEndDate())) {
+
+            daysRemaining =
+                    java.time.temporal.ChronoUnit.DAYS.between(
+                            today,
+                            round.getEndDate()
+                    );
+        }
+
+        String statusDescription =
+                "ACTIVE".equalsIgnoreCase(round.getStatus())
+                        ? "نشطة ومتاحة للتصويت والترشح"
+                        : "مغلقة ومنتهية";
+
+        String message =
+                "ACTIVE".equalsIgnoreCase(round.getStatus())
+                        ? "الجولة نشطة حالياً، ويمكن للسكان التصويت والترشح حتى تاريخ الإغلاق."
+                        : "تم إغلاق الجولة الانتخابية وانتهت فترة التصويت.";
+
+        String neighborhoodName =
+                round.getNeighborhood() != null
+                        ? round.getNeighborhood().getName()
+                        : "غير محدد";
+
+        return new ElectionRoundDetailsDTO(
+                round.getId(),
+                neighborhoodName,
+                round.getStartDate(),
+                round.getEndDate(),
+                round.getStatus(),
+                statusDescription,
+                daysRemaining,
+                totalCandidates,
+                totalVotes,
+                message,
+                winnerName,
+                winnerVotes
+        );
+    }
+
+
+    private ElectionRoundOutDTO toOutDTO(ElectionRound electionRound) {
+
+        return new ElectionRoundOutDTO(
+                electionRound.getId(),
+                electionRound.getStartDate(),
+                electionRound.getEndDate(),
+                electionRound.getStatus()
+        );
     }
 }

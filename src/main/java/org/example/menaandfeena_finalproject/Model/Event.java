@@ -68,7 +68,14 @@ public class Event {
     @JsonIgnore
     private Set<Review> reviews;
 
+    @ManyToOne
+    @JoinColumn(name = "neighborhood_id")
+    private Neighborhood neighborhood;
 
+
+    @ManyToOne
+    @JoinColumn(name = "creator_id")
+    private User creator;
 
 
 }
