@@ -67,6 +67,8 @@ public class IssueReportController {
 
     @GetMapping("/user/{userId}/report/{reportId}")
     public ResponseEntity<?> getUserIssueReportById(@PathVariable Integer userId, @PathVariable Integer reportId) {
+        // TODO: راجع لاحقاً عزل الأحياء هنا؛ المفترض أن المستخدم لا يستطيع فتح بلاغ خارج حيه.
+        // حالياً نترك المنطق كما هو للاختبار، وبعد تطبيق JWT سنربطه بالمستخدم المسجل دخوله.
         return ResponseEntity.status(200).body(issueReportService.getUserIssueReportById(userId, reportId));
     }
 
@@ -97,6 +99,11 @@ public class IssueReportController {
 
     @GetMapping("/mayor-report/{userId}/pdf")
     public ResponseEntity<byte[]> generateMayorIssueReportPdf(@PathVariable Integer userId) {
+        // TODO: راجع لاحقاً تحقق صلاحية العمدة؛ يجب أن يعمل فقط للعمدة الفعال في نفس الحي.
+        // حالياً userId مؤقت قبل Spring Security/JWT، وبعدها سيستبدل بالمستخدم المصادق عليه.
+        // هذا endpoint مخصص لتحميل تقرير PDF للعمدة.
+        // الـ Service هو الذي يتحقق من صلاحية العمدة ويولد محتوى الـ PDF كـ byte[].
+        // هنا في الـ Controller نجهز فقط استجابة HTTP: نوع الملف PDF واسم الملف عند التحميل.
         byte[] pdfBytes = issueReportService.generateMayorIssueReportPdf(userId);
 
         HttpHeaders headers = new HttpHeaders();
@@ -114,12 +121,6 @@ public class IssueReportController {
     @GetMapping("/search")
     public ResponseEntity<?> searchIssueReports(@RequestParam String keyword) {
         return ResponseEntity.status(200).body(issueReportService.searchIssueReports(keyword));
-    }
-
-    @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateIssueReportStatus(@PathVariable Integer id, @RequestParam String status) {
-        issueReportService.updateIssueReportStatus(id, status);
-        return ResponseEntity.status(200).body(new ApiResponse("Issue report status updated successfully"));
     }
 
     @PutMapping("/{id}/start-progress")

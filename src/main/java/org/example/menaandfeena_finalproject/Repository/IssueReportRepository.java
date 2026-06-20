@@ -30,6 +30,6 @@ public interface IssueReportRepository extends JpaRepository<IssueReport, Intege
 
     List<IssueReport> findIssueReportsByReportNeighborhoodId(Integer neighborhoodId);
 
-    @Query("select i from IssueReport i where lower(i.title) like lower(concat('%', :keyword, '%')) or lower(i.description) like lower(concat('%', :keyword, '%')) or lower(i.detectedDistrictName) like lower(concat('%', :keyword, '%')) or lower(i.detectedStreetName) like lower(concat('%', :keyword, '%'))")
+    @Query("select i from IssueReport i where lower(i.title) like lower(concat('%', :keyword, '%')) or lower(i.description) like lower(concat('%', :keyword, '%')) or lower(i.reportedStreetName) like lower(concat('%', :keyword, '%')) or lower(i.detectedDistrictName) like lower(concat('%', :keyword, '%')) or lower(i.detectedStreetName) like lower(concat('%', :keyword, '%'))")
     List<IssueReport> searchIssueReports(String keyword);
 }

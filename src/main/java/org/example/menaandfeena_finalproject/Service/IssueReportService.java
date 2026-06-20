@@ -9,9 +9,11 @@ import org.example.menaandfeena_finalproject.DTO.In.IssueReportInDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.IssueReportOutDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.IssueReportSummaryOutDTO;
 import org.example.menaandfeena_finalproject.Model.IssueReport;
+import org.example.menaandfeena_finalproject.Model.MayorProfile;
 import org.example.menaandfeena_finalproject.Model.Neighborhood;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.IssueReportRepository;
+import org.example.menaandfeena_finalproject.Repository.MayorProfileRepository;
 import org.example.menaandfeena_finalproject.Repository.NeighborhoodRepository;
 import org.example.menaandfeena_finalproject.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +44,9 @@ public class IssueReportService {
     private final IssueReportRepository issueReportRepository;
     private final UserRepository userRepository;
     private final NeighborhoodRepository neighborhoodRepository;
+    private final MayorProfileRepository mayorProfileRepository;
     private final OpenAIService openAIService;
+    private final NominatimService nominatimService;
 
     // يقرأ مسار مجلد الرفع من application.properties حتى نغيره بسهولة حسب بيئة التشغيل.
     @Value("${app.upload.dir}")
@@ -71,11 +75,12 @@ public class IssueReportService {
 
         IssueReport issueReport = new IssueReport();
         issueReport.setDescription(issueReportInDTO.getDescription());
+        issueReport.setReportedStreetName(issueReportInDTO.getReportedStreetName());
         issueReport.setLatitude(issueReportInDTO.getLatitude());
         issueReport.setLongitude(issueReportInDTO.getLongitude());
-        issueReport.setDetectedDistrictName(issueReportInDTO.getDetectedDistrictName());
-        issueReport.setDetectedStreetName(issueReportInDTO.getDetectedStreetName());
-        issueReport.setImageUrl(issueReportInDTO.getImageUrl());
+        Map<String, String> detectedLocation = nominatimService.detectLocationFromCoordinates(issueReportInDTO.getLatitude(), issueReportInDTO.getLongitude());
+        issueReport.setDetectedDistrictName(detectedLocation.getOrDefault("district", reporter.getNeighborhood().getName()));
+        issueReport.setDetectedStreetName(detectedLocation.getOrDefault("street", "Unknown street"));
 
         String systemPrompt = """
                 You classify municipal/community issue reports and generate a short Arabic title.
@@ -139,10 +144,13 @@ public class IssueReportService {
         old.setCategory(issueReport.getCategory());
         old.setPriority(issueReport.getPriority());
         old.setStatus(issueReport.getStatus());
+        old.setReportedStreetName(issueReport.getReportedStreetName());
         old.setLatitude(issueReport.getLatitude());
         old.setLongitude(issueReport.getLongitude());
-        old.setDetectedDistrictName(issueReport.getDetectedDistrictName());
-        old.setDetectedStreetName(issueReport.getDetectedStreetName());
+        Map<String, String> detectedLocation = nominatimService.detectLocationFromCoordinates(issueReport.getLatitude(), issueReport.getLongitude());
+        String fallbackDistrict = old.getReportNeighborhood() == null ? old.getDetectedDistrictName() : old.getReportNeighborhood().getName();
+        old.setDetectedDistrictName(detectedLocation.getOrDefault("district", fallbackDistrict));
+        old.setDetectedStreetName(detectedLocation.getOrDefault("street", old.getDetectedStreetName()));
         old.setImageUrl(issueReport.getImageUrl());
         old.setReportNeighborhood(issueReport.getReportNeighborhood());
         old.setReporter(issueReport.getReporter());
@@ -445,37 +453,6 @@ public class IssueReportService {
         return issueReportOutDTOS;
     }
 
-    public void updateIssueReportStatus(Integer reportId, String status) {
-        if (!status.matches("OPEN|IN_PROGRESS|COMPLETED")) {
-            throw new ApiException("Status must be OPEN, IN_PROGRESS or COMPLETED only");
-        }
-
-        IssueReport report = issueReportRepository.findIssueReportById(reportId);
-
-        if (report == null) {
-            throw new ApiException("Issue report not found");
-        }
-
-        if (report.getStatus().equals("COMPLETED")) {
-            throw new ApiException("Completed reports cannot be changed");
-        }
-
-        if (status.equals("OPEN") && !report.getStatus().equals("OPEN")) {
-            throw new ApiException("Issue report cannot be moved back to open");
-        }
-
-        if (status.equals("IN_PROGRESS") && !report.getStatus().equals("OPEN")) {
-            throw new ApiException("Only open reports can be moved to in progress");
-        }
-
-        if (status.equals("COMPLETED") && !report.getStatus().equals("IN_PROGRESS")) {
-            throw new ApiException("Only in progress reports can be completed");
-        }
-
-        report.setStatus(status);
-        issueReportRepository.save(report);
-    }
-
     public void startProgress(Integer reportId) {
         IssueReport report = issueReportRepository.findIssueReportById(reportId);
 
@@ -523,6 +500,14 @@ public class IssueReportService {
         }
         if (user.getNeighborhood() == null) {
             throw new ApiException("User neighborhood is required");
+        }
+        MayorProfile mayorProfile = mayorProfileRepository.findMayorProfileByUserId(userId);
+        if (mayorProfile == null || !"ACTIVE".equals(mayorProfile.getStatus())) {
+            throw new ApiException("Only active mayor can generate issue report PDF");
+        }
+        if (mayorProfile.getNeighborhood() == null
+                || !mayorProfile.getNeighborhood().getId().equals(user.getNeighborhood().getId())) {
+            throw new ApiException("Mayor profile must belong to the user's neighborhood");
         }
 
         Neighborhood neighborhood = user.getNeighborhood();
@@ -796,7 +781,7 @@ public class IssueReportService {
         Integer reportNeighborhoodId = issueReport.getReportNeighborhood() == null ? null : issueReport.getReportNeighborhood().getId();
         String reportNeighborhoodName = issueReport.getReportNeighborhood() == null ? null : issueReport.getReportNeighborhood().getName();
         String createdAt = issueReport.getCreatedAt() == null ? null : issueReport.getCreatedAt().format(ISSUE_REPORT_DATE_FORMAT);
-        return new IssueReportOutDTO(issueReport.getId(), issueReport.getTitle(), issueReport.getDescription(), issueReport.getCategory(), issueReport.getPriority(), issueReport.getStatus(), issueReport.getLatitude(), issueReport.getLongitude(), createdAt, issueReport.getDetectedDistrictName(), issueReport.getDetectedStreetName(), issueReport.getImageUrl(), reporterId, reporterName, reportNeighborhoodId, reportNeighborhoodName);
+        return new IssueReportOutDTO(issueReport.getId(), issueReport.getTitle(), issueReport.getDescription(), issueReport.getCategory(), issueReport.getPriority(), issueReport.getStatus(), issueReport.getLatitude(), issueReport.getLongitude(), createdAt, issueReport.getReportedStreetName(), issueReport.getDetectedDistrictName(), issueReport.getDetectedStreetName(), issueReport.getImageUrl(), reporterId, reporterName, reportNeighborhoodId, reportNeighborhoodName);
     }
 
     private IssueReportSummaryOutDTO mapToSummaryOutDTO(IssueReport issueReport) {

@@ -44,6 +44,9 @@ public class IssueReport {
     private LocalDateTime createdAt;
 
     @Column
+    private String reportedStreetName;
+
+    @Column
     private String detectedDistrictName;
 
     @Column

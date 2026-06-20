@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MayorProfileRepository extends JpaRepository<MayorProfile, Integer> {
     MayorProfile findMayorProfileById(Integer id);
+
+    MayorProfile findMayorProfileByUserId(Integer userId);
 }

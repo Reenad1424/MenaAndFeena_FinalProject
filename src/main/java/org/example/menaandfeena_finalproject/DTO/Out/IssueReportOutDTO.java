@@ -15,6 +15,7 @@ public class IssueReportOutDTO {
     private Double latitude;
     private Double longitude;
     private String createdAt;
+    private String reportedStreetName;
     private String detectedDistrictName;
     private String detectedStreetName;
     private String imageUrl;
