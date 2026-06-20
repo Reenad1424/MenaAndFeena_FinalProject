@@ -3,74 +3,99 @@ package org.example.menaandfeena_finalproject.Controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
+import org.example.menaandfeena_finalproject.DTO.Out.NeighborhoodDashboardDTO;
 import org.example.menaandfeena_finalproject.Model.Neighborhood;
-import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Service.NeighborhoodService;
-import org.example.menaandfeena_finalproject.Service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-
-@RestController
-@RequestMapping("/api/v1/neighborhood")
+import java.util.List;@RestController
+@RequestMapping("/api/v1/neighborhoods")
 @RequiredArgsConstructor
 public class NeighborhoodController {
 
     private final NeighborhoodService neighborhoodService;
-    private final UserService userService;
 
-    // ================= CRUD الأساسي =================
 
-    @GetMapping("/get-all")
-    public ResponseEntity<List<Neighborhood>> getAll() {
-        return ResponseEntity.status(200).body(neighborhoodService.getAll());
-    }
+    // =========================
+    // GET ALL NEIGHBORHOODS
+    // =========================
 
-    @PostMapping("/add")
-    public ResponseEntity<ApiResponse> add(@RequestBody @Valid Neighborhood neighborhood) {
-        neighborhoodService.add(neighborhood);
-        return ResponseEntity.status(201).body(new ApiResponse("Neighborhood added successfully"));
-    }
+    @GetMapping
+    public ResponseEntity<List<Neighborhood>> getAllNeighborhoods() {
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<ApiResponse> update(@PathVariable Integer id, @RequestBody @Valid Neighborhood neighborhood) {
-        neighborhoodService.update(id, neighborhood);
-        return ResponseEntity.status(200).body(new ApiResponse("Neighborhood updated successfully"));
-    }
-
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ApiResponse> delete(@PathVariable Integer id) {
-        neighborhoodService.delete(id);
-        return ResponseEntity.status(200).body(new ApiResponse("Neighborhood deleted successfully"));
+        return ResponseEntity.ok(
+                neighborhoodService.getAllNeighborhoods()
+        );
     }
 
 
-    //Reenad
-    /*@GetMapping("/analytics/{neighborhoodId}")
-    public ResponseEntity<Map<String, Object>> getAnalytics(@PathVariable Integer neighborhoodId) {
-        return ResponseEntity.ok(userService.getNeighborhoodStats(neighborhoodId));
+    // =========================
+    // CREATE NEIGHBORHOOD
+    // =========================
+
+    @PostMapping
+    public ResponseEntity<ApiResponse> createNeighborhood(
+            @RequestBody @Valid Neighborhood neighborhood
+    ) {
+
+        neighborhoodService.createNeighborhood(neighborhood);
+
+        return ResponseEntity.status(201).body(
+                new ApiResponse("Neighborhood added successfully")
+        );
     }
 
-    @GetMapping("/children/{neighborhoodId}")
-    public ResponseEntity<Integer> getChildrenCount(@PathVariable Integer neighborhoodId) {
-        return ResponseEntity.ok((Integer) userService.getNeighborhoodStats(neighborhoodId).get("children"));
+
+    // =========================
+    // UPDATE NEIGHBORHOOD
+    // =========================
+
+    @PutMapping("/{neighborhoodId}")
+    public ResponseEntity<ApiResponse> updateNeighborhood(
+            @PathVariable Integer neighborhoodId,
+            @RequestBody @Valid Neighborhood neighborhood
+    ) {
+
+        neighborhoodService.updateNeighborhood(
+                neighborhoodId,
+                neighborhood
+        );
+
+        return ResponseEntity.ok(
+                new ApiResponse("Neighborhood updated successfully")
+        );
     }
 
-    @GetMapping("/adults/{neighborhoodId}")
-    public ResponseEntity<Integer> getAdultsCount(@PathVariable Integer neighborhoodId) {
-        return ResponseEntity.ok((Integer) userService.getNeighborhoodStats(neighborhoodId).get("adults"));
+
+    // =========================
+    // DELETE NEIGHBORHOOD
+    // =========================
+
+    @DeleteMapping("/{neighborhoodId}")
+    public ResponseEntity<ApiResponse> deleteNeighborhood(
+            @PathVariable Integer neighborhoodId
+    ) {
+
+        neighborhoodService.deleteNeighborhood(neighborhoodId);
+
+        return ResponseEntity.ok(
+                new ApiResponse("Neighborhood deleted successfully")
+        );
     }
 
-    @GetMapping("/seniors/{neighborhoodId}")
-    public ResponseEntity<Integer> getSeniorsCount(@PathVariable Integer neighborhoodId) {
-        return ResponseEntity.ok((Integer) userService.getNeighborhoodStats(neighborhoodId).get("seniors"));
+
+    // =========================
+    // GET NEIGHBORHOOD DASHBOARD BY USER
+    // =========================
+
+    @GetMapping("/user/{userId}/dashboard")
+    public ResponseEntity<NeighborhoodDashboardDTO> getNeighborhoodDashboardByUser(
+            @PathVariable Integer userId
+    ) {
+
+        return ResponseEntity.ok(
+                neighborhoodService.getNeighborhoodDashboardByUser(userId)
+        );
     }
-
-    @GetMapping("/dashboard/{userId}")
-    public ResponseEntity<Map<String, Object>> getDashboard(@PathVariable Integer userId) {
-        return ResponseEntity.ok(neighborhoodService.getNeighborhoodDashboardByUserId(userId));
-    }*/
-
 }

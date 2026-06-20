@@ -8,38 +8,81 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/mayor-vote")
+@RequestMapping("/api/v1/mayor-votes")
 @RequiredArgsConstructor
 public class MayorVoteController {
 
     private final MayorVoteService mayorVoteService;
 
-    @GetMapping("/get")
+
+    // =========================
+    // GET ALL MAYOR VOTES
+    // =========================
+
+    @GetMapping
     public ResponseEntity<?> getAllMayorVotes() {
-        return ResponseEntity.status(200).body(mayorVoteService.getAllMayorVotes());
+
+        return ResponseEntity.ok(
+                mayorVoteService.getAllMayorVotes()
+        );
     }
 
-//Reenad
-    @PostMapping("/add/{userId}/{candidateId}/{roundId}")
-    public ResponseEntity<ApiResponse> addMayorVote(
+
+    // =========================
+    // VOTE FOR MAYOR CANDIDATE
+    // =========================
+
+    @PostMapping("/vote/user/{userId}/candidate/{candidateId}/round/{roundId}")
+    public ResponseEntity<ApiResponse> voteForMayorCandidate(
             @PathVariable Integer userId,
             @PathVariable Integer candidateId,
-            @PathVariable Integer roundId) {
+            @PathVariable Integer roundId
+    ) {
 
-        String resultMessage = mayorVoteService.addMayorVote(userId, candidateId, roundId);
+        String resultMessage =
+                mayorVoteService.voteForMayorCandidate(
+                        userId,
+                        candidateId,
+                        roundId
+                );
 
-        return ResponseEntity.status(200).body(new ApiResponse(resultMessage));
+        return ResponseEntity.ok(
+                new ApiResponse(resultMessage)
+        );
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<ApiResponse> updateMayorVote(@PathVariable Integer id, @RequestBody MayorVoteInDTO mayorVoteInDTO) {
-        mayorVoteService.updateMayorVote(id, mayorVoteInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Mayor vote updated"));
+
+    // =========================
+    // UPDATE MAYOR VOTE
+    // =========================
+
+    @PutMapping("/{voteId}")
+    public ResponseEntity<ApiResponse> updateMayorVote(
+            @PathVariable Integer voteId,
+            @RequestBody MayorVoteInDTO mayorVoteInDTO
+    ) {
+
+        mayorVoteService.updateMayorVote(voteId, mayorVoteInDTO);
+
+        return ResponseEntity.ok(
+                new ApiResponse("تم تحديث التصويت بنجاح")
+        );
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ApiResponse> deleteMayorVote(@PathVariable Integer id) {
-        mayorVoteService.deleteMayorVote(id);
-        return ResponseEntity.status(200).body(new ApiResponse("Mayor vote deleted"));
+
+    // =========================
+    // DELETE MAYOR VOTE
+    // =========================
+
+    @DeleteMapping("/{voteId}")
+    public ResponseEntity<ApiResponse> deleteMayorVote(
+            @PathVariable Integer voteId
+    ) {
+
+        mayorVoteService.deleteMayorVote(voteId);
+
+        return ResponseEntity.ok(
+                new ApiResponse("تم حذف التصويت بنجاح")
+        );
     }
 }

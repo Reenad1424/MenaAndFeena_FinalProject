@@ -12,4 +12,5 @@ public interface FamilyMemberRepository extends JpaRepository<FamilyMember, Inte
   List<FamilyMember> findByUserId(Integer userId);
 
 
+
 }

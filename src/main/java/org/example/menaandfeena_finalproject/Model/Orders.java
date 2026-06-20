@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -30,6 +31,18 @@ public class Orders {
     @Column(columnDefinition = "int not null")
     private Integer totalAmount;
 
+    @Column(columnDefinition = "date")
+    private LocalDate startDate;
+
+    @Column(columnDefinition = "date")
+    private LocalDate endDate;
+
+    private LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "marketplace_item_id", referencedColumnName = "id")
+    private MarketPlaceItem marketPlaceItem;
+
     @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<OrderItem> orderItems;
@@ -42,4 +55,9 @@ public class Orders {
 
     @OneToOne(mappedBy = "orders", cascade = CascadeType.ALL)
     private Payment payment;
+
+
+    @ManyToOne
+    @JoinColumn(name = "seller_id")
+    private User seller;
 }

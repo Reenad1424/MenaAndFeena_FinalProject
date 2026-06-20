@@ -8,10 +8,10 @@ import org.example.menaandfeena_finalproject.Model.*;
 import org.example.menaandfeena_finalproject.Repository.*;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class MayorCandidateService {
@@ -25,186 +25,387 @@ public class MayorCandidateService {
     private final IssueReportRepository issueReportRepository;
     private final EventRegistrationRepository eventRegistrationRepository;
 
+
+    //Reenad
+    // =========================
+    // GET ALL MAYOR CANDIDATES
+    // =========================
+
     public List<MayorCandidateOutDTO> getAllMayorCandidates() {
+
         List<MayorCandidateOutDTO> mayorCandidateOutDTOS = new ArrayList<>();
+
         for (MayorCandidate mayorCandidate : mayorCandidateRepository.findAll()) {
             mayorCandidateOutDTOS.add(toOutDTO(mayorCandidate));
         }
+
         return mayorCandidateOutDTOS;
     }
 
-    //Reenad
-    public void addMayorCandidate(Integer userId, Integer roundId) {
-        User user = userRepository.findUserById(userId);
-        if (user == null) {
-            throw new ApiException("Associated user not found");
-        }
 
-        ElectionRound round = electionRoundRepository.findById(roundId).orElse(null);
-        if (round == null) {
-            throw new ApiException("Election round not found");
-        }
+    // =========================
+    // APPLY FOR MAYOR CANDIDACY
+    // =========================
 
-        if (!round.getStatus().equalsIgnoreCase("ACTIVE")) {
-            throw new ApiException("This election round is closed for nominations");
-        }
+    public void applyForMayorCandidacy(Integer userId, Integer roundId) {
 
-        Integer age = userService.calculateAge(user.getBirthDate());
-        if (age == null || age < 30) {
-            throw new ApiException("عذراً، يجب ألا يقل عمر المرشح لمنصب العمدة عن 30 عاماً!");
-        }
+        User user = getUserOrThrow(userId);
 
-        boolean alreadyApplied = mayorCandidateRepository.existsByUserIdAndElectionRoundId(userId, roundId);
-        if (alreadyApplied) {
-            throw new ApiException("You have already applied as a candidate for this round");
-        }
+        ElectionRound round = getRoundOrThrow(roundId);
+
+        validateCandidateNeighborhood(user, round);
+
+        validateRoundIsActive(round);
+
+        validateCandidateAge(user);
+
+        validateUserNotAlreadyCandidate(userId, roundId);
 
         MayorCandidate candidate = new MayorCandidate();
+
         candidate.setUser(user);
         candidate.setElectionRound(round);
-        candidate.setStatus("PENDING");
+        candidate.setStatus("CANDIDATE");
         candidate.setAppliedAt(LocalDateTime.now());
 
         mayorCandidateRepository.save(candidate);
     }
 
-    public List<CandidateResponseDto> getCandidatesForRound(Integer roundId) {
-        ElectionRound round = electionRoundRepository.findById(roundId).orElse(null);
+
+    // =========================
+    // GET ROUND CANDIDATES
+    // =========================
+
+    public List<CandidateResponseDto> getCandidatesByRound(Integer roundId) {
+
+        ElectionRound round = getRoundOrThrow(roundId);
+
+        if (round.getNeighborhood() == null) {
+            throw new ApiException("Election round is not assigned to a neighborhood");
+        }
+
+        List<CandidateResponseDto> dtos = new ArrayList<>();
+
+        List<MayorCandidate> candidates =
+                mayorCandidateRepository.findByElectionRoundId(roundId);
+
+        for (MayorCandidate candidate : candidates) {
+
+            if (!isCandidateFromRoundNeighborhood(candidate, round)) {
+                continue;
+            }
+
+            int voteCount =
+                    mayorVoteRepository.countByMayorCandidateId(candidate.getId());
+
+            CandidateResponseDto dto =
+                    new CandidateResponseDto(
+                            candidate.getId(),
+                            candidate.getUser().getFullName(),
+                            candidate.getUser().getGender(),
+                            voteCount,
+                            candidate.getStatus(),
+                            "WINNER".equalsIgnoreCase(candidate.getStatus())
+                    );
+
+            dtos.add(dto);
+        }
+
+        return dtos;
+    }
+
+
+    // =========================
+    // GET ELECTION DASHBOARD
+    // =========================
+
+    public ElectionPageDTO getElectionDashboard(Integer roundId) {
+
+        ElectionRound round = getRoundOrThrow(roundId);
+
+        List<CandidateResponseDto> candidates =
+                getCandidatesByRound(roundId);
+
+        int totalVotes = 0;
+
+        for (CandidateResponseDto candidate : candidates) {
+            totalVotes += candidate.getTotalVotes();
+        }
+
+        String neighborhoodName =
+                round.getNeighborhood() != null
+                        ? round.getNeighborhood().getName()
+                        : "غير محدد";
+
+        String message =
+                "ACTIVE".equalsIgnoreCase(round.getStatus())
+                        ? "الجولة نشطة حالياً ويمكن التصويت للمرشحين."
+                        : "الجولة مغلقة ويمكن عرض النتائج النهائية.";
+
+        return new ElectionPageDTO(
+                round.getId(),
+                neighborhoodName,
+                round.getStatus(),
+                message,
+                candidates.size(),
+                totalVotes,
+                candidates
+        );
+    }
+
+
+    // =========================
+    // GET CANDIDATE PROFILE
+    // =========================
+
+    public CandidateDetailsDTO getCandidateProfile(Integer candidateId) {
+
+        MayorCandidate candidate = getCandidateOrThrow(candidateId);
+
+        User user = candidate.getUser();
+
+        String neighborhoodName =
+                user.getNeighborhood() != null
+                        ? user.getNeighborhood().getName()
+                        : "غير محدد";
+
+        int joinedInitiativesCount =
+                initiativeParticipationRepository.countByUserId(user.getId());
+
+        int resolvedIssuesCount =
+                issueReportRepository.countByReporterIdAndStatus(
+                        user.getId(),
+                        "COMPLETED"
+                );
+
+        int organizedEventsCount =
+                eventRegistrationRepository.countByUserIdAndStatus(
+                        user.getId(),
+                        "CONFIRMED"
+                );
+
+        int registeredResidents =
+                user.getNeighborhood() != null &&
+                        user.getNeighborhood().getRegisteredPopulation() != null
+                        ? user.getNeighborhood().getRegisteredPopulation()
+                        : 0;
+
+        int memberSinceYear =
+                user.getCreatedAt() != null
+                        ? user.getCreatedAt().getYear()
+                        : LocalDate.now().getYear();
+
+        int totalVotes =
+                mayorVoteRepository.countByMayorCandidateId(candidate.getId());
+
+        List<String> initiatives =
+                getCandidateInitiatives(user.getId());
+
+        List<String> events =
+                getCandidateEvents(user.getId());
+
+        return new CandidateDetailsDTO(
+                candidate.getId(),
+                user.getFullName(),
+                neighborhoodName,
+                memberSinceYear,
+                candidate.getStatus(),
+                candidate.getAppliedAt(),
+                totalVotes,
+                organizedEventsCount,
+                joinedInitiativesCount,
+                resolvedIssuesCount,
+                registeredResidents,
+                initiatives,
+                events
+        );
+    }
+
+
+    // =========================
+    // UPDATE CANDIDATE
+    // =========================
+
+    public void updateMayorCandidate(Integer candidateId,
+                                     MayorCandidateInDTO mayorCandidateInDTO) {
+
+        MayorCandidate oldMayorCandidate =
+                mayorCandidateRepository.findMayorCandidateById(candidateId);
+
+        if (oldMayorCandidate == null) {
+            throw new ApiException("Mayor candidate not found");
+        }
+
+        oldMayorCandidate.setAppliedAt(mayorCandidateInDTO.getAppliedAt());
+        oldMayorCandidate.setStatus(mayorCandidateInDTO.getStatus());
+
+        mayorCandidateRepository.save(oldMayorCandidate);
+    }
+
+
+    // =========================
+    // DELETE CANDIDATE
+    // =========================
+
+    public void deleteMayorCandidate(Integer candidateId) {
+
+        MayorCandidate mayorCandidate =
+                mayorCandidateRepository.findMayorCandidateById(candidateId);
+
+        if (mayorCandidate == null) {
+            throw new ApiException("Mayor candidate not found");
+        }
+
+        mayorCandidateRepository.delete(mayorCandidate);
+    }
+
+
+    // =========================
+    // PRIVATE HELPERS
+    // =========================
+
+    private User getUserOrThrow(Integer userId) {
+
+        User user = userRepository.findUserById(userId);
+
+        if (user == null) {
+            throw new ApiException("Associated user not found");
+        }
+
+        if (user.getNeighborhood() == null) {
+            throw new ApiException("User is not assigned to a neighborhood");
+        }
+
+        return user;
+    }
+
+
+    private ElectionRound getRoundOrThrow(Integer roundId) {
+
+        ElectionRound round =
+                electionRoundRepository.findById(roundId).orElse(null);
+
         if (round == null) {
             throw new ApiException("Election round not found");
         }
 
-        List<CandidateResponseDto> dtos = new ArrayList<>();
-        List<MayorCandidate> candidates = mayorCandidateRepository.findByElectionRoundId(roundId);
-
-        for (MayorCandidate candidate : candidates) {
-            int voteCount = mayorVoteRepository.countByMayorCandidateId(candidate.getId());
-
-            CandidateResponseDto dto = new CandidateResponseDto(
-                    candidate.getId(),
-                    candidate.getUser().getFullName(),
-                    candidate.getUser().getEmail(),
-                    candidate.getUser().getGender(),
-                    candidate.getAppliedAt(),
-                    voteCount,
-                    candidate.getStatus()
-            );
-            dtos.add(dto);
-        }
-        return dtos;
-    }
-
-    public void updateMayorCandidate(Integer id, MayorCandidateInDTO mayorCandidateInDTO) {
-        MayorCandidate oldMayorCandidate = mayorCandidateRepository.findMayorCandidateById(id);
-        if (oldMayorCandidate == null) {
-            throw new ApiException("Mayor candidate not found");
-        }
-        oldMayorCandidate.setAppliedAt(mayorCandidateInDTO.getAppliedAt());
-        oldMayorCandidate.setStatus(mayorCandidateInDTO.getStatus());
-        mayorCandidateRepository.save(oldMayorCandidate);
-    }
-
-    public void deleteMayorCandidate(Integer id) {
-        MayorCandidate mayorCandidate = mayorCandidateRepository.findMayorCandidateById(id);
-        if (mayorCandidate == null) {
-            throw new ApiException("Mayor candidate not found");
-        }
-        mayorCandidateRepository.delete(mayorCandidate);
-    }
-
-    private MayorCandidateOutDTO toOutDTO(MayorCandidate mayorCandidate) {
-        return new MayorCandidateOutDTO(mayorCandidate.getId(), mayorCandidate.getAppliedAt(), mayorCandidate.getStatus());
-    }
-    public String getElectionPageData(Integer roundId) {
-        ElectionRound round = electionRoundRepository.findById(roundId).orElse(null);
-        if (round == null) throw new ApiException("Election round not found");
-
-        long days = 2; long hours = 14; long minutes = 35;
-
-        List<MayorCandidate> candidates = mayorCandidateRepository.findByElectionRoundId(roundId);
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("🗳️ لوحة جولة انتخابات عمدة الحي الحية:\n");
-        sb.append("⏳ الوقت المتبقي لإغلاق صناديق الاقتراع: ").append(days).append(" أيام و ").append(hours).append(" ساعة و ").append(minutes).append(" دقيقة\n");
-        sb.append("===================================\n");
-        sb.append("👥 قائمة المرشحين الحاليين في هذه الدورة:\n");
-
-        int count = 0;
-        for (int i = 0; i < candidates.size(); i++) {
-            MayorCandidate candidate = candidates.get(i);
-            if (candidate.getStatus().equalsIgnoreCase("APPROVED") || candidate.getStatus().equalsIgnoreCase("PENDING")) {
-                int voteCount = mayorVoteRepository.countByMayorCandidateId(candidate.getId());
-
-                sb.append("🆔 رقم المرشح: ").append(candidate.getId()).append("\n")
-                        .append("👤 الاسم الكامل: ").append(candidate.getUser().getFullName()).append("\n")
-                        .append("📊 إجمالي الأصوات الحالية: ").append(voteCount).append(" صوت\n")
-                        .append("-----------------------------------\n");
-                count++;
-            }
+        if (round.getNeighborhood() == null) {
+            throw new ApiException("Election round is not assigned to a neighborhood");
         }
 
-        if (count == 0) {
-            sb.append("لا يوجد مرشحين معتمدين متاحين للتصويت حالياً.\n");
-        }
-
-        return sb.toString();
+        return round;
     }
 
-    public String getCandidateDetails(Integer candidateId) {
-        MayorCandidate candidate = mayorCandidateRepository.findById(candidateId).orElse(null);
+
+    private MayorCandidate getCandidateOrThrow(Integer candidateId) {
+
+        MayorCandidate candidate =
+                mayorCandidateRepository.findById(candidateId).orElse(null);
+
         if (candidate == null) {
             throw new ApiException("Mayor candidate not found");
         }
 
-        User user = candidate.getUser();
-        String neighborhoodName = user.getNeighborhood() != null ? user.getNeighborhood().getName() : "النرجس";
+        return candidate;
+    }
 
-        int joinedInitiativesCount = initiativeParticipationRepository.countByUserId(user.getId());
-        int resolvedIssuesCount = issueReportRepository.countByReporterIdAndStatus(user.getId(), "COMPLETED");
-        int organizedEventsCount = eventRegistrationRepository.countByUserIdAndStatus(user.getId(), "CONFIRMED");
-        int initiativeParticipants = user.getNeighborhood() != null ? user.getNeighborhood().getRegisteredPopulation() * 2 : 120;
 
-        int year = user.getCreatedAt() != null ? user.getCreatedAt().getYear() : 2024;
-        String memberSinceYear = "عضو في الحي منذ " + year;
+    private void validateRoundIsActive(ElectionRound round) {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("🪪 بطاقة تفاصيل ملف المرشح الرقمي:\n");
-        sb.append("👤 الاسم الكامل: ").append(user.getFullName()).append("\n");
-        sb.append("🏡 الحي السكني: ").append(neighborhoodName).append(" (").append(memberSinceYear).append(")\n");
-        sb.append("📌 الحالة الحالية: مرشح معتمد ومنظم للخدمات\n");
-        sb.append("===================================\n");
-        sb.append("📊 عدادات الأنشطة والتفاعلات للمرشح بالحي:\n");
-        sb.append("🗓️ فعاليات مسجل بتنظيمها: ").append(organizedEventsCount).append(" فعالية\n");
-        sb.append("🌱 مبادرات تطوعية ساهم بها: ").append(joinedInitiativesCount).append(" مبادرة\n");
-        sb.append("🚨 بلاغات رفعها وتم حلها ومتابعتها: ").append(resolvedIssuesCount).append(" بلاغ ناجح\n");
-        sb.append("👥 جيران تفاعلوا معه في برامجه: ").append(initiativeParticipants).append(" جار بالحي\n");
-        sb.append("===================================\n");
+        if (!"ACTIVE".equalsIgnoreCase(round.getStatus())) {
+            throw new ApiException("This election round is closed for nominations");
+        }
+    }
 
-        sb.append("🌱 المبادرات والأنشطة التي دعمها بالكامل:\n");
-        List<InitiativeParticipation> participations = initiativeParticipationRepository.findByUserId(user.getId());
-        int initCount = 0;
-        for (int i = 0; i < participations.size(); i++) {
-            InitiativeParticipation p = participations.get(i);
+
+    private void validateCandidateAge(User user) {
+
+        Integer age = userService.calculateAge(user.getBirthDate());
+
+        if (age == null || age < 30) {
+            throw new ApiException("عذراً، يجب ألا يقل عمر المرشح لمنصب العمدة عن 30 عاماً!");
+        }
+    }
+
+
+    private void validateUserNotAlreadyCandidate(Integer userId,
+                                                 Integer roundId) {
+
+        boolean alreadyApplied =
+                mayorCandidateRepository.existsByUserIdAndElectionRoundId(
+                        userId,
+                        roundId
+                );
+
+        if (alreadyApplied) {
+            throw new ApiException("You have already applied as a candidate for this round");
+        }
+    }
+
+
+    private void validateCandidateNeighborhood(User user,
+                                               ElectionRound round) {
+
+        if (!user.getNeighborhood().getId()
+                .equals(round.getNeighborhood().getId())) {
+
+            throw new ApiException("لا يمكنك الترشح في جولة انتخابية خارج حيّك");
+        }
+    }
+
+
+    private boolean isCandidateFromRoundNeighborhood(MayorCandidate candidate,
+                                                     ElectionRound round) {
+
+        return candidate.getUser() != null
+                && candidate.getUser().getNeighborhood() != null
+                && candidate.getUser().getNeighborhood().getId()
+                .equals(round.getNeighborhood().getId());
+    }
+
+
+    private List<String> getCandidateInitiatives(Integer userId) {
+
+        List<String> initiatives = new ArrayList<>();
+
+        List<InitiativeParticipation> participations =
+                initiativeParticipationRepository.findByUserId(userId);
+
+        for (InitiativeParticipation p : participations) {
+
             if (p.getInitiative() != null) {
-                sb.append("  - ").append(p.getInitiative().getTitle()).append("\n");
-                initCount++;
+                initiatives.add(p.getInitiative().getTitle());
             }
         }
-        if (initCount == 0) sb.append("  - لم ينضم لمبادرات مسجلة بعد.\n");
 
-        sb.append("\n🗓️ الفعاليات القائمة المسجل بحضورها:\n");
-        List<EventRegistration> registrations = eventRegistrationRepository.findByUserId(user.getId());
-        int evCount = 0;
-        for (int i = 0; i < registrations.size(); i++) {
-            EventRegistration reg = registrations.get(i);
+        return initiatives;
+    }
+
+
+    private List<String> getCandidateEvents(Integer userId) {
+
+        List<String> events = new ArrayList<>();
+
+        List<EventRegistration> registrations =
+                eventRegistrationRepository.findByUserId(userId);
+
+        for (EventRegistration reg : registrations) {
+
             if (reg.getEvent() != null) {
-                sb.append("  - ").append(reg.getEvent().getTitle()).append("\n");
-                evCount++;
+                events.add(reg.getEvent().getTitle());
             }
         }
-        if (evCount == 0) sb.append("  - لم يسجل في فعاليات قريبة بالحي بعد.\n");
 
-        return sb.toString();
+        return events;
+    }
+
+
+    private MayorCandidateOutDTO toOutDTO(MayorCandidate mayorCandidate) {
+
+        return new MayorCandidateOutDTO(
+                mayorCandidate.getId(),
+                mayorCandidate.getAppliedAt(),
+                mayorCandidate.getStatus()
+        );
     }
 }
-

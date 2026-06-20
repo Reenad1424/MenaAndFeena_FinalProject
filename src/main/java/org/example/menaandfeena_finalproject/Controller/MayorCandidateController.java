@@ -4,56 +4,131 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.MayorCandidateInDTO;
+import org.example.menaandfeena_finalproject.DTO.Out.CandidateDetailsDTO;
+import org.example.menaandfeena_finalproject.DTO.Out.ElectionPageDTO;
 import org.example.menaandfeena_finalproject.Service.MayorCandidateService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
-@RequestMapping("/api/v1/mayor-candidate")
+@RequestMapping("/api/v1/mayor-candidates")
 @RequiredArgsConstructor
 public class MayorCandidateController {
 
     private final MayorCandidateService mayorCandidateService;
 
-    @GetMapping("/get")
+
+    // =========================
+    // GET ALL CANDIDATES
+    // =========================
+
+    @GetMapping
     public ResponseEntity<?> getAllMayorCandidates() {
-        return ResponseEntity.status(200).body(mayorCandidateService.getAllMayorCandidates());
+
+        return ResponseEntity.ok(
+                mayorCandidateService.getAllMayorCandidates()
+        );
     }
 
-    @PostMapping("/add/{userId}/{roundId}")
-    public ResponseEntity<ApiResponse> addMayorCandidate(@PathVariable Integer userId, @PathVariable Integer roundId) {
-        mayorCandidateService.addMayorCandidate(userId, roundId);
-        return ResponseEntity.status(201).body(new ApiResponse("تم تقديم طلب الترشح لمنصب عمدة الحي بنجاح وفحص الشروط القانونية مسبقاً."));
+
+    // =========================
+    // APPLY FOR CANDIDACY
+    // =========================
+
+    @PostMapping("/apply/{userId}/round/{roundId}")
+    public ResponseEntity<ApiResponse> applyForMayorCandidacy(
+            @PathVariable Integer userId,
+            @PathVariable Integer roundId
+    ) {
+
+        mayorCandidateService.applyForMayorCandidacy(userId, roundId);
+
+        return ResponseEntity.status(201).body(
+                new ApiResponse("تم ترشيح المستخدم لمنصب عمدة الحي بنجاح")
+        );
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<ApiResponse> updateMayorCandidate(@PathVariable Integer id, @RequestBody @Valid MayorCandidateInDTO mayorCandidateInDTO) {
-        mayorCandidateService.updateMayorCandidate(id, mayorCandidateInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Mayor candidate updated successfully"));
+
+    // =========================
+    // GET ROUND CANDIDATES
+    // =========================
+
+    @GetMapping("/round/{roundId}")
+    public ResponseEntity<?> getCandidatesByRound(
+            @PathVariable Integer roundId
+    ) {
+
+        return ResponseEntity.ok(
+                mayorCandidateService.getCandidatesByRound(roundId)
+        );
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ApiResponse> deleteMayorCandidate(@PathVariable Integer id) {
-        mayorCandidateService.deleteMayorCandidate(id);
-        return ResponseEntity.status(200).body(new ApiResponse("Mayor candidate deleted successfully"));
+
+    // =========================
+    // GET ELECTION DASHBOARD
+    // =========================
+
+    @GetMapping("/round/{roundId}/dashboard")
+    public ResponseEntity<ElectionPageDTO> getElectionDashboard(
+            @PathVariable Integer roundId
+    ) {
+
+        return ResponseEntity.ok(
+                mayorCandidateService.getElectionDashboard(roundId)
+        );
     }
 
-    //Reenad
-    @GetMapping("/get-by-round/{roundId}")
-    public ResponseEntity<?> getCandidatesByRound(@PathVariable Integer roundId) {
-        return ResponseEntity.status(200).body(mayorCandidateService.getCandidatesForRound(roundId));
+
+    // =========================
+    // GET CANDIDATE PROFILE
+    // =========================
+
+    @GetMapping("/{candidateId}/profile")
+    public ResponseEntity<CandidateDetailsDTO> getCandidateProfile(
+            @PathVariable Integer candidateId
+    ) {
+
+        return ResponseEntity.ok(
+                mayorCandidateService.getCandidateProfile(candidateId)
+        );
     }
 
-    @GetMapping("/election-page/{roundId}")
-    public ResponseEntity<ApiResponse> getElectionPage(@PathVariable Integer roundId) {
-        String content = mayorCandidateService.getElectionPageData(roundId);
-        return ResponseEntity.status(200).body(new ApiResponse(content));
+
+    // =========================
+    // UPDATE CANDIDATE
+    // =========================
+
+    @PutMapping("/{candidateId}")
+    public ResponseEntity<ApiResponse> updateMayorCandidate(
+            @PathVariable Integer candidateId,
+            @RequestBody @Valid MayorCandidateInDTO mayorCandidateInDTO
+    ) {
+
+        mayorCandidateService.updateMayorCandidate(
+                candidateId,
+                mayorCandidateInDTO
+        );
+
+        return ResponseEntity.ok(
+                new ApiResponse("تم تحديث بيانات المرشح بنجاح")
+        );
     }
 
-    @GetMapping("/details/{candidateId}")
-    public ResponseEntity<ApiResponse> getCandidateDetails(@PathVariable Integer candidateId) {
-        String content = mayorCandidateService.getCandidateDetails(candidateId);
-        return ResponseEntity.status(200).body(new ApiResponse(content));
+
+    // =========================
+    // DELETE CANDIDATE
+    // =========================
+
+    @DeleteMapping("/{candidateId}")
+    public ResponseEntity<ApiResponse> deleteMayorCandidate(
+            @PathVariable Integer candidateId
+    ) {
+
+        mayorCandidateService.deleteMayorCandidate(candidateId);
+
+        return ResponseEntity.ok(
+                new ApiResponse("تم حذف المرشح بنجاح")
+        );
     }
 }
-
