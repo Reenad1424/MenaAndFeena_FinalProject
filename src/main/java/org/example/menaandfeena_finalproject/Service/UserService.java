@@ -33,6 +33,7 @@ public class UserService {
     private final InitiativeRepository initiativeRepository;
     private final MarketPlaceItemRepository marketPlaceItemRepository;
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final EmailService emailService;
@@ -59,24 +60,37 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public void createUser(User user) {
+    public void createUser(UserRegisterRequestDto dto) {
+        User user = new User();
+        user.setFullName(dto.getFullName());
+        user.setEmail(dto.getEmail());
+        user.setPassword(dto.getPassword());
+        user.setPhone(dto.getPhone());
+        user.setNationalId(dto.getNationalId());
+        user.setBirthDate(dto.getBirthDate());
+        user.setGender(dto.getGender());
+        user.setYearsInNeighborhood(dto.getYearsInNeighborhood());
+        user.setLatitude(dto.getLatitude());
+        user.setLongitude(dto.getLongitude());
+        user.setStatus("RESIDENT");
+        user.setIsVerified(false);
         userRepository.save(user);
     }
 
-    public void updateUser(Integer userId, User user) {
+    public void updateUser(Integer userId, UserRegisterRequestDto dto) {
 
         User old = getUserOrThrow(userId);
 
-        old.setFullName(user.getFullName());
-        old.setEmail(user.getEmail());
-        old.setPassword(user.getPassword());
-        old.setPhone(user.getPhone());
-        old.setNationalId(user.getNationalId());
-        old.setBirthDate(user.getBirthDate());
-        old.setGender(user.getGender());
-        old.setStatus(user.getStatus());
-        old.setYearsInNeighborhood(user.getYearsInNeighborhood());
-        old.setIsVerified(user.getIsVerified());
+        old.setFullName(dto.getFullName());
+        old.setEmail(dto.getEmail());
+        old.setPassword(dto.getPassword());
+        old.setPhone(dto.getPhone());
+        old.setNationalId(dto.getNationalId());
+        old.setBirthDate(dto.getBirthDate());
+        old.setGender(dto.getGender());
+        old.setYearsInNeighborhood(dto.getYearsInNeighborhood());
+        old.setLatitude(dto.getLatitude());
+        old.setLongitude(dto.getLongitude());
 
         userRepository.save(old);
     }
@@ -833,37 +847,58 @@ public class UserService {
 
     private List<UserOrderDTO> getPurchases(Integer userId) {
 
-        return orderRepository.findOrdersByUserId(userId)
-                .stream()
-                .map(o ->
-                        new UserOrderDTO(
-                                o.getId(),
-                                o.getMarketPlaceItem().getTitle(),
-                                o.getUser().getFullName(),
-                                o.getSeller().getFullName(),
-                                o.getMarketPlaceItem().getType(),
-                                o.getStatus(),
-                                o.getTotalAmount()
-                        )
-                )
-                .toList();
+        List<UserOrderDTO> purchases = new ArrayList<>();
+
+        for (Orders order : orderRepository.findOrdersByUserId(userId)) {
+            String buyerName = order.getUser() == null ? null : order.getUser().getFullName();
+
+            for (OrderItem orderItem : orderItemRepository.findOrderItemsByOrdersId(order.getId())) {
+                MarketPlaceItem item = orderItem.getMarketPlaceItem();
+                if (item == null) {
+                    continue;
+                }
+
+                String sellerName = item.getUser() == null ? null : item.getUser().getFullName();
+                purchases.add(new UserOrderDTO(
+                        order.getId(),
+                        item.getTitle(),
+                        buyerName,
+                        sellerName,
+                        orderItem.getType(),
+                        order.getStatus(),
+                        orderItem.getSubtotal()
+                ));
+            }
+        }
+
+        return purchases;
     }
 
     private List<UserOrderDTO> getSales(Integer userId) {
 
-        return orderRepository.findOrdersBySellerId(userId)
-                .stream()
-                .map(o ->
-                        new UserOrderDTO(
-                                o.getId(),
-                                o.getMarketPlaceItem().getTitle(),
-                                o.getUser().getFullName(),
-                                o.getSeller().getFullName(),
-                                o.getMarketPlaceItem().getType(),
-                                o.getStatus(),
-                                o.getTotalAmount()
-                        )
-                )
-                .toList();
+        List<UserOrderDTO> sales = new ArrayList<>();
+
+        for (Orders order : orderRepository.findDistinctByOrderItemsMarketPlaceItemUserId(userId)) {
+            String buyerName = order.getUser() == null ? null : order.getUser().getFullName();
+
+            for (OrderItem orderItem : orderItemRepository.findOrderItemsByOrdersId(order.getId())) {
+                MarketPlaceItem item = orderItem.getMarketPlaceItem();
+                if (item == null || item.getUser() == null || !item.getUser().getId().equals(userId)) {
+                    continue;
+                }
+
+                sales.add(new UserOrderDTO(
+                        order.getId(),
+                        item.getTitle(),
+                        buyerName,
+                        item.getUser().getFullName(),
+                        orderItem.getType(),
+                        order.getStatus(),
+                        orderItem.getSubtotal()
+                ));
+            }
+        }
+
+        return sales;
     }
 }

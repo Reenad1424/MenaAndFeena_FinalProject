@@ -137,27 +137,6 @@ public class IssueReportService {
 
 
 
-    public void update(Integer id, IssueReport issueReport) {
-        IssueReport old = issueReportRepository.findIssueReportById(id);
-        if (old == null) throw new ApiException("Issue report not found");
-        old.setTitle(issueReport.getTitle());
-        old.setDescription(issueReport.getDescription());
-        old.setCategory(issueReport.getCategory());
-        old.setPriority(issueReport.getPriority());
-        old.setStatus(issueReport.getStatus());
-        old.setReportedStreetName(issueReport.getReportedStreetName());
-        old.setLatitude(issueReport.getLatitude());
-        old.setLongitude(issueReport.getLongitude());
-        Map<String, String> detectedLocation = nominatimService.detectLocationFromCoordinates(issueReport.getLatitude(), issueReport.getLongitude());
-        String fallbackDistrict = old.getReportNeighborhood() == null ? old.getDetectedDistrictName() : old.getReportNeighborhood().getName();
-        old.setDetectedDistrictName(detectedLocation.getOrDefault("district", fallbackDistrict));
-        old.setDetectedStreetName(detectedLocation.getOrDefault("street", old.getDetectedStreetName()));
-        old.setImageUrl(issueReport.getImageUrl());
-        old.setReportNeighborhood(issueReport.getReportNeighborhood());
-        old.setReporter(issueReport.getReporter());
-        issueReportRepository.save(old);
-    }
-
     public void delete(Integer id) {
         IssueReport issueReport = issueReportRepository.findIssueReportById(id);
         if (issueReport == null) throw new ApiException("Issue report not found");

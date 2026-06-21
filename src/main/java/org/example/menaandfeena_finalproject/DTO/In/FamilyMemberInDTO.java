@@ -1,16 +1,21 @@
 package org.example.menaandfeena_finalproject.DTO.In;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
-public class FamilyMemberRequestDto {
+public class FamilyMemberInDTO {
+
     @NotBlank(message = "Name cannot be blank")
     private String name;
 
     @NotNull(message = "Age cannot be null")
     @Min(value = 0, message = "Age must be at least 0")
-    @Max(value = 130, message = "Age must be realistic")
+    @Max(value = 60, message = "Age must be realistic")
     private Integer age;
 
     @NotBlank(message = "Gender cannot be blank")
@@ -18,8 +23,5 @@ public class FamilyMemberRequestDto {
     private String gender;
 
     @NotBlank(message = "Relation cannot be blank")
-    private String relation; // ابن، ابنة، زوجة
-
-    @NotNull(message = "User ID cannot be null")
-    private Integer userId; // مؤقتاً لربط التابع باليوزر (حتى نفعّل السيكيورتي لاحقاً)
+    private String relation;
 }

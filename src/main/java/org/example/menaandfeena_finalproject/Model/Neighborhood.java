@@ -2,7 +2,6 @@ package org.example.menaandfeena_finalproject.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.*;
 import java.util.Date;
 import java.util.List;
@@ -20,11 +19,9 @@ public class Neighborhood {
     private Integer id;
 
     @Column(nullable = false)
-    @NotBlank(message = "Neighborhood name cannot be null")
     private String name;
 
     @Column(nullable = false)
-    @NotBlank(message = "City cannot be null")
     private String city;
 
     private Integer estimatedPopulation;
@@ -32,10 +29,8 @@ public class Neighborhood {
     private Date createdAt = new Date();
 
     // 🌟 حقول إحداثيات مركز الحي لتحديد أقرب حي لليوزر
-    @NotNull(message = "Neighborhood latitude cannot be null")
     private Double latitude;
 
-    @NotNull(message = "Neighborhood longitude cannot be null")
     private Double longitude;
 
     // علاقة الحي مع السكان

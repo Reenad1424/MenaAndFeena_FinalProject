@@ -2,8 +2,6 @@ package org.example.menaandfeena_finalproject.Model;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,12 +22,10 @@ public class EventRegistration {
     private Integer id;
 
 
-    @Pattern(regexp = "PENDING|CONFIRMED|CANCELLED", message = "Status must be PENDING, CONFIRMED, or CANCELLED")
     @Column(columnDefinition = "varchar(20) not null")
     private String status;
 
 
-    @NotNull(message = "Registration date cannot be null")
     private LocalDate registeredAt;
 
     @Column(columnDefinition = "varchar(100) unique")

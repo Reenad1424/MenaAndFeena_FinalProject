@@ -1,19 +1,21 @@
 package org.example.menaandfeena_finalproject.DTO.In;
 
-
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EventInDTO {
+public class InitiativeInDTO {
 
     @NotEmpty(message = "Title cannot be empty")
     private String title;
@@ -22,19 +24,13 @@ public class EventInDTO {
     private String description;
 
     @NotNull(message = "Date cannot be null")
-    private LocalDateTime date;
-
-    @NotEmpty(message = "Location cannot be empty")
-    private String location;
-
-    @NotNull(message = "Paid status cannot be null")
-    private Boolean isPaid;
-
-    @PositiveOrZero(message = "Price must be zero or positive")
-    private Double price;
+    @FutureOrPresent(message = "Date must be today or in the future")
+    private LocalDate date;
 
     @NotNull(message = "Max participants cannot be null")
     @Positive(message = "Max participants must be positive")
     private Integer maxParticipants;
 
+    @NotEmpty(message = "Category cannot be empty")
+    private String category;
 }

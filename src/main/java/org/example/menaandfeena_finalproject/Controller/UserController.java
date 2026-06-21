@@ -6,7 +6,6 @@ import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.ContactRequestDto;
 import org.example.menaandfeena_finalproject.DTO.In.UserRegisterRequestDto;
 import org.example.menaandfeena_finalproject.DTO.Out.*;
-import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,37 +26,37 @@ public class UserController {
     // =========================
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.status(200).body(userService.getAllUsers());
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse> createUser(
-            @RequestBody @Valid User user
+    public ResponseEntity<?> createUser(
+            @RequestBody @Valid UserRegisterRequestDto userRegisterRequestDto
     ) {
-        userService.createUser(user);
-        return ResponseEntity.status(201).body(
+        userService.createUser(userRegisterRequestDto);
+        return ResponseEntity.status(200).body(
                 new ApiResponse("User added successfully")
         );
     }
 
     @PutMapping("/{userId}")
-    public ResponseEntity<ApiResponse> updateUser(
+    public ResponseEntity<?> updateUser(
             @PathVariable Integer userId,
-            @RequestBody @Valid User user
+            @RequestBody @Valid UserRegisterRequestDto userRegisterRequestDto
     ) {
-        userService.updateUser(userId, user);
-        return ResponseEntity.ok(
+        userService.updateUser(userId, userRegisterRequestDto);
+        return ResponseEntity.status(200).body(
                 new ApiResponse("User updated successfully")
         );
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<ApiResponse> deleteUser(
+    public ResponseEntity<?> deleteUser(
             @PathVariable Integer userId
     ) {
         userService.deleteUser(userId);
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 new ApiResponse("User deleted successfully")
         );
     }
@@ -68,22 +67,22 @@ public class UserController {
     // =========================
 
     @GetMapping("/welcome")
-    public ResponseEntity<WelcomeDTO> getWelcomeScreen() {
-        return ResponseEntity.ok(userService.getWelcomeScreen());
+    public ResponseEntity<?> getWelcomeScreen() {
+        return ResponseEntity.status(200).body(userService.getWelcomeScreen());
     }
 
     @GetMapping("/about")
-    public ResponseEntity<AboutInfoDTO> getAboutInfo() {
-        return ResponseEntity.ok(userService.getAboutInfo());
+    public ResponseEntity<?> getAboutInfo() {
+        return ResponseEntity.status(200).body(userService.getAboutInfo());
     }
 
     @PostMapping("/contact")
-    public ResponseEntity<ApiResponse> sendContactMessage(
+    public ResponseEntity<?> sendContactMessage(
             @RequestBody @Valid ContactRequestDto dto
     ) {
         userService.sendContactMessage(dto);
 
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 new ApiResponse("تم إرسال رسالتك بنجاح، وسيتواصل معك فريق الدعم قريباً")
         );
     }
@@ -94,7 +93,7 @@ public class UserController {
     // =========================
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse> registerUser(
+    public ResponseEntity<?> registerUser(
             @RequestBody @Valid UserRegisterRequestDto dto
     ) {
         UserRegisterResponseDto response =
@@ -106,7 +105,7 @@ public class UserController {
                         + " في حي "
                         + response.getDetectedNeighborhoodName();
 
-        return ResponseEntity.status(201).body(
+        return ResponseEntity.status(200).body(
                 new ApiResponse(message)
         );
     }
@@ -117,10 +116,10 @@ public class UserController {
     // =========================
 
     @GetMapping("/{userId}/neighborhood-residents")
-    public ResponseEntity<List<NeighborhoodResidentDTO>> getNeighborhoodResidents(
+    public ResponseEntity<?> getNeighborhoodResidents(
             @PathVariable Integer userId
     ) {
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 userService.getNeighborhoodResidents(userId)
         );
     }
@@ -131,10 +130,10 @@ public class UserController {
     // =========================
 
     @GetMapping("/{userId}/activity-log")
-    public ResponseEntity<UserActivityLogDTO> getUserActivityLog(
+    public ResponseEntity<?> getUserActivityLog(
             @PathVariable Integer userId
     ) {
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 userService.getUserActivityLog(userId)
         );
     }
@@ -145,55 +144,55 @@ public class UserController {
     // =========================
 
     @GetMapping("/{userId}/profile/full")
-    public ResponseEntity<UserProfileDetailsDTO> getFullProfile(
+    public ResponseEntity<?> getFullProfile(
             @PathVariable Integer userId
     ) {
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 userService.getUserProfileDetails(userId)
         );
     }
 
     @GetMapping("/{userId}/profile/basic")
-    public ResponseEntity<UserBasicInfoDTO> getBasicProfile(
+    public ResponseEntity<?> getBasicProfile(
             @PathVariable Integer userId
     ) {
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 userService.getBasicProfile(userId)
         );
     }
 
     @GetMapping("/{userId}/profile/community")
-    public ResponseEntity<UserProfileCommunityDTO> getCommunityProfile(
+    public ResponseEntity<?> getCommunityProfile(
             @PathVariable Integer userId
     ) {
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 userService.getCommunityProfile(userId)
         );
     }
 
     @GetMapping("/{userId}/profile/activities")
-    public ResponseEntity<UserProfileActivitiesDTO> getActivitiesProfile(
+    public ResponseEntity<?> getActivitiesProfile(
             @PathVariable Integer userId
     ) {
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 userService.getActivitiesProfile(userId)
         );
     }
 
     @GetMapping("/{userId}/profile/reputation")
-    public ResponseEntity<UserProfileReputationDTO> getReputationProfile(
+    public ResponseEntity<?> getReputationProfile(
             @PathVariable Integer userId
     ) {
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 userService.getReputationProfile(userId)
         );
     }
 
     @GetMapping("/{userId}/profile/marketplace")
-    public ResponseEntity<UserProfileMarketplaceDTO> getMarketplaceProfile(
+    public ResponseEntity<?> getMarketplaceProfile(
             @PathVariable Integer userId
     ) {
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 userService.getMarketplaceProfile(userId)
         );
     }

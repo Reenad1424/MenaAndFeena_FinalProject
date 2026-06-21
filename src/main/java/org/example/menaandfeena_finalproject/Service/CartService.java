@@ -133,6 +133,9 @@ public class CartService {
         if (item.getUser() == null || item.getUser().getNeighborhood() == null) {
             throw new ApiException("Market place item owner neighborhood is required");
         }
+        if (item.getUser().getId().equals(user.getId())) {
+            throw new ApiException("You cannot add your own marketplace item to cart");
+        }
         if (!item.getUser().getNeighborhood().getId().equals(user.getNeighborhood().getId())) {
             throw new ApiException("Market place item is outside your neighborhood");
         }

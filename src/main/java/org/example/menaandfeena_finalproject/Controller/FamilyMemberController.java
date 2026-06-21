@@ -3,11 +3,10 @@ package org.example.menaandfeena_finalproject.Controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
-import org.example.menaandfeena_finalproject.Model.FamilyMember;
+import org.example.menaandfeena_finalproject.DTO.In.FamilyMemberInDTO;
 import org.example.menaandfeena_finalproject.Service.FamilyMemberService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/family-member")
@@ -17,26 +16,26 @@ public class FamilyMemberController {
     private final FamilyMemberService familyMemberService;
 
     @GetMapping("/my-family/{userId}")
-    public ResponseEntity<List<FamilyMember>> getMyFamily(@PathVariable Integer userId) {
+    public ResponseEntity<?> getMyFamily(@PathVariable Integer userId) {
         return ResponseEntity.status(200).body(familyMemberService.getMyFamily(userId));
     }
 
     @PostMapping("/add/{userId}")
-    public ResponseEntity<ApiResponse> add(@PathVariable Integer userId, @RequestBody @Valid FamilyMember familyMember) {
-        familyMemberService.add(userId, familyMember);
-        return ResponseEntity.status(201).body(new ApiResponse("Family member added successfully"));
+    public ResponseEntity<?> add(@PathVariable Integer userId, @RequestBody @Valid FamilyMemberInDTO familyMemberInDTO) {
+        familyMemberService.add(userId, familyMemberInDTO);
+        return ResponseEntity.status(200).body(new ApiResponse("Family member added successfully"));
     }
 
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<ApiResponse> update(@PathVariable Integer id, @RequestBody @Valid FamilyMember familyMember) {
-        familyMemberService.update(id, familyMember);
+    @PutMapping("/update/{userId}/{id}")
+    public ResponseEntity<?> update(@PathVariable Integer userId, @PathVariable Integer id, @RequestBody @Valid FamilyMemberInDTO familyMemberInDTO) {
+        familyMemberService.update(userId, id, familyMemberInDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Family member updated successfully"));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ApiResponse> delete(@PathVariable Integer id) {
-        familyMemberService.delete(id);
+    @DeleteMapping("/delete/{userId}/{id}")
+    public ResponseEntity<?> delete(@PathVariable Integer userId, @PathVariable Integer id) {
+        familyMemberService.delete(userId, id);
         return ResponseEntity.status(200).body(new ApiResponse("Family member deleted successfully"));
     }
 }

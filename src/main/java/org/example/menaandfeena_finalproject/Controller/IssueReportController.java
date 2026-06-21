@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.IssueReportInDTO;
-import org.example.menaandfeena_finalproject.Model.IssueReport;
 import org.example.menaandfeena_finalproject.Service.IssueReportService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -98,7 +97,7 @@ public class IssueReportController {
     }
 
     @GetMapping("/mayor-report/{userId}/pdf")
-    public ResponseEntity<byte[]> generateMayorIssueReportPdf(@PathVariable Integer userId) {
+    public ResponseEntity<?> generateMayorIssueReportPdf(@PathVariable Integer userId) {
         // TODO: راجع لاحقاً تحقق صلاحية العمدة؛ يجب أن يعمل فقط للعمدة الفعال في نفس الحي.
         // حالياً userId مؤقت قبل Spring Security/JWT، وبعدها سيستبدل بالمستخدم المصادق عليه.
         // هذا endpoint مخصص لتحميل تقرير PDF للعمدة.
@@ -110,7 +109,7 @@ public class IssueReportController {
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"Neighborhood-Issue-Report.pdf\"");
 
-        return ResponseEntity.ok().headers(headers).body(pdfBytes);
+        return ResponseEntity.status(200).headers(headers).body(pdfBytes);
     }
 
     @PostMapping("/mayor-report/{userId}/pdf/email")
@@ -146,12 +145,6 @@ public class IssueReportController {
     }
 
     // TODO: بعد إضافة Spring Security/JWT هذا endpoint يجب أن يكون للـ ADMIN فقط لأنه يعدل بيانات البلاغ كاملة.
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody @Valid IssueReport issueReport) {
-        issueReportService.update(id, issueReport);
-        return ResponseEntity.status(200).body(new ApiResponse("Issue report updated successfully"));
-    }
-
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         issueReportService.delete(id);

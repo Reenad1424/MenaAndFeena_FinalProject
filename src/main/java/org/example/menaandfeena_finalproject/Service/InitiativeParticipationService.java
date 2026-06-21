@@ -2,6 +2,7 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
+import org.example.menaandfeena_finalproject.DTO.In.InitiativeParticipationInDTO;
 import org.example.menaandfeena_finalproject.Model.FamilyMember;
 import org.example.menaandfeena_finalproject.Model.Initiative;
 import org.example.menaandfeena_finalproject.Model.InitiativeParticipation;
@@ -27,11 +28,27 @@ public class InitiativeParticipationService {
         return initiativeParticipationRepository.findAll();
     }
 
-    public void addInitiativeParticipation(InitiativeParticipation initiativeParticipation) {
+    public void addInitiativeParticipation(InitiativeParticipationInDTO dto) {
+        User user = userRepository.findUserById(dto.getUserId());
+        if (user == null) {
+            throw new ApiException("User not found");
+        }
+
+        Initiative initiative = initiativeRepository.findInitiativeById(dto.getInitiativeId());
+        if (initiative == null) {
+            throw new ApiException("Initiative not found");
+        }
+
+        InitiativeParticipation initiativeParticipation = new InitiativeParticipation();
+        initiativeParticipation.setStatus("JOINED");
+        initiativeParticipation.setJoinedAt(LocalDate.now());
+        initiativeParticipation.setUser(user);
+        initiativeParticipation.setInitiative(initiative);
+
         initiativeParticipationRepository.save(initiativeParticipation);
     }
 
-    public void updateInitiativeParticipation(Integer id, InitiativeParticipation initiativeParticipation) {
+    public void updateInitiativeParticipation(Integer id, InitiativeParticipationInDTO dto) {
 
         InitiativeParticipation oldParticipation = initiativeParticipationRepository.findInitiativeParticipationById(id);
 
@@ -39,10 +56,18 @@ public class InitiativeParticipationService {
             throw new ApiException("Initiative participation not found");
         }
 
-        oldParticipation.setStatus(initiativeParticipation.getStatus());
-        oldParticipation.setJoinedAt(initiativeParticipation.getJoinedAt());
-        // oldParticipation.setUser(initiativeParticipation.getUser());
-// oldParticipation.setInitiative(initiativeParticipation.getInitiative());
+        User user = userRepository.findUserById(dto.getUserId());
+        if (user == null) {
+            throw new ApiException("User not found");
+        }
+
+        Initiative initiative = initiativeRepository.findInitiativeById(dto.getInitiativeId());
+        if (initiative == null) {
+            throw new ApiException("Initiative not found");
+        }
+
+        oldParticipation.setUser(user);
+        oldParticipation.setInitiative(initiative);
 
         initiativeParticipationRepository.save(oldParticipation);
     }
@@ -69,6 +94,27 @@ public class InitiativeParticipationService {
         if (initiative == null) {
             throw new ApiException("Initiative not found");
         }
+        if (user.getNeighborhood() == null) {
+            throw new ApiException("User neighborhood is required");
+        }
+        if (initiative.getUser() == null || initiative.getUser().getNeighborhood() == null) {
+            throw new ApiException("Initiative owner neighborhood is required");
+        }
+        if (!initiative.getUser().getNeighborhood().getId().equals(user.getNeighborhood().getId())) {
+            throw new ApiException("Initiative is outside your neighborhood");
+        }
+        if (initiative.getUser().getId().equals(userId)) {
+            throw new ApiException("Initiative owner cannot join own initiative");
+        }
+        if (!"ACTIVE".equals(initiative.getStatus())) {
+            throw new ApiException("Initiative is not active");
+        }
+        if (initiativeParticipationRepository.existsByUserIdAndInitiativeId(userId, initiativeId)) {
+            throw new ApiException("User already joined this initiative");
+        }
+        if (initiative.getMaxParticipants() != null && initiativeParticipationRepository.countByInitiativeId(initiativeId) >= initiative.getMaxParticipants()) {
+            throw new ApiException("Initiative is full");
+        }
 
         InitiativeParticipation participation = new InitiativeParticipation();
 
@@ -92,6 +138,31 @@ public class InitiativeParticipationService {
 
         if (initiative == null) {
             throw new ApiException("Initiative not found");
+        }
+        User user = familyMember.getUser();
+        if (user == null) {
+            throw new ApiException("Family member owner not found");
+        }
+        if (user.getNeighborhood() == null) {
+            throw new ApiException("User neighborhood is required");
+        }
+        if (initiative.getUser() == null || initiative.getUser().getNeighborhood() == null) {
+            throw new ApiException("Initiative owner neighborhood is required");
+        }
+        if (!initiative.getUser().getNeighborhood().getId().equals(user.getNeighborhood().getId())) {
+            throw new ApiException("Initiative is outside your neighborhood");
+        }
+        if (initiative.getUser().getId().equals(user.getId())) {
+            throw new ApiException("Initiative owner family cannot join own initiative");
+        }
+        if (!"ACTIVE".equals(initiative.getStatus())) {
+            throw new ApiException("Initiative is not active");
+        }
+        if (initiativeParticipationRepository.existsByUserIdAndInitiativeId(user.getId(), initiativeId)) {
+            throw new ApiException("User already joined this initiative");
+        }
+        if (initiative.getMaxParticipants() != null && initiativeParticipationRepository.countByInitiativeId(initiativeId) >= initiative.getMaxParticipants()) {
+            throw new ApiException("Initiative is full");
         }
 
         InitiativeParticipation participation = new InitiativeParticipation();

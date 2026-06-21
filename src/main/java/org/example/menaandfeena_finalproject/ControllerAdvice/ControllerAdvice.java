@@ -50,7 +50,7 @@ public class ControllerAdvice {
     // wrong write SQL in @column Exception
     @ExceptionHandler(value = InvalidDataAccessResourceUsageException.class)
     public ResponseEntity<ApiResponse> InvalidDataAccessResourceUsageException(InvalidDataAccessResourceUsageException e) {
-        return ResponseEntity.status(200).body(new ApiResponse(e.getMessage()));
+        return ResponseEntity.status(400).body(new ApiResponse(e.getMessage()));
     }
 
     // Database Constraint Exception

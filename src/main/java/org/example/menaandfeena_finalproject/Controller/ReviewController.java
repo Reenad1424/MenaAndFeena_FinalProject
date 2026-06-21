@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.ReviewInDTO;
-import org.example.menaandfeena_finalproject.Model.Review;
 import org.example.menaandfeena_finalproject.Service.ReviewService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,27 +15,27 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @GetMapping("/get")
-    public ResponseEntity getAllReviews() {
+    public ResponseEntity<?> getAllReviews() {
         return ResponseEntity.status(200).body(reviewService.getAllReviews());
     }
 
     @PostMapping("/add")
-    public ResponseEntity addReview(@Valid @RequestBody Review review) {
+    public ResponseEntity<?> addReview(@Valid @RequestBody ReviewInDTO reviewInDTO) {
 
-        reviewService.addReview(review);
+        reviewService.addReview(reviewInDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Review added successfully"));
 
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity updateReview(@PathVariable Integer id, @Valid @RequestBody Review review) {
+    public ResponseEntity<?> updateReview(@PathVariable Integer id, @Valid @RequestBody ReviewInDTO reviewInDTO) {
 
-        reviewService.updateReview(id, review);
+        reviewService.updateReview(id, reviewInDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Review updated successfully"));
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity deleteReview(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteReview(@PathVariable Integer id) {
         reviewService.deleteReview(id);
         return ResponseEntity.status(200).body(new ApiResponse("Review deleted successfully"));
 
@@ -44,22 +43,29 @@ public class ReviewController {
 
 
     @PostMapping("/add-event-review/{userId}/{eventId}")
-    public ResponseEntity addEventReview(@PathVariable Integer userId, @PathVariable Integer eventId,
+    public ResponseEntity<?> addEventReview(@PathVariable Integer userId, @PathVariable Integer eventId,
                                          @Valid @RequestBody ReviewInDTO reviewInDTO) {
         reviewService.addEventReview(userId, eventId, reviewInDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Event review added successfully"));
     }
 
+    @PostMapping("/add-initiative-review/{userId}/{initiativeId}")
+    public ResponseEntity<?> addInitiativeReview(@PathVariable Integer userId, @PathVariable Integer initiativeId,
+                                              @Valid @RequestBody ReviewInDTO reviewInDTO) {
+        reviewService.addInitiativeReview(userId, initiativeId, reviewInDTO);
+        return ResponseEntity.status(200).body(new ApiResponse("Initiative review added successfully"));
+    }
+
 
     @GetMapping("/event/{eventId}")
-    public ResponseEntity getEventReviews(@PathVariable Integer eventId) {
+    public ResponseEntity<?> getEventReviews(@PathVariable Integer eventId) {
 
         return ResponseEntity.status(200).body(reviewService.getEventReviews(eventId));
     }
 
 
     @GetMapping("/initiative/{initiativeId}")
-    public ResponseEntity getInitiativeReviews(@PathVariable Integer initiativeId) {
+    public ResponseEntity<?> getInitiativeReviews(@PathVariable Integer initiativeId) {
         return ResponseEntity.status(200).body(reviewService.getInitiativeReviews(initiativeId));
     }
 
@@ -67,7 +73,7 @@ public class ReviewController {
 
 
     @GetMapping("/event/{eventId}/filter")
-    public ResponseEntity getEventReviews(@PathVariable Integer eventId, @RequestParam(required = false) String sort) {
+    public ResponseEntity<?> getEventReviews(@PathVariable Integer eventId, @RequestParam(required = false) String sort) {
 
         if ("newest".equalsIgnoreCase(sort)) {
             return ResponseEntity.status(200).body(reviewService.getEventReviewsNewest(eventId));
@@ -78,25 +84,25 @@ public class ReviewController {
 
 
     @GetMapping("/average/{eventId}")
-    public ResponseEntity getAverageRating(@PathVariable Integer eventId) {
+    public ResponseEntity<?> getAverageRating(@PathVariable Integer eventId) {
         return ResponseEntity.status(200).body(reviewService.getAverageRating(eventId));
     }
 
 
     @GetMapping("/positive-ratio/{eventId}")
-    public ResponseEntity getPositiveRatio(@PathVariable Integer eventId) {
+    public ResponseEntity<?> getPositiveRatio(@PathVariable Integer eventId) {
         return ResponseEntity.status(200).body(reviewService.getPositiveRatio(eventId));
     }
 
 
     @GetMapping("/average/initiative/{initiativeId}")
-    public ResponseEntity getAverageRatingByInitiative(@PathVariable Integer initiativeId) {
+    public ResponseEntity<?> getAverageRatingByInitiative(@PathVariable Integer initiativeId) {
         return ResponseEntity.status(200).body(reviewService.getAverageRatingByInitiative(initiativeId));
     }
 
 
     @GetMapping("/positive-ratio/initiative/{initiativeId}")
-    public ResponseEntity getPositiveRatioByInitiative(@PathVariable Integer initiativeId) {
+    public ResponseEntity<?> getPositiveRatioByInitiative(@PathVariable Integer initiativeId) {
         return ResponseEntity.status(200).body(reviewService.getPositiveRatioByInitiative(initiativeId));
     }
 

@@ -60,7 +60,10 @@ public class MarketPlaceItemService {
         for (MarketPlaceItem item : marketPlaceItemRepository.findAll()) {
             if (item.getUser() != null
                     && item.getUser().getNeighborhood() != null
-                    && item.getUser().getNeighborhood().getId().equals(user.getNeighborhood().getId())) {
+                    && item.getUser().getNeighborhood().getId().equals(user.getNeighborhood().getId())
+                    && "AVAILABLE".equals(item.getStatus())
+                    && item.getQuantity() != null
+                    && item.getQuantity() > 0) {
                 Integer itemUserId = item.getUser().getId();
                 String sellerFullName = item.getUser().getFullName();
                 marketPlaceItemOutDTOS.add(new MarketPlaceItemOutDTO(item.getId(), item.getTitle(), item.getDescription(), item.getType(), item.getStatus(), item.getPrice(), item.getRentPrice(), item.getDepositAmount(), item.getQuantity(), itemUserId, sellerFullName));
@@ -241,6 +244,12 @@ public class MarketPlaceItemService {
         if (!marketPlaceItem.getUser().getNeighborhood().getId().equals(user.getNeighborhood().getId())) {
             throw new ApiException("Market place item is outside your neighborhood");
         }
+        if (!"AVAILABLE".equals(marketPlaceItem.getStatus())) {
+            throw new ApiException("Market place item is unavailable");
+        }
+        if (marketPlaceItem.getQuantity() == null || marketPlaceItem.getQuantity() <= 0) {
+            throw new ApiException("Market place item is out of stock");
+        }
 
         Integer itemUserId = marketPlaceItem.getUser().getId();
         String sellerFullName = marketPlaceItem.getUser().getFullName();
@@ -280,7 +289,10 @@ public class MarketPlaceItemService {
         for (MarketPlaceItem item : marketPlaceItemRepository.findMarketPlaceItemsByType(type)) {
             if (item.getUser() != null
                     && item.getUser().getNeighborhood() != null
-                    && item.getUser().getNeighborhood().getId().equals(user.getNeighborhood().getId())) {
+                    && item.getUser().getNeighborhood().getId().equals(user.getNeighborhood().getId())
+                    && "AVAILABLE".equals(item.getStatus())
+                    && item.getQuantity() != null
+                    && item.getQuantity() > 0) {
                 Integer itemUserId = item.getUser().getId();
                 String sellerFullName = item.getUser().getFullName();
                 marketPlaceItemOutDTOS.add(new MarketPlaceItemOutDTO(item.getId(), item.getTitle(), item.getDescription(), item.getType(), item.getStatus(), item.getPrice(), item.getRentPrice(), item.getDepositAmount(), item.getQuantity(), itemUserId, sellerFullName));
@@ -306,7 +318,10 @@ public class MarketPlaceItemService {
             if (itemText.contains(searchKeyword)
                     && item.getUser() != null
                     && item.getUser().getNeighborhood() != null
-                    && item.getUser().getNeighborhood().getId().equals(user.getNeighborhood().getId())) {
+                    && item.getUser().getNeighborhood().getId().equals(user.getNeighborhood().getId())
+                    && "AVAILABLE".equals(item.getStatus())
+                    && item.getQuantity() != null
+                    && item.getQuantity() > 0) {
                 Integer itemUserId = item.getUser().getId();
                 String sellerFullName = item.getUser().getFullName();
                 marketPlaceItemOutDTOS.add(new MarketPlaceItemOutDTO(item.getId(), item.getTitle(), item.getDescription(), item.getType(), item.getStatus(), item.getPrice(), item.getRentPrice(), item.getDepositAmount(), item.getQuantity(), itemUserId, sellerFullName));

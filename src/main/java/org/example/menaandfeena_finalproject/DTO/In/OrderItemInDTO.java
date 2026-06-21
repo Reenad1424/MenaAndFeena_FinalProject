@@ -35,9 +35,6 @@ public class OrderItemInDTO {
     @PositiveOrZero(message = "Subtotal must be zero or positive")
     private Integer subtotal;
 
-    @Pattern(regexp = "NOT_RETURNED|WAITING_OWNER_CONFIRMATION|RETURNED|DAMAGED", message = "Return status must be NOT_RETURNED, WAITING_OWNER_CONFIRMATION, RETURNED, or DAMAGED")
-    private String returnStatus;
-
     @NotNull(message = "Order id cannot be null")
     private Integer orderId;
 

@@ -2,7 +2,6 @@ package org.example.menaandfeena_finalproject.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -24,42 +23,35 @@ public class User {
     private Integer id;
 
     @Column(nullable = false)
-    @NotBlank(message = "Full name cannot be blank")
-    @Size(min = 2, max = 50, message = "Full name must be between 2 and 50 characters")
     private String fullName;
 
     @Column(nullable = false, unique = true)
-    @NotBlank(message = "Email cannot be blank")
-    @Email(message = "Must be a valid email format")
     private String email;
 
     @Column(nullable = false)
-    @NotBlank(message = "Password cannot be blank")
-    @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
     @Column(nullable = false)
-    @NotBlank(message = "Phone number cannot be blank")
     private String phone;
 
     @Column(unique = true)
     private String nationalId;
+
     private LocalDate birthDate;
+
     private String gender;
+
     private String status = "RESIDENT";
+
     private Integer yearsInNeighborhood;
 
     private Boolean isVerified = false;
 
-    // TEMP TEST FIX: Added only because existing UserService and MayorCandidateService call getCreatedAt().
-    // Revisit with the owner of user/mayor work before keeping permanently.
     @CreationTimestamp
     private LocalDate createdAt=LocalDate.now();
 
-    @NotNull(message = "User latitude cannot be null")
     private Double latitude;
 
-    @NotNull(message = "User longitude cannot be null")
     private Double longitude;
 
     // علاقة السكن داخل حي (Many Users to One Neighborhood)
@@ -125,7 +117,9 @@ public class User {
     //private LocalDate createdAt =  LocalDate.now();
 
     private LocalDate mayorStartDate;
+
     private LocalDate mayorEndDate;
+
     private Boolean mayorActive;
 
 

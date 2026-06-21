@@ -11,6 +11,8 @@ import java.util.List;
 public interface InitiativeParticipationRepository extends JpaRepository<InitiativeParticipation, Integer> {
     InitiativeParticipation findInitiativeParticipationById(Integer id);
     List<InitiativeParticipation> findByInitiative_Id(Integer initiativeId);
+    boolean existsByUserIdAndInitiativeId(Integer userId, Integer initiativeId);
+    int countByInitiativeId(Integer initiativeId);
 
     int countByUserId(Integer id);
 

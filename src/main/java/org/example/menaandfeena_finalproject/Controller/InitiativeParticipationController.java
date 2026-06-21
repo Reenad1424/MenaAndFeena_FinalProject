@@ -3,7 +3,7 @@ package org.example.menaandfeena_finalproject.Controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
-import org.example.menaandfeena_finalproject.Model.InitiativeParticipation;
+import org.example.menaandfeena_finalproject.DTO.In.InitiativeParticipationInDTO;
 import org.example.menaandfeena_finalproject.Service.InitiativeParticipationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,31 +15,31 @@ public class InitiativeParticipationController {
     private final InitiativeParticipationService initiativeParticipationService;
 
     @GetMapping("/get")
-    public ResponseEntity getAllInitiativeParticipations() {
+    public ResponseEntity<?> getAllInitiativeParticipations() {
         return ResponseEntity.status(200).body(initiativeParticipationService.getAllInitiativeParticipations());
     }
 
     @PostMapping("/add")
-    public ResponseEntity addInitiativeParticipation(
-            @Valid @RequestBody InitiativeParticipation initiativeParticipation) {
+    public ResponseEntity<?> addInitiativeParticipation(
+            @Valid @RequestBody InitiativeParticipationInDTO initiativeParticipationInDTO) {
 
-        initiativeParticipationService.addInitiativeParticipation(initiativeParticipation);
+        initiativeParticipationService.addInitiativeParticipation(initiativeParticipationInDTO);
 
         return ResponseEntity.status(200).body(new ApiResponse("Initiative participation added successfully"));
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity updateInitiativeParticipation(
+    public ResponseEntity<?> updateInitiativeParticipation(
             @PathVariable Integer id,
-            @Valid @RequestBody InitiativeParticipation initiativeParticipation) {
+            @Valid @RequestBody InitiativeParticipationInDTO initiativeParticipationInDTO) {
 
-        initiativeParticipationService.updateInitiativeParticipation(id, initiativeParticipation);
+        initiativeParticipationService.updateInitiativeParticipation(id, initiativeParticipationInDTO);
 
         return ResponseEntity.status(200).body(new ApiResponse("Initiative participation updated successfully"));
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity deleteInitiativeParticipation(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteInitiativeParticipation(@PathVariable Integer id) {
 
         initiativeParticipationService.deleteInitiativeParticipation(id);
 
@@ -48,7 +48,7 @@ public class InitiativeParticipationController {
 
 
     @PostMapping("/join/{userId}/{initiativeId}")
-    public ResponseEntity joinInitiative(@PathVariable Integer userId, @PathVariable Integer initiativeId) {
+    public ResponseEntity<?> joinInitiative(@PathVariable Integer userId, @PathVariable Integer initiativeId) {
         initiativeParticipationService.joinInitiative(userId, initiativeId);
         return ResponseEntity.status(200).body(new ApiResponse("Joined successfully"));
     }
@@ -56,7 +56,7 @@ public class InitiativeParticipationController {
 
 
     @PostMapping("/join-family/{familyMemberId}/{initiativeId}")
-    public ResponseEntity joinFamilyMember(@PathVariable Integer familyMemberId, @PathVariable Integer initiativeId) {
+    public ResponseEntity<?> joinFamilyMember(@PathVariable Integer familyMemberId, @PathVariable Integer initiativeId) {
         initiativeParticipationService.joinFamilyMember(familyMemberId, initiativeId);
         return ResponseEntity.status(200).body(new ApiResponse("Family member joined successfully"));
     }
@@ -64,7 +64,7 @@ public class InitiativeParticipationController {
 
 
     @GetMapping("/{initiativeId}/participants")
-    public ResponseEntity getParticipants(@PathVariable Integer initiativeId) {
+    public ResponseEntity<?> getParticipants(@PathVariable Integer initiativeId) {
         return ResponseEntity.status(200).body(initiativeParticipationService.getParticipants(initiativeId));
     }
 

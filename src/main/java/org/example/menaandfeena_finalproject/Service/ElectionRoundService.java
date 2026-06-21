@@ -8,8 +8,10 @@ import org.example.menaandfeena_finalproject.DTO.Out.ElectionRoundOutDTO;
 import org.example.menaandfeena_finalproject.Model.ElectionRound;
 import org.example.menaandfeena_finalproject.Model.MayorCandidate;
 import org.example.menaandfeena_finalproject.Model.MayorProfile;
+import org.example.menaandfeena_finalproject.Model.Neighborhood;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.*;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -24,6 +26,7 @@ public class ElectionRoundService {
     private final MayorCandidateRepository mayorCandidateRepository;
     private final MayorVoteRepository mayorVoteRepository;
     private final MayorProfileRepository mayorProfileRepository;
+    private final NeighborhoodRepository neighborhoodRepository;
     private final EmailService emailService;
 
     //Reenad
@@ -67,12 +70,21 @@ public class ElectionRoundService {
     // =========================
 
     public void createElectionRound(ElectionRoundInDTO electionRoundInDTO) {
+        if (!electionRoundInDTO.getEndDate().isAfter(electionRoundInDTO.getStartDate())) {
+            throw new ApiException("End date must be after start date");
+        }
+
+        Neighborhood neighborhood = neighborhoodRepository.findNeighborhoodById(electionRoundInDTO.getNeighborhoodId());
+        if (neighborhood == null) {
+            throw new ApiException("Neighborhood not found");
+        }
 
         ElectionRound electionRound = new ElectionRound();
 
         electionRound.setStartDate(electionRoundInDTO.getStartDate());
         electionRound.setEndDate(electionRoundInDTO.getEndDate());
         electionRound.setStatus("ACTIVE");
+        electionRound.setNeighborhood(neighborhood);
 
         electionRoundRepository.save(electionRound);
     }
@@ -86,10 +98,18 @@ public class ElectionRoundService {
                                     ElectionRoundInDTO electionRoundInDTO) {
 
         ElectionRound oldElectionRound = getRoundOrThrow(roundId);
+        if (!electionRoundInDTO.getEndDate().isAfter(electionRoundInDTO.getStartDate())) {
+            throw new ApiException("End date must be after start date");
+        }
+
+        Neighborhood neighborhood = neighborhoodRepository.findNeighborhoodById(electionRoundInDTO.getNeighborhoodId());
+        if (neighborhood == null) {
+            throw new ApiException("Neighborhood not found");
+        }
 
         oldElectionRound.setStartDate(electionRoundInDTO.getStartDate());
         oldElectionRound.setEndDate(electionRoundInDTO.getEndDate());
-        oldElectionRound.setStatus(electionRoundInDTO.getStatus());
+        oldElectionRound.setNeighborhood(neighborhood);
 
         electionRoundRepository.save(oldElectionRound);
     }
@@ -206,8 +226,29 @@ public class ElectionRoundService {
     private void assignMayor(MayorCandidate winnerCandidate) {
 
         User winningUser = winnerCandidate.getUser();
+        LocalDate today = LocalDate.now();
+        LocalDate termEndDate = today.plusYears(1);
+
+        if (winningUser.getNeighborhood() == null) {
+            throw new ApiException("Winning user neighborhood is required");
+        }
+
+        MayorProfile currentActiveMayor =
+                mayorProfileRepository.findTopByNeighborhoodIdAndStatusOrderByStartDateDesc(
+                        winningUser.getNeighborhood().getId(),
+                        "ACTIVE"
+                );
+
+        if (currentActiveMayor != null
+                && currentActiveMayor.getUser() != null
+                && !currentActiveMayor.getUser().getId().equals(winningUser.getId())) {
+            deactivateMayorProfile(currentActiveMayor, today);
+        }
 
         winningUser.setStatus("MAYOR");
+        winningUser.setMayorActive(true);
+        winningUser.setMayorStartDate(today);
+        winningUser.setMayorEndDate(termEndDate);
         userRepository.save(winningUser);
 
         boolean hasActiveMayorProfile =
@@ -223,8 +264,8 @@ public class ElectionRoundService {
         MayorProfile mayorProfile = new MayorProfile();
 
         mayorProfile.setUser(winningUser);
-        mayorProfile.setStartDate(LocalDate.now());
-        mayorProfile.setEndDate(LocalDate.now().plusYears(1));
+        mayorProfile.setStartDate(today);
+        mayorProfile.setEndDate(termEndDate);
         mayorProfile.setNeighborhood(winningUser.getNeighborhood());
         mayorProfile.setStatus("ACTIVE");
 
@@ -263,7 +304,7 @@ public class ElectionRoundService {
             return;
         }
 
-        if (!today.isAfter(currentMayorProfile.getEndDate())) {
+        if (currentMayorProfile.getEndDate() == null || !today.isAfter(currentMayorProfile.getEndDate())) {
             return;
         }
 
@@ -277,13 +318,7 @@ public class ElectionRoundService {
             return;
         }
 
-        User oldMayor = currentMayorProfile.getUser();
-
-        oldMayor.setStatus("RESIDENT");
-        userRepository.save(oldMayor);
-
-        currentMayorProfile.setStatus("INACTIVE");
-        mayorProfileRepository.save(currentMayorProfile);
+        deactivateMayorProfile(currentMayorProfile, today);
 
         ElectionRound nextRound = new ElectionRound();
 
@@ -293,6 +328,56 @@ public class ElectionRoundService {
         nextRound.setNeighborhood(currentMayorProfile.getNeighborhood());
 
         electionRoundRepository.save(nextRound);
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void processExpiredMayorTerms() {
+        LocalDate today = LocalDate.now();
+
+        for (MayorProfile mayorProfile : mayorProfileRepository.findByStatus("ACTIVE")) {
+            if (mayorProfile.getEndDate() == null || !today.isAfter(mayorProfile.getEndDate())) {
+                continue;
+            }
+
+            if (mayorProfile.getNeighborhood() == null) {
+                continue;
+            }
+
+            deactivateMayorProfile(mayorProfile, today);
+
+            boolean hasActiveRoundNow =
+                    electionRoundRepository.existsByStatusAndNeighborhoodId(
+                            "ACTIVE",
+                            mayorProfile.getNeighborhood().getId()
+                    );
+
+            if (hasActiveRoundNow) {
+                continue;
+            }
+
+            ElectionRound nextRound = new ElectionRound();
+            nextRound.setStartDate(today);
+            nextRound.setEndDate(today.plusDays(1));
+            nextRound.setStatus("ACTIVE");
+            nextRound.setNeighborhood(mayorProfile.getNeighborhood());
+
+            electionRoundRepository.save(nextRound);
+        }
+    }
+
+    private void deactivateMayorProfile(MayorProfile mayorProfile, LocalDate endDate) {
+        User oldMayor = mayorProfile.getUser();
+
+        if (oldMayor != null) {
+            oldMayor.setStatus("RESIDENT");
+            oldMayor.setMayorActive(false);
+            oldMayor.setMayorEndDate(endDate);
+            userRepository.save(oldMayor);
+        }
+
+        mayorProfile.setStatus("INACTIVE");
+        mayorProfile.setEndDate(endDate);
+        mayorProfileRepository.save(mayorProfile);
     }
 
 

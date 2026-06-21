@@ -2,11 +2,14 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
+import org.example.menaandfeena_finalproject.DTO.In.LandmarkInDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.LandmarkDashboardDto;
 import org.example.menaandfeena_finalproject.DTO.Out.LandmarkResponseDto;
 import org.example.menaandfeena_finalproject.Model.Landmark;
+import org.example.menaandfeena_finalproject.Model.Neighborhood;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.LandmarkRepository;
+import org.example.menaandfeena_finalproject.Repository.NeighborhoodRepository;
 import org.example.menaandfeena_finalproject.Repository.UserRepository;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +31,7 @@ public class LandmarkService {
 
     private final LandmarkRepository landmarkRepository;
     private final UserRepository userRepository;
+    private final NeighborhoodRepository neighborhoodRepository;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -46,7 +50,19 @@ public class LandmarkService {
     // CREATE LANDMARK
     // =========================
 
-    public void createLandmark(Landmark landmark) {
+    public void createLandmark(LandmarkInDTO dto) {
+        Neighborhood neighborhood = neighborhoodRepository.findNeighborhoodById(dto.getNeighborhoodId());
+        if (neighborhood == null) {
+            throw new ApiException("Neighborhood not found");
+        }
+
+        Landmark landmark = new Landmark();
+        landmark.setName(dto.getName());
+        landmark.setType(dto.getType());
+        landmark.setLatitude(dto.getLatitude());
+        landmark.setLongitude(dto.getLongitude());
+        landmark.setNeighborhood(neighborhood);
+
         landmarkRepository.save(landmark);
     }
 
@@ -55,15 +71,19 @@ public class LandmarkService {
     // UPDATE LANDMARK
     // =========================
 
-    public void updateLandmark(Integer landmarkId, Landmark landmark) {
+    public void updateLandmark(Integer landmarkId, LandmarkInDTO dto) {
 
         Landmark oldLandmark = getLandmarkOrThrow(landmarkId);
+        Neighborhood neighborhood = neighborhoodRepository.findNeighborhoodById(dto.getNeighborhoodId());
+        if (neighborhood == null) {
+            throw new ApiException("Neighborhood not found");
+        }
 
-        oldLandmark.setName(landmark.getName());
-        oldLandmark.setType(landmark.getType());
-        oldLandmark.setLatitude(landmark.getLatitude());
-        oldLandmark.setLongitude(landmark.getLongitude());
-        oldLandmark.setNeighborhood(landmark.getNeighborhood());
+        oldLandmark.setName(dto.getName());
+        oldLandmark.setType(dto.getType());
+        oldLandmark.setLatitude(dto.getLatitude());
+        oldLandmark.setLongitude(dto.getLongitude());
+        oldLandmark.setNeighborhood(neighborhood);
 
         landmarkRepository.save(oldLandmark);
     }

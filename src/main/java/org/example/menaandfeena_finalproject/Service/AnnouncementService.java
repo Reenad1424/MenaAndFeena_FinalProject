@@ -20,7 +20,6 @@ public class AnnouncementService {
 
     private final AnnouncementRepository announcementRepository;
     private final UserRepository userRepository;
-    private final GeminiService geminiService;
     private final OpenAIService openAIService;
 
 
@@ -32,31 +31,45 @@ public class AnnouncementService {
                 .toList();
     }
 
-    public void addAnnouncement(Announcement announcement) {
-        announcementRepository.save(announcement);
-    }
-
-    public void updateAnnouncement(Integer id, Announcement announcement) {
+    public void updateAnnouncement(Integer id, Integer userId, AnnouncementInDTO announcementInDTO) {
 
         Announcement oldAnnouncement = announcementRepository.findAnnouncementById(id);
 
         if (oldAnnouncement == null) {
             throw new ApiException("Announcement not found");
         }
+        User user = userRepository.findUserById(userId);
+        if (user == null) {
+            throw new ApiException("User not found");
+        }
+        if (oldAnnouncement.getUser() == null || !oldAnnouncement.getUser().getId().equals(userId)) {
+            throw new ApiException("Only the announcement owner can update announcement");
+        }
+        if (oldAnnouncement.getCreatedAt() == null) {
+            throw new ApiException("Announcement creation date is missing");
+        }
+        if (oldAnnouncement.getCreatedAt().isBefore(LocalDate.now().minusDays(2))) {
+            throw new ApiException("Announcement can only be updated within 2 days of posting");
+        }
 
-        oldAnnouncement.setTitle(announcement.getTitle());
-        oldAnnouncement.setContent(announcement.getContent());
-        oldAnnouncement.setStatus(announcement.getStatus());
-        oldAnnouncement.setCreatedAt(announcement.getCreatedAt());
+        oldAnnouncement.setTitle(announcementInDTO.getTitle());
+        oldAnnouncement.setContent(announcementInDTO.getContent());
         announcementRepository.save(oldAnnouncement);
     }
 
-    public void deleteAnnouncement(Integer id) {
+    public void deleteAnnouncement(Integer id, Integer userId) {
 
         Announcement announcement = announcementRepository.findAnnouncementById(id);
 
         if (announcement == null) {
             throw new ApiException("Announcement not found");
+        }
+        User user = userRepository.findUserById(userId);
+        if (user == null) {
+            throw new ApiException("User not found");
+        }
+        if (announcement.getUser() == null || !announcement.getUser().getId().equals(userId)) {
+            throw new ApiException("Only the announcement owner can delete announcement");
         }
 
         announcementRepository.delete(announcement);
@@ -89,11 +102,11 @@ public class AnnouncementService {
         announcement.setCreatedAt(LocalDate.now());
 
         announcementRepository.save(announcement);
-       // return aiResult.trim().toUpperCase();
+        // return aiResult.trim().toUpperCase();
     }
 
 
-   // Walaa
+    // Walaa
 
     public void moderateAnnouncement(Integer announcementId) {
 
@@ -114,36 +127,18 @@ public class AnnouncementService {
         announcementRepository.save(announcement);
 
 
-
-
     }
 
 
+    // Walaa
+    public List<AnnouncementOutDTO> searchAnnouncements(String keyword) {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // Walaa
-  public List<AnnouncementOutDTO> searchAnnouncements(String keyword) {
-
-      return announcementRepository
-              .findByTitleContainingIgnoreCase(keyword)
-              .stream()
-              .map(this::convertToOutDTO)
-              .toList();
-  }
-
+        return announcementRepository
+                .findByTitleContainingIgnoreCase(keyword)
+                .stream()
+                .map(this::convertToOutDTO)
+                .toList();
+    }
 
 
 //Walaa
@@ -160,24 +155,24 @@ public class AnnouncementService {
     }
 
 
+    // Walaa
+    public PublisherContactOutDTO getPublisherContact(Integer announcementId) { // نجيب صاحب الاعلان
 
-// Walaa
-public PublisherContactOutDTO getPublisherContact(Integer announcementId) { // نجيب صاحب الاعلان
+        Announcement announcement = announcementRepository.findAnnouncementById(announcementId);
+        if (announcement == null) {
+            throw new ApiException("Announcement not found");
+        }
 
-    Announcement announcement = announcementRepository.findAnnouncementById(announcementId);
-    if (announcement == null) {
-        throw new ApiException("Announcement not found");
+        User user = announcement.getUser();
+        return new PublisherContactOutDTO(
+                user.getFullName(),
+                user.getEmail(),
+                user.getPhone()
+
+        );
     }
 
-    User user = announcement.getUser();
-    return new PublisherContactOutDTO(
-            user.getFullName(),
-            user.getEmail(),
-            user.getPhone()
-
-    );
-}
-//Walaa
+    //Walaa
     private AnnouncementOutDTO convertToOutDTO(Announcement announcement) {
 
         return new AnnouncementOutDTO(
@@ -199,8 +194,6 @@ public PublisherContactOutDTO getPublisherContact(Integer announcementId) { // �
 //}
 
 
-
-
     public String testOpenAI() {
 
         return openAIService.askAI(
@@ -213,7 +206,6 @@ public PublisherContactOutDTO getPublisherContact(Integer announcementId) { // �
                 "أبيع مخدرات للتواصل"
         );
     }
-
 
 
 }

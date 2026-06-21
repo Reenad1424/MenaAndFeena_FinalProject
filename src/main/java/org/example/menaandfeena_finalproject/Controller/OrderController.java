@@ -1,8 +1,10 @@
 package org.example.menaandfeena_finalproject.Controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.Api.ApiException;
+import org.example.menaandfeena_finalproject.DTO.In.OrderPaymentRequestDTO;
 import org.example.menaandfeena_finalproject.Model.Orders;
 import org.example.menaandfeena_finalproject.Repository.OrderRepository;
 import org.example.menaandfeena_finalproject.Service.OrderService;
@@ -46,6 +48,17 @@ public class OrderController {
         return ResponseEntity.status(200).body(new ApiResponse("Order cancelled"));
     }
 
+    @PostMapping("/{orderId}/user/{userId}/payment")
+    public ResponseEntity<?> payOrderWithCard(@PathVariable Integer orderId, @PathVariable Integer userId,
+                                              @RequestBody @Valid OrderPaymentRequestDTO card) {
+        return ResponseEntity.status(200).body(orderService.payOrderWithCard(orderId, userId, card));
+    }
+
+    @PostMapping("/{orderId}/user/{userId}/payment/sync")
+    public ResponseEntity<?> syncOrderPayment(@PathVariable Integer orderId, @PathVariable Integer userId) {
+        return ResponseEntity.status(200).body(orderService.syncOrderPayment(orderId, userId));
+    }
+
     // TODO SECURITY: ADMIN/DEBUG only. Normal users should use /my-orders or /my-sales.
     @GetMapping("/get")
     public ResponseEntity<?> getAllOrders() {
@@ -59,14 +72,14 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}/invoice/pdf")
-    public ResponseEntity<byte[]> generateInvoicePdf(@PathVariable Integer orderId, @RequestParam Integer userId) {
+    public ResponseEntity<?> generateInvoicePdf(@PathVariable Integer orderId, @RequestParam Integer userId) {
         Orders order = orderRepository.findOrderById(orderId);
         if (order == null) {
             throw new ApiException("Order not found");
         }
 
         byte[] pdfBytes = orderService.generateInvoicePdf(orderId, userId);
-        return ResponseEntity.ok()
+        return ResponseEntity.status(200)
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"invoice-" + order.getInvoiceNumber() + ".pdf\"")
                 .body(pdfBytes);

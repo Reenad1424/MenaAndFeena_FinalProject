@@ -236,8 +236,7 @@ public class MayorCandidateService {
             throw new ApiException("Mayor candidate not found");
         }
 
-        oldMayorCandidate.setAppliedAt(mayorCandidateInDTO.getAppliedAt());
-        oldMayorCandidate.setStatus(mayorCandidateInDTO.getStatus());
+        oldMayorCandidate.setAppliedAt(LocalDateTime.now());
 
         mayorCandidateRepository.save(oldMayorCandidate);
     }

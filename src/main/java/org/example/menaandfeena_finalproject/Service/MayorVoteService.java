@@ -2,7 +2,6 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
-import org.example.menaandfeena_finalproject.DTO.In.MayorVoteInDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.MayorVoteOutDTO;
 import org.example.menaandfeena_finalproject.Model.ElectionRound;
 import org.example.menaandfeena_finalproject.Model.MayorCandidate;
@@ -88,22 +87,6 @@ public class MayorVoteService {
     // =========================
     // UPDATE MAYOR VOTE
     // =========================
-
-    public void updateMayorVote(Integer voteId,
-                                MayorVoteInDTO mayorVoteInDTO) {
-
-        MayorVote oldMayorVote =
-                mayorVoteRepository.findMayorVoteById(voteId);
-
-        if (oldMayorVote == null) {
-            throw new ApiException("Mayor vote not found");
-        }
-
-        oldMayorVote.setCreatedAt(mayorVoteInDTO.getCreatedAt());
-
-        mayorVoteRepository.save(oldMayorVote);
-    }
-
 
     // =========================
     // DELETE MAYOR VOTE

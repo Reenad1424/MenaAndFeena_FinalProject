@@ -2,20 +2,17 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
-import org.example.menaandfeena_finalproject.Api.ApiResponse;
+import org.example.menaandfeena_finalproject.DTO.In.EventInDTO;
 import org.example.menaandfeena_finalproject.Model.Event;
 import org.example.menaandfeena_finalproject.Model.FamilyMember;
 import org.example.menaandfeena_finalproject.Repository.EventRepository;
 import org.example.menaandfeena_finalproject.Repository.FamilyMemberRepository;
 import org.example.menaandfeena_finalproject.Repository.UserRepository;
 import org.springframework.stereotype.Service;
-import org.example.menaandfeena_finalproject.DTO.In.EventInDTO;
-import org.example.menaandfeena_finalproject.DTO.Out.EventOutDTO;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.example.menaandfeena_finalproject.Repository.UserRepository;
 import org.example.menaandfeena_finalproject.Model.User;
 
 @Service
@@ -31,25 +28,50 @@ public class EventService {
     }
 
 
-    public void addEvent(Event event) {
+    public void addEvent(EventInDTO eventInDTO) {
+        Event event = new Event();
+        event.setTitle(eventInDTO.getTitle());
+        event.setDescription(eventInDTO.getDescription());
+        event.setDate(eventInDTO.getDate());
+        event.setLocation(eventInDTO.getLocation());
+        event.setIsPaid(eventInDTO.getIsPaid());
+        event.setPrice(eventInDTO.getPrice());
+        event.setMaxParticipants(eventInDTO.getMaxParticipants());
+        event.setStatus("ACTIVE");
+
+        if (Boolean.FALSE.equals(eventInDTO.getIsPaid())) {
+            event.setPrice(0.0);
+        }
+
+        if (Boolean.TRUE.equals(eventInDTO.getIsPaid()) && (eventInDTO.getPrice() == null || eventInDTO.getPrice() <= 0)) {
+            throw new ApiException("Paid event must have price greater than 0");
+        }
+
         eventRepository.save(event);
     }
 
 
-    public void updateEvent(Integer id, Event event) {
+    public void updateEvent(Integer id, EventInDTO eventInDTO) {
         Event oldEvent = eventRepository.findEventById(id);
 
       if(oldEvent == null){
           throw new ApiException("Event not found");
       }
-        oldEvent.setTitle(event.getTitle());
-        oldEvent.setDescription(event.getDescription());
-        oldEvent.setDate(event.getDate());
-        oldEvent.setLocation(event.getLocation());
-        oldEvent.setIsPaid(event.getIsPaid());
-        oldEvent.setPrice(event.getPrice());
-        oldEvent.setMaxParticipants(event.getMaxParticipants());
-        oldEvent.setStatus(event.getStatus());
+        oldEvent.setTitle(eventInDTO.getTitle());
+        oldEvent.setDescription(eventInDTO.getDescription());
+        oldEvent.setDate(eventInDTO.getDate());
+        oldEvent.setLocation(eventInDTO.getLocation());
+        oldEvent.setIsPaid(eventInDTO.getIsPaid());
+        oldEvent.setPrice(eventInDTO.getPrice());
+        oldEvent.setMaxParticipants(eventInDTO.getMaxParticipants());
+
+        if (Boolean.FALSE.equals(eventInDTO.getIsPaid())) {
+            oldEvent.setPrice(0.0);
+        }
+
+        if (Boolean.TRUE.equals(eventInDTO.getIsPaid()) && (eventInDTO.getPrice() == null || eventInDTO.getPrice() <= 0)) {
+            throw new ApiException("Paid event must have price greater than 0");
+        }
 
         eventRepository.save(oldEvent);
 
@@ -102,7 +124,7 @@ public class EventService {
 
     // Walaa
 
-    public void createEvent(Integer userId, Event event) {
+    public void createEvent(Integer userId, EventInDTO eventInDTO) {
 
         User user = userRepository.findUserById(userId);
 
@@ -110,11 +132,20 @@ public class EventService {
             throw new ApiException("User not found");
         }
 
-        if (event.getIsPaid().equals(false)) {
+        Event event = new Event();
+        event.setTitle(eventInDTO.getTitle());
+        event.setDescription(eventInDTO.getDescription());
+        event.setDate(eventInDTO.getDate());
+        event.setLocation(eventInDTO.getLocation());
+        event.setIsPaid(eventInDTO.getIsPaid());
+        event.setPrice(eventInDTO.getPrice());
+        event.setMaxParticipants(eventInDTO.getMaxParticipants());
+
+        if (Boolean.FALSE.equals(eventInDTO.getIsPaid())) {
             event.setPrice(0.0);
         }
 
-        if (event.getIsPaid().equals(true) && event.getPrice() <= 0) {
+        if (Boolean.TRUE.equals(eventInDTO.getIsPaid()) && (eventInDTO.getPrice() == null || eventInDTO.getPrice() <= 0)) {
             throw new ApiException("Paid event must have price greater than 0");
         }
 

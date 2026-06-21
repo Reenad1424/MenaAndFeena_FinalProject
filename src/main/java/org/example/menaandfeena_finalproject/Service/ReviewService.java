@@ -9,7 +9,9 @@ import org.example.menaandfeena_finalproject.Model.Initiative;
 import org.example.menaandfeena_finalproject.Model.Review;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.EventRepository;
+import org.example.menaandfeena_finalproject.Repository.EventRegistrationRepository;
 import org.example.menaandfeena_finalproject.Repository.InitiativeRepository;
+import org.example.menaandfeena_finalproject.Repository.InitiativeParticipationRepository;
 import org.example.menaandfeena_finalproject.Repository.ReviewRepository;
 import org.example.menaandfeena_finalproject.Repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -24,18 +26,24 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
-  private final InitiativeRepository initiativeRepository;
+    private final InitiativeRepository initiativeRepository;
+    private final EventRegistrationRepository eventRegistrationRepository;
+    private final InitiativeParticipationRepository initiativeParticipationRepository;
 
 
     public List<Review> getAllReviews() {
         return reviewRepository.findAll();
     }
 
-    public void addReview(Review review) {
+    public void addReview(ReviewInDTO reviewInDTO) {
+        Review review = new Review();
+        review.setComment(reviewInDTO.getComment());
+        review.setRating(reviewInDTO.getRating());
+        review.setCreatedAt(LocalDate.now());
         reviewRepository.save(review);
     }
 
-    public void updateReview(Integer id, Review review) {
+    public void updateReview(Integer id, ReviewInDTO reviewInDTO) {
 
         Review oldReview = reviewRepository.findReviewById(id);
 
@@ -43,9 +51,8 @@ public class ReviewService {
             throw new ApiException("Review not found");
         }
 
-        oldReview.setComment(review.getComment());
-        oldReview.setCreatedAt(review.getCreatedAt());
-        oldReview.setRating(review.getRating());
+        oldReview.setComment(reviewInDTO.getComment());
+        oldReview.setRating(reviewInDTO.getRating());
 
 
         reviewRepository.save(oldReview);
@@ -79,6 +86,15 @@ public class ReviewService {
         if (event == null) {
             throw new ApiException("Event not found");
         }
+        if (!eventRegistrationRepository.existsByUserIdAndEventId(userId, eventId)) {
+            throw new ApiException("User must register for the event before reviewing");
+        }
+        if (!eventRegistrationRepository.existsByUserIdAndEventIdAndStatus(userId, eventId, "CONFIRMED")) {
+            throw new ApiException("User registration must be confirmed before reviewing");
+        }
+        if (reviewRepository.existsByUserIdAndEventId(userId, eventId)) {
+            throw new ApiException("User already reviewed this event");
+        }
         Review review = new Review();
         review.setComment(reviewInDTO.getComment());
         review.setRating(reviewInDTO.getRating());
@@ -87,6 +103,35 @@ public class ReviewService {
         review.setEvent(event);
         reviewRepository.save(review);
 
+    }
+
+    public void addInitiativeReview(Integer userId, Integer initiativeId, ReviewInDTO reviewInDTO) {
+
+        User user = userRepository.findUserById(userId);
+
+        if (user == null) {
+            throw new ApiException("User not found");
+        }
+
+        Initiative initiative = initiativeRepository.findInitiativeById(initiativeId);
+
+        if (initiative == null) {
+            throw new ApiException("Initiative not found");
+        }
+        if (!initiativeParticipationRepository.existsByUserIdAndInitiativeId(userId, initiativeId)) {
+            throw new ApiException("User must join the initiative before reviewing");
+        }
+        if (reviewRepository.existsByUserIdAndInitiativeId(userId, initiativeId)) {
+            throw new ApiException("User already reviewed this initiative");
+        }
+
+        Review review = new Review();
+        review.setComment(reviewInDTO.getComment());
+        review.setRating(reviewInDTO.getRating());
+        review.setCreatedAt(LocalDate.now());
+        review.setUser(user);
+        review.setInitiative(initiative);
+        reviewRepository.save(review);
     }
 
 

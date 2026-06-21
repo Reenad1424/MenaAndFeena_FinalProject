@@ -21,18 +21,18 @@ public class PaymentController {
 
     @PostMapping("/card")
     public ResponseEntity<?> processPayment(@RequestBody @Valid PaymentRequestDTO paymentRequest) {
-        return paymentService.processPayment(paymentRequest);
+        return ResponseEntity.status(200).body(paymentService.processPayment(paymentRequest).getBody());
     }
 
     @GetMapping("/get-status/{id}")
     public ResponseEntity<?> getPaymentStatus(@PathVariable String id) {
 
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.status(200)
                 .body(paymentService.getPaymentStatus(id));
     }
 
 //    @GetMapping("/invoice/{id}")
-//    public ResponseEntity getPaymentInvoice(@PathVariable String id) {
+//    public ResponseEntity<?> getPaymentInvoice(@PathVariable String id) {
 //
 //        return ResponseEntity.status(200).body(paymentService.getPaymentInvoice(id));
 //    }
@@ -42,7 +42,7 @@ public class PaymentController {
 //    @GetMapping("/get-status/{id}")
 //    public ResponseEntity<?> getPaymentStatus(@PathVariable String id) {
 //
-//        return ResponseEntity.status(HttpStatus.OK)
+//        return ResponseEntity.status(200)
 //                .body(paymentService.getPaymentStatus(id));
 //    }
 
@@ -61,7 +61,7 @@ public class PaymentController {
 
  // Walaa
     @PostMapping("/pay-event/{registrationId}")
-    public ResponseEntity payEventRegistration(@PathVariable Integer registrationId,
+    public ResponseEntity<?> payEventRegistration(@PathVariable Integer registrationId,
                                                @RequestBody @Valid OrderPaymentRequestDTO card) {
 
         return ResponseEntity.status(200).body(paymentService.payEventRegistration(registrationId, card));
@@ -70,7 +70,7 @@ public class PaymentController {
 // Walaa
 
     @GetMapping("/callback")
-    public ResponseEntity paymentCallback(@RequestParam String id,
+    public ResponseEntity<?> paymentCallback(@RequestParam String id,
                                           @RequestParam String status,
                                           @RequestParam(required = false) String message) {
 

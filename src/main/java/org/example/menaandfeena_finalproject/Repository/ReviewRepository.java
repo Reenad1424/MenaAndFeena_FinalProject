@@ -12,6 +12,8 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     Review findReviewById(Integer id);
     List<Review> findByEvent_Id(Integer eventId);
     List<Review> findByInitiative_Id(Integer initiativeId);
+    boolean existsByUserIdAndEventId(Integer userId, Integer eventId);
+    boolean existsByUserIdAndInitiativeId(Integer userId, Integer initiativeId);
     List<Review> findByEvent_IdOrderByCreatedAtDesc(Integer eventId);
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.event.id = :eventId")
     Double getAverageRatingByEventId(Integer eventId);

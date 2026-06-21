@@ -2,6 +2,7 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
+import org.example.menaandfeena_finalproject.DTO.In.InitiativeInDTO;
 import org.example.menaandfeena_finalproject.Model.Initiative;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.InitiativeRepository;
@@ -20,22 +21,30 @@ public class InitiativeService {
         return initiativeRepository.findAll();
     }
 
-    public void addInitiative(Initiative initiative) {
+    public void addInitiative(InitiativeInDTO initiativeInDTO) {
+        Initiative initiative = new Initiative();
+        initiative.setTitle(initiativeInDTO.getTitle());
+        initiative.setDescription(initiativeInDTO.getDescription());
+        initiative.setDate(initiativeInDTO.getDate());
+        initiative.setMaxParticipants(initiativeInDTO.getMaxParticipants());
+        initiative.setCategory(initiativeInDTO.getCategory());
+        initiative.setStatus("ACTIVE");
+
         initiativeRepository.save(initiative);
     }
 
-    public void updateInitiative(Integer id, Initiative initiative) {
+    public void updateInitiative(Integer id, InitiativeInDTO initiativeInDTO) {
         Initiative oldInitiative = initiativeRepository.findInitiativeById(id);
 
         if (oldInitiative == null) {
             throw new ApiException("Initiative not found");
         }
 
-        oldInitiative.setTitle(initiative.getTitle());
-        oldInitiative.setDescription(initiative.getDescription());
-        oldInitiative.setDate(initiative.getDate());
-        oldInitiative.setMaxParticipants(initiative.getMaxParticipants());
-        oldInitiative.setStatus(initiative.getStatus());
+        oldInitiative.setTitle(initiativeInDTO.getTitle());
+        oldInitiative.setDescription(initiativeInDTO.getDescription());
+        oldInitiative.setDate(initiativeInDTO.getDate());
+        oldInitiative.setMaxParticipants(initiativeInDTO.getMaxParticipants());
+        oldInitiative.setCategory(initiativeInDTO.getCategory());
 
         initiativeRepository.save(oldInitiative);
     }
@@ -74,7 +83,7 @@ public Initiative getInitiativeById(Integer id) {
 
 
 // Walaa
-public void createInitiative(Integer userId, Initiative initiative) {
+public void createInitiative(Integer userId, InitiativeInDTO initiativeInDTO) {
 
     User user = userRepository.findUserById(userId);
 
@@ -82,6 +91,12 @@ public void createInitiative(Integer userId, Initiative initiative) {
         throw new ApiException("User not found");
     }
 
+    Initiative initiative = new Initiative();
+    initiative.setTitle(initiativeInDTO.getTitle());
+    initiative.setDescription(initiativeInDTO.getDescription());
+    initiative.setDate(initiativeInDTO.getDate());
+    initiative.setMaxParticipants(initiativeInDTO.getMaxParticipants());
+    initiative.setCategory(initiativeInDTO.getCategory());
     initiative.setUser(user);
     initiative.setStatus("ACTIVE");
 

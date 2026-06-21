@@ -3,13 +3,12 @@ package org.example.menaandfeena_finalproject.Controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
-import org.example.menaandfeena_finalproject.DTO.Out.NeighborhoodDashboardDTO;
-import org.example.menaandfeena_finalproject.Model.Neighborhood;
+import org.example.menaandfeena_finalproject.DTO.In.NeighborhoodInDTO;
 import org.example.menaandfeena_finalproject.Service.NeighborhoodService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;@RestController
+@RestController
 @RequestMapping("/api/v1/neighborhoods")
 @RequiredArgsConstructor
 public class NeighborhoodController {
@@ -22,9 +21,9 @@ public class NeighborhoodController {
     // =========================
 
     @GetMapping
-    public ResponseEntity<List<Neighborhood>> getAllNeighborhoods() {
+    public ResponseEntity<?> getAllNeighborhoods() {
 
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 neighborhoodService.getAllNeighborhoods()
         );
     }
@@ -35,13 +34,13 @@ public class NeighborhoodController {
     // =========================
 
     @PostMapping
-    public ResponseEntity<ApiResponse> createNeighborhood(
-            @RequestBody @Valid Neighborhood neighborhood
+    public ResponseEntity<?> createNeighborhood(
+            @RequestBody @Valid NeighborhoodInDTO neighborhoodInDTO
     ) {
 
-        neighborhoodService.createNeighborhood(neighborhood);
+        neighborhoodService.createNeighborhood(neighborhoodInDTO);
 
-        return ResponseEntity.status(201).body(
+        return ResponseEntity.status(200).body(
                 new ApiResponse("Neighborhood added successfully")
         );
     }
@@ -52,17 +51,17 @@ public class NeighborhoodController {
     // =========================
 
     @PutMapping("/{neighborhoodId}")
-    public ResponseEntity<ApiResponse> updateNeighborhood(
+    public ResponseEntity<?> updateNeighborhood(
             @PathVariable Integer neighborhoodId,
-            @RequestBody @Valid Neighborhood neighborhood
+            @RequestBody @Valid NeighborhoodInDTO neighborhoodInDTO
     ) {
 
         neighborhoodService.updateNeighborhood(
                 neighborhoodId,
-                neighborhood
+                neighborhoodInDTO
         );
 
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 new ApiResponse("Neighborhood updated successfully")
         );
     }
@@ -73,13 +72,13 @@ public class NeighborhoodController {
     // =========================
 
     @DeleteMapping("/{neighborhoodId}")
-    public ResponseEntity<ApiResponse> deleteNeighborhood(
+    public ResponseEntity<?> deleteNeighborhood(
             @PathVariable Integer neighborhoodId
     ) {
 
         neighborhoodService.deleteNeighborhood(neighborhoodId);
 
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 new ApiResponse("Neighborhood deleted successfully")
         );
     }
@@ -90,11 +89,11 @@ public class NeighborhoodController {
     // =========================
 
     @GetMapping("/user/{userId}/dashboard")
-    public ResponseEntity<NeighborhoodDashboardDTO> getNeighborhoodDashboardByUser(
+    public ResponseEntity<?> getNeighborhoodDashboardByUser(
             @PathVariable Integer userId
     ) {
 
-        return ResponseEntity.ok(
+        return ResponseEntity.status(200).body(
                 neighborhoodService.getNeighborhoodDashboardByUser(userId)
         );
     }

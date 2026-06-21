@@ -2,6 +2,7 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
+import org.example.menaandfeena_finalproject.DTO.In.FamilyMemberInDTO;
 import org.example.menaandfeena_finalproject.Model.FamilyMember;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.FamilyMemberRepository;
@@ -21,32 +22,50 @@ public class FamilyMemberService {
     }
 
 
-    public void add(Integer userId, FamilyMember familyMember) {
+    public void add(Integer userId, FamilyMemberInDTO dto) {
         User user = userRepository.findUserById(userId);
 
         if (user == null) {
             throw new ApiException("Associated user not found");
         }
 
+        FamilyMember familyMember = new FamilyMember();
+        familyMember.setName(dto.getName());
+        familyMember.setAge(dto.getAge());
+        familyMember.setGender(dto.getGender());
+        familyMember.setRelation(dto.getRelation());
         familyMember.setUser(user);
         familyMemberRepository.save(familyMember);
     }
 
 
 
-    public void update(Integer id, FamilyMember familyMember) {
+    public void update(Integer userId, Integer id, FamilyMemberInDTO dto) {
+        User user = userRepository.findUserById(userId);
+        if (user == null) throw new ApiException("User not found");
+
         FamilyMember old = familyMemberRepository.findFamilyMemberById(id);
         if (old == null) throw new ApiException("Family member not found");
-        old.setName(familyMember.getName());
-        old.setAge(familyMember.getAge());
-        old.setGender(familyMember.getGender());
-        old.setRelation(familyMember.getRelation());
+        if (old.getUser() == null || !old.getUser().getId().equals(userId)) {
+            throw new ApiException("Family member does not belong to this user");
+        }
+
+        old.setName(dto.getName());
+        old.setAge(dto.getAge());
+        old.setGender(dto.getGender());
+        old.setRelation(dto.getRelation());
         familyMemberRepository.save(old);
     }
 
-    public void delete(Integer id) {
+    public void delete(Integer userId, Integer id) {
+        User user = userRepository.findUserById(userId);
+        if (user == null) throw new ApiException("User not found");
+
         FamilyMember familyMember = familyMemberRepository.findFamilyMemberById(id);
         if (familyMember == null) throw new ApiException("Family member not found");
+        if (familyMember.getUser() == null || !familyMember.getUser().getId().equals(userId)) {
+            throw new ApiException("Family member does not belong to this user");
+        }
         familyMemberRepository.delete(familyMember);
     }
 

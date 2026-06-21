@@ -3,12 +3,14 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
+import org.example.menaandfeena_finalproject.DTO.In.MayorProfileInDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.*;
 import org.example.menaandfeena_finalproject.Model.*;
 import org.example.menaandfeena_finalproject.Repository.*;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +19,7 @@ import java.util.List;
 public class MayorProfileService {
     private final MayorProfileRepository mayorProfileRepository;
     private final UserRepository userRepository;
+    private final NeighborhoodRepository neighborhoodRepository;
     private final IssueReportRepository issueReportRepository;
     private final EventRepository eventRepository;
     private final InitiativeRepository initiativeRepository;
@@ -29,11 +32,57 @@ public class MayorProfileService {
         return mayorProfileRepository.findAll();
     }
 
-    public void addMayorProfile(MayorProfile mayorProfile) {
+    public void addMayorProfile(MayorProfileInDTO dto) {
+        User user = userRepository.findUserById(dto.getUserId());
+        if (user == null) {
+            throw new ApiException("User not found");
+        }
+
+        Neighborhood neighborhood = neighborhoodRepository.findNeighborhoodById(dto.getNeighborhoodId());
+        if (neighborhood == null) {
+            throw new ApiException("Neighborhood not found");
+        }
+
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = startDate.plusYears(1);
+
+        MayorProfile currentActiveMayor =
+                mayorProfileRepository.findTopByNeighborhoodIdAndStatusOrderByStartDateDesc(
+                        neighborhood.getId(),
+                        "ACTIVE"
+                );
+
+        if (currentActiveMayor != null
+                && currentActiveMayor.getUser() != null
+                && !currentActiveMayor.getUser().getId().equals(user.getId())) {
+            User oldMayor = currentActiveMayor.getUser();
+            oldMayor.setStatus("RESIDENT");
+            oldMayor.setMayorActive(false);
+            oldMayor.setMayorEndDate(startDate);
+            userRepository.save(oldMayor);
+
+            currentActiveMayor.setStatus("INACTIVE");
+            currentActiveMayor.setEndDate(startDate);
+            mayorProfileRepository.save(currentActiveMayor);
+        }
+
+        MayorProfile mayorProfile = new MayorProfile();
+        mayorProfile.setStatus("ACTIVE");
+        mayorProfile.setStartDate(startDate);
+        mayorProfile.setEndDate(endDate);
+        mayorProfile.setUser(user);
+        mayorProfile.setNeighborhood(neighborhood);
+
+        user.setStatus("MAYOR");
+        user.setMayorActive(true);
+        user.setMayorStartDate(startDate);
+        user.setMayorEndDate(endDate);
+        userRepository.save(user);
+
         mayorProfileRepository.save(mayorProfile);
     }
 
-    public void updateMayorProfile(Integer id, MayorProfile mayorProfile) {
+    public void updateMayorProfile(Integer id, MayorProfileInDTO dto) {
 
         MayorProfile oldMayorProfile = mayorProfileRepository.findMayorProfileById(id);
 
@@ -41,11 +90,35 @@ public class MayorProfileService {
             throw new ApiException("Mayor profile not found");
         }
 
-        oldMayorProfile.setStatus(mayorProfile.getStatus());
-        oldMayorProfile.setStartDate(mayorProfile.getStartDate());
-        oldMayorProfile.setEndDate(mayorProfile.getEndDate());
-        oldMayorProfile.setUser(mayorProfile.getUser());
-        oldMayorProfile.setNeighborhood(mayorProfile.getNeighborhood());
+        User user = userRepository.findUserById(dto.getUserId());
+        if (user == null) {
+            throw new ApiException("User not found");
+        }
+
+        Neighborhood neighborhood = neighborhoodRepository.findNeighborhoodById(dto.getNeighborhoodId());
+        if (neighborhood == null) {
+            throw new ApiException("Neighborhood not found");
+        }
+
+        User previousMayor = oldMayorProfile.getUser();
+
+        oldMayorProfile.setUser(user);
+        oldMayorProfile.setNeighborhood(neighborhood);
+
+        if ("ACTIVE".equals(oldMayorProfile.getStatus())) {
+            if (previousMayor != null && !previousMayor.getId().equals(user.getId())) {
+                previousMayor.setStatus("RESIDENT");
+                previousMayor.setMayorActive(false);
+                previousMayor.setMayorEndDate(LocalDate.now());
+                userRepository.save(previousMayor);
+            }
+
+            user.setStatus("MAYOR");
+            user.setMayorActive(true);
+            user.setMayorStartDate(oldMayorProfile.getStartDate());
+            user.setMayorEndDate(oldMayorProfile.getEndDate());
+            userRepository.save(user);
+        }
 
         mayorProfileRepository.save(oldMayorProfile);
     }
@@ -57,6 +130,15 @@ public class MayorProfileService {
         if (mayorProfile == null) {
             throw new ApiException("Mayor profile not found");
         }
+
+        if ("ACTIVE".equals(mayorProfile.getStatus()) && mayorProfile.getUser() != null) {
+            User mayor = mayorProfile.getUser();
+            mayor.setStatus("RESIDENT");
+            mayor.setMayorActive(false);
+            mayor.setMayorEndDate(LocalDate.now());
+            userRepository.save(mayor);
+        }
+
         mayorProfileRepository.delete(mayorProfile);
     }
 

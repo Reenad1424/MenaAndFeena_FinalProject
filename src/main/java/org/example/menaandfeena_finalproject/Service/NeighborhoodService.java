@@ -2,6 +2,7 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
+import org.example.menaandfeena_finalproject.DTO.In.NeighborhoodInDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.*;
 import org.example.menaandfeena_finalproject.Model.*;
 import org.example.menaandfeena_finalproject.Repository.*;
@@ -50,7 +51,14 @@ public class NeighborhoodService {
     // CREATE NEIGHBORHOOD
     // =========================
 
-    public void createNeighborhood(Neighborhood neighborhood) {
+    public void createNeighborhood(NeighborhoodInDTO dto) {
+        Neighborhood neighborhood = new Neighborhood();
+        neighborhood.setName(dto.getName());
+        neighborhood.setCity(dto.getCity());
+        neighborhood.setEstimatedPopulation(dto.getEstimatedPopulation());
+        neighborhood.setRegisteredPopulation(0);
+        neighborhood.setLatitude(dto.getLatitude());
+        neighborhood.setLongitude(dto.getLongitude());
 
         neighborhoodRepository.save(neighborhood);
     }
@@ -61,17 +69,19 @@ public class NeighborhoodService {
     // =========================
 
     public void updateNeighborhood(Integer neighborhoodId,
-                                   Neighborhood neighborhood) {
+                                   NeighborhoodInDTO dto) {
 
         Neighborhood oldNeighborhood =
                 getNeighborhoodOrThrow(neighborhoodId);
 
-        oldNeighborhood.setName(neighborhood.getName());
-        oldNeighborhood.setCity(neighborhood.getCity());
-        oldNeighborhood.setEstimatedPopulation(neighborhood.getEstimatedPopulation());
-        oldNeighborhood.setRegisteredPopulation(neighborhood.getRegisteredPopulation());
-        oldNeighborhood.setLatitude(neighborhood.getLatitude());
-        oldNeighborhood.setLongitude(neighborhood.getLongitude());
+        oldNeighborhood.setName(dto.getName());
+        oldNeighborhood.setCity(dto.getCity());
+        oldNeighborhood.setEstimatedPopulation(dto.getEstimatedPopulation());
+        oldNeighborhood.setRegisteredPopulation(
+                userRepository.findByNeighborhoodId(neighborhoodId).size()
+        );
+        oldNeighborhood.setLatitude(dto.getLatitude());
+        oldNeighborhood.setLongitude(dto.getLongitude());
 
         neighborhoodRepository.save(oldNeighborhood);
     }
