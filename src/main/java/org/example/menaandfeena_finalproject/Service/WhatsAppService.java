@@ -7,11 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.ResponseEntity;
 
-//@Service
+@Service
 @RequiredArgsConstructor
 public class WhatsAppService {
-
     @Value("${ultramsg.instance.id}")
     private String instanceId;
 
@@ -34,5 +34,11 @@ public class WhatsAppService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
         restTemplate.postForEntity(url, request, String.class);
+
+        ResponseEntity<String> response =
+                restTemplate.postForEntity(url, request, String.class);
+
+        System.out.println("WHATSAPP RESPONSE = " + response.getBody());
+
     }
 }

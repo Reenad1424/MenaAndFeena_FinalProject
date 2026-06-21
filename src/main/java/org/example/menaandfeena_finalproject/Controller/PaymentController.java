@@ -8,9 +8,11 @@ import org.example.menaandfeena_finalproject.DTO.In.PaymentRequestDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.PaymentInvoiceDTO;
 import org.example.menaandfeena_finalproject.Service.OrderService;
 import org.example.menaandfeena_finalproject.Service.PaymentService;
+import org.example.menaandfeena_finalproject.Service.PdfInvoiceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/api/v1/payment")
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final PdfInvoiceService pdfInvoiceService;
 
     @PostMapping("/card")
     public ResponseEntity<?> processPayment(@RequestBody @Valid PaymentRequestDTO paymentRequest) {
@@ -76,6 +79,20 @@ public class PaymentController {
 
         paymentService.handlePaymentCallback(id, status);
         return ResponseEntity.status(200).body(new ApiResponse("Payment callback handled successfully"));
+    }
+
+
+
+   // Walaa
+    @GetMapping("/invoice-pdf/{paymentId}")
+    public ResponseEntity<byte[]> generateInvoicePdf(@PathVariable String paymentId) throws Exception {
+        byte[] pdf = pdfInvoiceService.generateInvoice(paymentId);
+        return ResponseEntity.ok()
+                .header("Content-Disposition",
+                        "inline; filename=invoice.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+
     }
 
 

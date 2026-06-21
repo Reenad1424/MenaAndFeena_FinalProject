@@ -21,7 +21,7 @@ public class AnnouncementService {
     private final AnnouncementRepository announcementRepository;
     private final UserRepository userRepository;
     private final OpenAIService openAIService;
-
+    private final WhatsAppService whatsAppService;
 
     public List<AnnouncementOutDTO> getAllAnnouncements() {
 
@@ -116,7 +116,6 @@ public class AnnouncementService {
             throw new ApiException("Announcement not found");
         }
 
-
         String aiResult = openAIService.askAI(
                 "You are a moderation system. Return only REJECTED if the text contains drugs, narcotics, weapons, scams, fraud, insults, offensive language, adult content, or prohibited sales. Return only APPROVED otherwise.",
                 "Title: " + announcement.getTitle() +
@@ -125,6 +124,64 @@ public class AnnouncementService {
 
         announcement.setStatus(aiResult.trim().toUpperCase());
         announcementRepository.save(announcement);
+
+        if (announcement.getStatus().equals("APPROVED")) {
+
+            String importanceResult = openAIService.askAI(
+                    "You are an importance detection system for a neighborhood platform. " +
+                            "Return only IMPORTANT if the announcement is urgent or important for all neighborhood residents, " +
+                            "such as missing person, safety warning, fire, water outage, electricity outage, road closure, emergency, or public health alert. " +
+                            "Return only NORMAL otherwise.",
+                    "Title: " + announcement.getTitle() +
+                            "\nContent: " + announcement.getContent()
+            );
+
+            if (importanceResult.trim().equalsIgnoreCase("IMPORTANT")) {
+
+                if (announcement.getUser().getNeighborhood() == null) {
+                    throw new ApiException("User neighborhood not found");
+                }
+                Integer neighborhoodId = announcement.getUser().getNeighborhood().getId();
+
+                List<User> residents = userRepository.findByNeighborhoodId(neighborhoodId);
+
+                System.out.println("IMPORTANCE = " + importanceResult);
+                System.out.println("RESIDENTS COUNT = " + residents.size());
+
+                String message = "🚨 Important neighborhood announcement\n\n" +
+                                "Title: " + announcement.getTitle() + "\n" +
+                                "Content: " + announcement.getContent();
+
+                for (User resident : residents) {
+                    if (resident.getPhone() != null) {
+                        whatsAppService.sendWhatsAppMessage(
+                                resident.getPhone(),
+                                message
+                        );
+                    }
+                }
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
 
 
     }
