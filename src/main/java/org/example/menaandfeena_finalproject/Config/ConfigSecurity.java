@@ -84,7 +84,19 @@ public class ConfigSecurity {
                                 "/api/v1/landmarks/delete/**",
                                 "/api/v1/election-rounds/add",
                                 "/api/v1/election-rounds/update/**",
-                                "/api/v1/election-rounds/delete/**"
+                                "/api/v1/election-rounds/delete/**",
+                                "/api/v1/mayor-candidates/update/**",
+                                "/api/v1/mayor-candidates/delete/**",
+                                "/api/v1/mayor-profiles/get-all",
+                                "/api/v1/mayor-profiles/add",
+                                "/api/v1/mayor-profiles/update/**",
+                                "/api/v1/mayor-profiles/delete/**",
+                                "/api/v1/mayor-votes/get-all",
+                                "/api/v1/mayor-votes/delete/**",
+                                "/api/v1/neighborhoods/get-all",
+                                "/api/v1/neighborhoods/add",
+                                "/api/v1/neighborhoods/update/**",
+                                "/api/v1/neighborhoods/delete/**"
                         ).hasAuthority("ADMIN")
 
                         // =========================
@@ -102,7 +114,13 @@ public class ConfigSecurity {
                                 "/api/v1/family-members/**",
                                 "/api/v1/landmarks/sync",
                                 "/api/v1/landmarks/nearby",
-                                "/api/v1/landmarks/dashboard"
+                                "/api/v1/landmarks/dashboard",
+                                "/api/v1/mayor-votes/vote/**",
+                                "/api/v1/mayor-candidates/get-all",
+                                "/api/v1/mayor-candidates/round/**",
+                                "/api/v1/mayor-candidates/profile/**",
+                                "/api/v1/mayor-candidates/apply/round/**",
+                                "/api/v1/neighborhoods/dashboard"
                         ).hasAnyAuthority("USER", "MAYOR")
 
                         // =========================
@@ -111,7 +129,13 @@ public class ConfigSecurity {
 
                         .requestMatchers(
                                 "/api/v1/mayor-profiles/**",
-                                "/api/v1/mayor-reports/**"
+                                "/api/v1/mayor-reports/**",
+                                "/api/v1/mayor-profiles/analytics",
+                                "/api/v1/mayor-profiles/reports",
+                                "/api/v1/mayor-profiles/weekly",
+                                "/api/v1/mayor-profiles/performance",
+                                "/api/v1/mayor-profiles/satisfaction",
+                                "/api/v1/mayor-profiles/resend-appointment-email"
                         ).hasAuthority("MAYOR")
 
                         .anyRequest().authenticated()
