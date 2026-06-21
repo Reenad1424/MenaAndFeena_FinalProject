@@ -95,6 +95,17 @@ public class ReviewController {
     }
 
 
+
+
+    @GetMapping("/ai-summary/{eventId}")
+    public ResponseEntity<?> getEventAISummary(@PathVariable Integer eventId) {
+
+        return ResponseEntity.status(200)
+                .body(reviewService.getEventAISummary(eventId));
+    }
+
+
+
     @GetMapping("/average/initiative/{initiativeId}")
     public ResponseEntity<?> getAverageRatingByInitiative(@PathVariable Integer initiativeId) {
         return ResponseEntity.status(200).body(reviewService.getAverageRatingByInitiative(initiativeId));
@@ -105,15 +116,6 @@ public class ReviewController {
     public ResponseEntity<?> getPositiveRatioByInitiative(@PathVariable Integer initiativeId) {
         return ResponseEntity.status(200).body(reviewService.getPositiveRatioByInitiative(initiativeId));
     }
-
-
-
-
-
-
-
-
-
 
 
 

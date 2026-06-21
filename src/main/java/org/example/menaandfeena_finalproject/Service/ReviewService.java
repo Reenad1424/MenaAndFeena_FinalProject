@@ -29,6 +29,7 @@ public class ReviewService {
     private final InitiativeRepository initiativeRepository;
     private final EventRegistrationRepository eventRegistrationRepository;
     private final InitiativeParticipationRepository initiativeParticipationRepository;
+    private final OpenAIService openAIService;
 
 
     public List<Review> getAllReviews() {
@@ -260,6 +261,77 @@ public Double getAverageRatingByInitiative(Integer initiativeId) {
         return (positiveReviews * 100.0) / totalReviews;
 
     }
+
+
+
+    public String getEventAISummary(Integer eventId) {
+
+        Event event = eventRepository.findEventById(eventId);
+
+        if (event == null) {
+            throw new ApiException("Event not found");
+        }
+
+        List<Review> reviews = reviewRepository.findByEvent_Id(eventId);
+
+        Double averageRating = reviewRepository.getAverageRatingByEventId(eventId);
+
+        if (averageRating == null) {
+            averageRating = 0.0;
+        }
+
+        if (reviews.isEmpty()) {
+            throw new ApiException("No reviews found for this event");
+        }
+        StringBuilder reviewText = new StringBuilder();
+
+        for (Review review : reviews) {
+
+            reviewText.append("Rating: ")
+                    .append(review.getRating())
+                    .append("/5")
+                    .append(" | Comment: ")
+                    .append(review.getComment())
+                    .append("\n");
+        }
+        String prompt =
+                "Analyze the following event reviews and provide:\n" +
+                        "1. Average satisfaction summary\n" +
+                        "2. Positive feedback trend\n" +
+                        "3. Most common complaint\n" +
+                        "4. One recommendation for improvement\n\n" +
+                        reviewText;
+
+        String aiSummary = openAIService.askAI(
+                """
+                You are an AI review analyst for a smart neighborhood platform.
+        
+                        Analyze the reviews and return ONLY this format:
+                        
+                        😊 Positive Trend:
+                           [one short sentence]
+                        
+                           ⚠ Common Complaint:
+                            [one short sentence]
+                        
+                          💡 Recommendation:
+                            [one short sentence]
+                        
+                            Do not mention rating scores.
+                            Do not add extra explanations.
+                            Keep the response concise.
+        
+                Keep the response concise and dashboard-friendly.
+                """,
+                prompt
+        );
+
+        return "⭐ Average Rating:\n"
+                + String.format("%.1f/5", averageRating)
+                + "\n\n"
+                + aiSummary;
+    }
+
 
 
 
