@@ -8,6 +8,12 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Setter
 @Getter
@@ -16,7 +22,7 @@ import java.util.Set;
 @Builder
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -116,6 +122,8 @@ public class User {
 
     //private LocalDate createdAt =  LocalDate.now();
 
+    private String role = "USER";
+
     private LocalDate mayorStartDate;
 
     private LocalDate mayorEndDate;
@@ -123,4 +131,44 @@ public class User {
     private Boolean mayorActive;
 
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        if (role != null) {
+            authorities.add(new SimpleGrantedAuthority(role));
+        }
+
+        if (status != null) {
+            authorities.add(new SimpleGrantedAuthority(status));
+        }
+
+        return authorities;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

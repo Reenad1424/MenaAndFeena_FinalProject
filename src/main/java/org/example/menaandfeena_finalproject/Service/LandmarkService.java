@@ -105,7 +105,7 @@ public class LandmarkService {
     // SYNC LANDMARKS FOR USER NEIGHBORHOOD
     // =========================
 
-    public void syncLandmarksForUser(Integer userId, Integer radius) {
+    public int syncLandmarksForUser(Integer userId, Integer radius) {
 
         User user = getUserOrThrow(userId);
 
@@ -113,23 +113,25 @@ public class LandmarkService {
         validateUserNeighborhood(user);
         validateRadius(radius);
 
-        syncOneTypeForUser(user, "MOSQUE", radius);
-        syncOneTypeForUser(user, "SCHOOL", radius);
-        syncOneTypeForUser(user, "PARK", radius);
+        int savedCount = 0;
+
+        savedCount += syncOneTypeForUser(user, "MOSQUE", radius);
+        savedCount += syncOneTypeForUser(user, "SCHOOL", radius);
+        savedCount += syncOneTypeForUser(user, "PARK", radius);
+
+        return savedCount;
     }
-    private void syncOneTypeForUser(
+    private int syncOneTypeForUser(
             User user,
             String type,
             Integer radius
     ) {
 
         int currentRadius = radius;
+        int maxRadius = Math.max(radius, 30000);
+        int savedCount = 0;
 
-        while (currentRadius <= 15000) {
-
-            if (hasLandmarkForNeighborhood(user, type)) {
-                return;
-            }
+        while (currentRadius <= maxRadius) {
 
             List<Map<String, Object>> elements =
                     fetchElementsFromOverpass(
@@ -139,18 +141,20 @@ public class LandmarkService {
                             type
                     );
 
-            saveElementsForUserNeighborhood(
+            savedCount += saveElementsForUserNeighborhood(
                     user,
                     elements,
                     type
             );
 
             if (hasLandmarkForNeighborhood(user, type)) {
-                return;
+                return savedCount;
             }
 
-            currentRadius += 3000;
+            currentRadius += 5000;
         }
+
+        return savedCount;
     }
     private boolean hasLandmarkForNeighborhood(
             User user,
@@ -205,11 +209,13 @@ public class LandmarkService {
 
         return (List<Map<String, Object>>) responseBody.get("elements");
     }
-    private void saveElementsForUserNeighborhood(
+    private int saveElementsForUserNeighborhood(
             User user,
             List<Map<String, Object>> elements,
             String expectedType
     ) {
+
+        int savedCount = 0;
 
         for (Map<String, Object> element : elements) {
 
@@ -278,7 +284,11 @@ public class LandmarkService {
             landmark.setNeighborhood(user.getNeighborhood());
 
             landmarkRepository.save(landmark);
+
+            savedCount++;
         }
+
+        return savedCount;
     }
     private String buildOverpassQueryByType(
             Double lat,

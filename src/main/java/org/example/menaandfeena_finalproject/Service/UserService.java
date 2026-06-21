@@ -9,6 +9,7 @@ import org.example.menaandfeena_finalproject.Model.*;
 import org.example.menaandfeena_finalproject.Repository.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,6 +38,7 @@ public class UserService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${app.support.email}")
     private String supportEmail;
@@ -83,8 +85,7 @@ public class UserService {
 
         old.setFullName(dto.getFullName());
         old.setEmail(dto.getEmail());
-        old.setPassword(dto.getPassword());
-        old.setPhone(dto.getPhone());
+        old.setPassword(passwordEncoder.encode(dto.getPassword()));        old.setPhone(dto.getPhone());
         old.setNationalId(dto.getNationalId());
         old.setBirthDate(dto.getBirthDate());
         old.setGender(dto.getGender());
