@@ -2,7 +2,6 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
-import org.example.menaandfeena_finalproject.DTO.In.MayorCandidateInDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.*;
 import org.example.menaandfeena_finalproject.Model.*;
 import org.example.menaandfeena_finalproject.Repository.*;
@@ -226,8 +225,7 @@ public class MayorCandidateService {
     // UPDATE CANDIDATE
     // =========================
 
-    public void updateMayorCandidate(Integer candidateId,
-                                     MayorCandidateInDTO mayorCandidateInDTO) {
+    public void updateMayorCandidate(Integer candidateId) {
 
         MayorCandidate oldMayorCandidate =
                 mayorCandidateRepository.findMayorCandidateById(candidateId);

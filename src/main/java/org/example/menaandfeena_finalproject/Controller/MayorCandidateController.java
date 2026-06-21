@@ -1,9 +1,7 @@
 package org.example.menaandfeena_finalproject.Controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
-import org.example.menaandfeena_finalproject.DTO.In.MayorCandidateInDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.CandidateDetailsDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.ElectionPageDTO;
 import org.example.menaandfeena_finalproject.Service.MayorCandidateService;
@@ -101,14 +99,10 @@ public class MayorCandidateController {
 
     @PutMapping("/{candidateId}")
     public ResponseEntity<?> updateMayorCandidate(
-            @PathVariable Integer candidateId,
-            @RequestBody @Valid MayorCandidateInDTO mayorCandidateInDTO
+            @PathVariable Integer candidateId
     ) {
 
-        mayorCandidateService.updateMayorCandidate(
-                candidateId,
-                mayorCandidateInDTO
-        );
+        mayorCandidateService.updateMayorCandidate(candidateId);
 
         return ResponseEntity.status(200).body(
                 new ApiResponse("تم تحديث بيانات المرشح بنجاح")
