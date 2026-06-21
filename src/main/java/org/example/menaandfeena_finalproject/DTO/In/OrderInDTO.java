@@ -1,6 +1,7 @@
 package org.example.menaandfeena_finalproject.DTO.In;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,4 +18,9 @@ public class OrderInDTO {
     private LocalDate startDate;
     private LocalDate endDate;
 
+    @Positive(message = "Quantity must be positive")
+    private Integer quantity;
+
+    @Positive(message = "Rental days must be greater than zero")
+    private Integer rentalDays;
 }

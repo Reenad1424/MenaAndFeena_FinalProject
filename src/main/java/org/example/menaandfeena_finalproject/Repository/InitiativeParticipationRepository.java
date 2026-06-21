@@ -14,5 +14,6 @@ public interface InitiativeParticipationRepository extends JpaRepository<Initiat
 
     int countByUserId(Integer id);
 
+
     List<InitiativeParticipation> findByUserId(Integer id);
 }

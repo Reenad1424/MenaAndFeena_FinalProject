@@ -6,6 +6,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.util.*;
+import org.springframework.http.*;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -16,23 +18,21 @@ public class OpenAIService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    // دالة عامة تستقبل التوجيه (System Prompt) والنص المراد معالجته (User Content)
     public String askAI(String systemPrompt, String userContent) {
         String apiUrl = "https://api.openai.com/v1/chat/completions";
 
-        // تجهيز جسم الطلب (Request Body)
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", "gpt-4o-mini");
 
+        requestBody.put("temperature", 0.0);
+
         List<Map<String, String>> messages = new ArrayList<>();
 
-        // 1. تحديد دور وتوجيه الذكاء الاصطناعي
         Map<String, String> systemMessage = new HashMap<>();
         systemMessage.put("role", "system");
         systemMessage.put("content", systemPrompt);
         messages.add(systemMessage);
 
-        // 2. تمرير النص المرسل من المستخدم أو النظام
         Map<String, String> userMessage = new HashMap<>();
         userMessage.put("role", "user");
         userMessage.put("content", userContent);
@@ -40,7 +40,6 @@ public class OpenAIService {
 
         requestBody.put("messages", messages);
 
-        // إعدادات الحماية والـ Headers
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
@@ -55,7 +54,8 @@ public class OpenAIService {
 
         } catch (Exception ex) {
             System.out.println("❌ [OPENAI EXCEPTION]: " + ex.getMessage());
-            return "ERROR_FALLBACK"; // نص بديل وموحد في حال فشل الاتصال بالـ API
+            return "ERROR_FALLBACK";
         }
     }
 }
+

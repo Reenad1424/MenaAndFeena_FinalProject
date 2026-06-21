@@ -52,6 +52,8 @@ public class Initiative {
     @JsonIgnore
     private Set<Review> reviews;
 
+
+
     @NotEmpty(message = "Category cannot be empty")
     @Pattern(regexp = "ENVIRONMENTAL|VOLUNTEERING|EDUCATIONAL|HEALTH|SPORTS", message = "Category must be ENVIRONMENTAL, "
             + "VOLUNTEERING, EDUCATIONAL, HEALTH, or SPORTS")
@@ -63,4 +65,11 @@ public class Initiative {
     @JsonIgnore
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "neighborhood_id")
+    private Neighborhood neighborhood;
+
+    @ManyToOne
+    @JoinColumn(name = "creator_id")
+    private User creator;
 }

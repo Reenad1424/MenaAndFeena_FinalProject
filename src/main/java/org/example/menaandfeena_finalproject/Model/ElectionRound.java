@@ -34,4 +34,9 @@ public class ElectionRound {
     @OneToMany(mappedBy = "electionRound", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<MayorVote> mayorVotes;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "neighborhood_id")
+    private Neighborhood neighborhood;
+
 }

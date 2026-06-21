@@ -1,9 +1,7 @@
 package org.example.menaandfeena_finalproject.Controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
-import org.example.menaandfeena_finalproject.DTO.In.InsuranceInDTO;
 import org.example.menaandfeena_finalproject.Service.InsuranceService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,18 +16,6 @@ public class InsuranceController {
     @GetMapping("/get")
     public ResponseEntity<?> getAllInsurances() {
         return ResponseEntity.status(200).body(insuranceService.getAllInsurances());
-    }
-
-    @PostMapping("/add")
-    public ResponseEntity<?> addInsurance(@RequestBody @Valid InsuranceInDTO insuranceInDTO) {
-        insuranceService.addInsurance(insuranceInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Insurance added"));
-    }
-
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateInsurance(@PathVariable Integer id, @RequestBody @Valid InsuranceInDTO insuranceInDTO) {
-        insuranceService.updateInsurance(id, insuranceInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Insurance updated"));
     }
 
     @DeleteMapping("/delete/{id}")

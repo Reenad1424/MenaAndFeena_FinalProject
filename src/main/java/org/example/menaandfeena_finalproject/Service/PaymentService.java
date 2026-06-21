@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -86,14 +87,11 @@ public class PaymentService {
         HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
 
         RestTemplate restTemplate = new RestTemplate();
-        // هنا يتم استدعاء Moyasar، والكنترولر يرجع نفس الحالة ونفس الرد.
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 
         return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
     }
 
-    // يجلب حالة الدفع من Moyasar ويرجع JSON الخام كنص.
-    // مفيد في Postman إذا نريد نشوف رد Moyasar كامل.
     public String getPaymentStatus(String paymentId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBasicAuth(apiKey, "");

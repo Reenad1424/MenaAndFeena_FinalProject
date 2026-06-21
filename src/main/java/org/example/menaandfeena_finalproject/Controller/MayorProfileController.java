@@ -43,4 +43,40 @@ public class MayorProfileController {
 
         return ResponseEntity.status(200).body(new ApiResponse("Mayor profile deleted successfully"));
     }
-}
+
+        @GetMapping("/analytics/{id}")
+        public ResponseEntity<?> getAnalytics(@PathVariable Integer id) {
+            return ResponseEntity.ok(mayorProfileService.getMayorAnalytics(id));
+        }
+
+        @GetMapping("/reports/{id}")
+        public ResponseEntity<?> getReports(@PathVariable Integer id) {
+            return ResponseEntity.ok(mayorProfileService.getMayorReports(id));
+        }
+    @GetMapping("/weekly/{id}")
+    public void weekly(@PathVariable Integer id) {
+        mayorProfileService.sendWeeklyReport(id);
+    }
+
+    @GetMapping("/performance/{id}")
+    public void performance(@PathVariable Integer id) {
+        mayorProfileService.sendPerformanceReport(id);
+    }
+
+    @GetMapping("/satisfaction/{id}")
+    public void satisfaction(@PathVariable Integer id) {
+        mayorProfileService.sendSatisfactionReport(id);
+    }
+
+    @PostMapping("/resend-appointment-email/{mayorId}")
+    public ResponseEntity<ApiResponse> resendMayorAppointmentEmail(
+            @PathVariable Integer mayorId
+    ) {
+        mayorProfileService.resendMayorAppointmentEmail(mayorId);
+
+        return ResponseEntity.ok(
+                new ApiResponse("تم إعادة إرسال رسالة تنصيب العمدة")
+        );
+    }
+    }
+

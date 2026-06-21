@@ -26,14 +26,44 @@ public class MarketPlaceItemController {
         return ResponseEntity.status(200).body(marketPlaceItemService.getAllMarketPlaceItems());
     }
 
+    @GetMapping("/user/{userId}/get")
+    public ResponseEntity<?> getMarketPlaceItemsForUser(@PathVariable Integer userId) {
+        return ResponseEntity.status(200).body(marketPlaceItemService.getMarketPlaceItemsForUser(userId));
+    }
+
+    @GetMapping("/recommendations/{userId}")
+    public ResponseEntity<?> getPersonalizedRecommendations(@PathVariable Integer userId) {
+        return ResponseEntity.status(200).body(marketPlaceItemService.getPersonalizedRecommendations(userId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getMarketPlaceItemById(@PathVariable Integer id) {
         return ResponseEntity.status(200).body(marketPlaceItemService.getMarketPlaceItemById(id));
     }
 
+    @GetMapping("/user/{userId}/item/{id}")
+    public ResponseEntity<?> getMarketPlaceItemByIdForUser(@PathVariable Integer userId, @PathVariable Integer id) {
+        return ResponseEntity.status(200).body(marketPlaceItemService.getMarketPlaceItemByIdForUser(id, userId));
+    }
+
+    @GetMapping("/{marketPlaceItemId}/similar/{userId}")
+    public ResponseEntity<?> getSimilarProducts(@PathVariable Integer marketPlaceItemId, @PathVariable Integer userId) {
+        return ResponseEntity.status(200).body(marketPlaceItemService.getSimilarProducts(marketPlaceItemId, userId));
+    }
+
     @GetMapping("/type/{type}")
     public ResponseEntity<?> getMarketPlaceItemsByType(@PathVariable String type) {
         return ResponseEntity.status(200).body(marketPlaceItemService.getMarketPlaceItemsByType(type));
+    }
+
+    @GetMapping("/user/{userId}/type/{type}")
+    public ResponseEntity<?> getMarketPlaceItemsByTypeForUser(@PathVariable Integer userId, @PathVariable String type) {
+        return ResponseEntity.status(200).body(marketPlaceItemService.getMarketPlaceItemsByTypeForUser(type, userId));
+    }
+
+    @GetMapping("/user/{userId}/search")
+    public ResponseEntity<?> searchMarketPlaceItemsForUser(@PathVariable Integer userId, @RequestParam String keyword) {
+        return ResponseEntity.status(200).body(marketPlaceItemService.searchMarketPlaceItemsForUser(userId, keyword));
     }
 
     @GetMapping("/my-items/{userId}")

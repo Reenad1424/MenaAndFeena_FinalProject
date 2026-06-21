@@ -19,7 +19,7 @@ public class MarketPlaceItemInDTO {
     private String description;
 
     @NotBlank(message = "Type cannot be blank")
-    @Pattern(regexp = "SELL|RENT", message = "Type must be SELL or RENT")
+    @Pattern(regexp = "SELL|RENT", message = "Type must be SELL or RENT only")
     private String type;
 
     private Integer price;

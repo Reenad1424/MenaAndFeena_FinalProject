@@ -42,6 +42,9 @@ public class InquiryService {
         if (requester == null) {
             throw new ApiException("User not found");
         }
+        if (requester.getNeighborhood() == null) {
+            throw new ApiException("User neighborhood is required");
+        }
 
         MarketPlaceItem item = marketPlaceItemRepository.findMarketPlaceItemById(itemId);
 
@@ -53,6 +56,12 @@ public class InquiryService {
 
         if (targetUser == null) {
             throw new ApiException("Inquiry target user not found");
+        }
+        if (targetUser.getNeighborhood() == null) {
+            throw new ApiException("Market place item owner neighborhood is required");
+        }
+        if (!targetUser.getNeighborhood().getId().equals(requester.getNeighborhood().getId())) {
+            throw new ApiException("Market place item is outside your neighborhood");
         }
 
         if (requester.getId().equals(targetUser.getId())) {

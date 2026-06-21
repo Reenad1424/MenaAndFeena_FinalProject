@@ -22,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GeminiService {
 
-    @Value("${gemini.api.key}")
+    //@Value("${gemini.api.key}")
     private String apiKey;
 
    // private final RestTemplate restTemplate;

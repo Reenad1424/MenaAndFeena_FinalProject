@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    @font-face {
+      font-family: 'InvoiceArabic';
+      src: url('fonts/tahoma.ttf');
+      -fs-font-subset: complete-font;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page { margin: 0; }
+
+    body {
+      font-family: 'InvoiceArabic', Tahoma, Arial, sans-serif;
+      background: #fef9f3;
+      color: #3a3a3a;
+      padding: 40px 28px;
+      direction: rtl;
+      unicode-bidi: embed;
+      text-align: right;
+    }
+
+    .wrap {
+      width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .head {
+      text-align: center;
+      margin-bottom: 28px;
+      direction: rtl;
+      unicode-bidi: embed;
+    }
+
+    .logo {
+      width: 84px;
+      height: 84px;
+      border-radius: 22px;
+      margin-bottom: 16px;
+    }
+
+    .head h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #3a3a3a;
+      margin-bottom: 10px;
+    }
+
+    .head p {
+      font-size: 15px;
+      color: #9a9a9a;
+      font-weight: 500;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 22px;
+      border-top: 5px solid #e8923d;
+      padding: 34px 36px;
+      direction: rtl;
+      unicode-bidi: embed;
+    }
+
+    table {
+      direction: rtl;
+      unicode-bidi: embed;
+    }
+
+    th, td {
+      direction: rtl;
+      unicode-bidi: embed;
+      text-align: right;
+    }
+
+    .card-top-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-bottom: 1px solid #ededed;
+      margin-bottom: 6px;
+    }
+
+    .card-top-table td {
+      vertical-align: top;
+      padding-bottom: 24px;
+    }
+
+    .invoice-cell {
+      width: 50%;
+      text-align: right;
+    }
+
+    .meta-cell {
+      width: 50%;
+      text-align: left;
+    }
+
+    .invoice-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: #3a3a3a;
+    }
+
+    .invoice-no {
+      font-size: 19px;
+      font-weight: 800;
+      color: #e8923d;
+      margin-top: 4px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #e8923d;
+      background: #fdf0e2;
+      border-radius: 20px;
+    }
+
+    .meta {
+      font-size: 14px;
+      color: #9a9a9a;
+      line-height: 1.9;
+      font-weight: 500;
+    }
+
+    table.items {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      direction: rtl;
+      unicode-bidi: embed;
+    }
+
+    table.items thead th {
+      font-size: 15px;
+      font-weight: 700;
+      color: #3a3a3a;
+      padding: 22px 0 15px;
+      border-bottom: 1px solid #ededed;
+    }
+
+    th.item, td.item { text-align: right; }
+    th.type, td.type { text-align: center; }
+    th.amount, td.amount { text-align: left; }
+
+    table.items tbody td {
+      font-size: 14px;
+      color: #555;
+      font-weight: 500;
+      padding: 15px 0;
+      vertical-align: top;
+    }
+
+    table.items tbody td.item {
+      color: #3a3a3a;
+    }
+
+    table.items tbody td.amount {
+      font-weight: 700;
+      color: #3a3a3a;
+      white-space: nowrap;
+    }
+
+    .item-details {
+      font-size: 12px;
+      color: #9a9a9a;
+      line-height: 1.8;
+      margin-top: 4px;
+    }
+
+    .total-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      border-top: 1px solid #ededed;
+    }
+
+    .total-table td {
+      padding-top: 24px;
+    }
+
+    .total-label {
+      font-size: 18px;
+      font-weight: 700;
+      color: #e8923d;
+      text-align: right;
+    }
+
+    .total-amount {
+      font-size: 21px;
+      font-weight: 800;
+      color: #3a3a3a;
+      white-space: nowrap;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <img class="logo" src="{{logoSrc}}" alt="Mena And Feena" />
+      <h1>تمت عملية الشراء بنجاح!</h1>
+      <p>شكراً للمساهمة في دعم بيئة وتكافل الحي السكني.</p>
+    </div>
+
+    <div class="card">
+      <table class="card-top-table">
+        <tr>
+          <td class="invoice-cell">
+            <div class="invoice-title">فاتورة الطلب:</div>
+            <div class="invoice-no">#{{invoiceNumber}}</div>
+            <span class="status-badge">{{paymentStatus}}</span>
+          </td>
+          <td class="meta-cell">
+            <div class="meta">
+              <div>التاريخ: {{orderDate}}</div>
+              <div>المشتري: {{buyerName}}</div>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <table class="items">
+        <thead>
+          <tr>
+            <th class="item">العنصر</th>
+            <th class="type">النوع</th>
+            <th class="amount">المبلغ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{itemsRows}}
+        </tbody>
+      </table>
+
+      <table class="total-table">
+        <tr>
+          <td class="total-label">المبلغ الإجمالي المدفوع:</td>
+          <td class="total-amount">{{totalAmount}}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

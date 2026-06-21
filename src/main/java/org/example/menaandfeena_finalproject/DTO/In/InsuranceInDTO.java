@@ -32,4 +32,7 @@ public class InsuranceInDTO {
     private LocalDateTime refundedAt;
 
     private String refundTransactionId;
+
+    @NotNull(message = "Order item id cannot be null")
+    private Integer orderItemId;
 }

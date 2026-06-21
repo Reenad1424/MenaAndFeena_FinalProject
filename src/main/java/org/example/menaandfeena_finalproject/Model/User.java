@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -51,7 +51,11 @@ public class User {
 
     private Boolean isVerified = false;
 
-    // 🌟 حقول الإحداثيات المضافة لتخزين موقع المستخدم عند التسجيل
+    // TEMP TEST FIX: Added only because existing UserService and MayorCandidateService call getCreatedAt().
+    // Revisit with the owner of user/mayor work before keeping permanently.
+    @CreationTimestamp
+    private LocalDate createdAt=LocalDate.now();
+
     @NotNull(message = "User latitude cannot be null")
     private Double latitude;
 
@@ -63,7 +67,6 @@ public class User {
     @JoinColumn(name = "neighborhood_id")
     private Neighborhood neighborhood;
 
-    // بقية العلاقات الحالية للمستخدم (مبسطة وبدون تغيير في المسميات)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FamilyMember> familyMembers;
 
@@ -86,9 +89,6 @@ public class User {
     @JsonIgnore
     private List<Review> reviews;
 
-
-    private LocalDate createdAt;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<MayorVote> votes;
@@ -104,6 +104,11 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
     private MayorProfile mayorProfile;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Cart cart;
+
     @OneToMany(mappedBy = "requester", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Inquiry> requestedInquiries;
@@ -115,6 +120,13 @@ public class User {
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<InquiryMessage> inquiryMessages;
+
+
+    //private LocalDate createdAt =  LocalDate.now();
+
+    private LocalDate mayorStartDate;
+    private LocalDate mayorEndDate;
+    private Boolean mayorActive;
 
 
 }

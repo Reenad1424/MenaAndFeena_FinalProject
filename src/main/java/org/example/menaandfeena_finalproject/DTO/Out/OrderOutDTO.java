@@ -1,19 +1,21 @@
 package org.example.menaandfeena_finalproject.DTO.Out;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class OrderOutDTO {
     private Integer id;
-    private String type;
+    private String invoiceNumber;
+    private LocalDate orderDate;
     private String status;
     private Integer totalAmount;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private Integer marketPlaceItemId;
     private Integer userId;
+    private List<OrderItemOutDTO> orderItems;
 }

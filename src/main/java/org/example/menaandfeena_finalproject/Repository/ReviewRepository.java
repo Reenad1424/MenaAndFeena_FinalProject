@@ -22,5 +22,10 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     Integer countByInitiative_Id(Integer initiativeId);
     Integer countByInitiative_IdAndRatingGreaterThanEqual(Integer initiativeId, Integer rating);
 
+    List<Review> findByUserId(Integer userId);
 
+    List<Review> findByTargetUserId(Integer userId);
+
+    Integer countByUser_Neighborhood_Id(Integer neighborhoodId);
+    List<Review> findByUser_Neighborhood_Id(Integer neighborhoodId);
 }

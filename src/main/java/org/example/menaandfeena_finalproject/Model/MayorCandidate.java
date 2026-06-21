@@ -21,7 +21,7 @@ public class MayorCandidate {
     private LocalDateTime appliedAt;
 
     // PENDING, APPROVED, REJECTED
-    @Column(columnDefinition = "varchar(10) not null")
+    @Column(columnDefinition = "varchar(20) not null")
     private String status;
 
 

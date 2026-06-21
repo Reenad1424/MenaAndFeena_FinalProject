@@ -6,6 +6,7 @@ import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.OrderPaymentRequestDTO;
 import org.example.menaandfeena_finalproject.DTO.In.PaymentRequestDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.PaymentInvoiceDTO;
+import org.example.menaandfeena_finalproject.Service.OrderService;
 import org.example.menaandfeena_finalproject.Service.PaymentService;
 import org.example.menaandfeena_finalproject.Service.PdfInvoiceService;
 import org.springframework.http.HttpStatus;
@@ -26,12 +27,11 @@ public class PaymentController {
         return paymentService.processPayment(paymentRequest);
     }
 
-
     @GetMapping("/get-status/{id}")
     public ResponseEntity<?> getPaymentStatus(@PathVariable String id) {
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(paymentService.getPaymentInvoice(id));
+                .body(paymentService.getPaymentStatus(id));
     }
 
 //    @GetMapping("/invoice/{id}")

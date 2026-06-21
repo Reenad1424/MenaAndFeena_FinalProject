@@ -1,8 +1,6 @@
 package org.example.menaandfeena_finalproject.Model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,8 +19,6 @@ public class InquiryMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "Message content cannot be blank")
-    @Size(max = 500, message = "Message content must not exceed 500 characters")
     @Column(columnDefinition = "varchar(500) not null")
     private String content;
 
