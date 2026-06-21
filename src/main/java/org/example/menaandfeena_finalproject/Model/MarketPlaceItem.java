@@ -58,12 +58,4 @@ public class MarketPlaceItem {
     @OneToMany(mappedBy = "marketPlaceItem", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Inquiry> inquiries;
-
-    @ManyToOne
-    @JoinColumn(name = "neighborhood_id")
-    private Neighborhood neighborhood;
-
-    @ManyToOne
-    @JoinColumn(name = "seller_id")
-    private User seller;
 }

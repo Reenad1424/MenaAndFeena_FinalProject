@@ -113,6 +113,14 @@ public class IssueReportController {
         return ResponseEntity.ok().headers(headers).body(pdfBytes);
     }
 
+    @PostMapping("/mayor-report/{userId}/pdf/email")
+    public ResponseEntity<?> sendMayorIssueReportPdfEmail(@PathVariable Integer userId) {
+        // هذا endpoint منفصل عن التحميل: يولد نفس تقرير PDF ويرسله كمرفق على إيميل العمدة.
+        // فصلناه حتى نقدر نختبر التحميل وحده، ونختبر الإرسال بالبريد وحده بدون خلط بين السلوكين.
+        issueReportService.sendMayorIssueReportPdfEmail(userId);
+        return ResponseEntity.status(200).body(new ApiResponse("Issue report PDF sent to mayor email"));
+    }
+
     @GetMapping("/neighborhood/{neighborhoodId}")
     public ResponseEntity<?> getIssueReportsByNeighborhood(@PathVariable Integer neighborhoodId) {
         return ResponseEntity.status(200).body(issueReportService.getIssueReportsByNeighborhood(neighborhoodId));
@@ -123,18 +131,21 @@ public class IssueReportController {
         return ResponseEntity.status(200).body(issueReportService.searchIssueReports(keyword));
     }
 
-    @PutMapping("/{id}/start-progress")
-    public ResponseEntity<?> startProgress(@PathVariable Integer id) {
-        issueReportService.startProgress(id);
+    // TODO: بعد إضافة Spring Security/JWT نحذف userId من الرابط ونأخذ العمدة من المستخدم المسجل دخوله.
+    @PutMapping("/{id}/start-progress/{userId}")
+    public ResponseEntity<?> startProgress(@PathVariable Integer id, @PathVariable Integer userId) {
+        issueReportService.startProgress(id, userId);
         return ResponseEntity.status(200).body(new ApiResponse("Issue report moved to in progress successfully"));
     }
 
-    @PutMapping("/{id}/complete")
-    public ResponseEntity<?> completeReport(@PathVariable Integer id) {
-        issueReportService.completeReport(id);
+    // TODO: بعد إضافة Spring Security/JWT نحذف userId من الرابط ونأخذ العمدة من المستخدم المسجل دخوله.
+    @PutMapping("/{id}/complete/{userId}")
+    public ResponseEntity<?> completeReport(@PathVariable Integer id, @PathVariable Integer userId) {
+        issueReportService.completeReport(id, userId);
         return ResponseEntity.status(200).body(new ApiResponse("Issue report completed successfully"));
     }
 
+    // TODO: بعد إضافة Spring Security/JWT هذا endpoint يجب أن يكون للـ ADMIN فقط لأنه يعدل بيانات البلاغ كاملة.
     @PutMapping("/update/{id}")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody @Valid IssueReport issueReport) {
         issueReportService.update(id, issueReport);

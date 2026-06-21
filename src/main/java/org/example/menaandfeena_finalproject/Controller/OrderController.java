@@ -34,24 +34,25 @@ public class OrderController {
         return ResponseEntity.status(200).body(orderService.getMySales(userId));
     }
 
-    @PutMapping("/complete/{orderId}")
-    public ResponseEntity<?> completeOrder(@PathVariable Integer orderId) {
-        orderService.completeOrder(orderId);
+    @PutMapping("/complete/{orderId}/{userId}")
+    public ResponseEntity<?> completeOrder(@PathVariable Integer orderId, @PathVariable Integer userId) {
+        orderService.completeOrder(orderId, userId);
         return ResponseEntity.status(200).body(new ApiResponse("Order completed"));
     }
 
-    @PutMapping("/cancel/{orderId}")
-    public ResponseEntity<?> cancelOrder(@PathVariable Integer orderId) {
-        orderService.cancelOrder(orderId);
+    @PutMapping("/cancel/{orderId}/{userId}")
+    public ResponseEntity<?> cancelOrder(@PathVariable Integer orderId, @PathVariable Integer userId) {
+        orderService.cancelOrder(orderId, userId);
         return ResponseEntity.status(200).body(new ApiResponse("Order cancelled"));
     }
 
+    // TODO SECURITY: ADMIN/DEBUG only. Normal users should use /my-orders or /my-sales.
     @GetMapping("/get")
     public ResponseEntity<?> getAllOrders() {
         return ResponseEntity.status(200).body(orderService.getAllOrders());
     }
 
-    // Returns a single order by id (instead of fetching all and searching manually).
+    // TODO SECURITY: ADMIN/DEBUG only. User-facing order details should include user ownership validation.
     @GetMapping("/{orderId}")
     public ResponseEntity<?> getOrderById(@PathVariable Integer orderId) {
         return ResponseEntity.status(200).body(orderService.getOrderById(orderId));
@@ -71,6 +72,7 @@ public class OrderController {
                 .body(pdfBytes);
     }
 
+    // TODO SECURITY: ADMIN/DEBUG only. Deleting orders manually can break payment, stock, and invoice history.
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteOrder(@PathVariable Integer id) {
         orderService.deleteOrder(id);

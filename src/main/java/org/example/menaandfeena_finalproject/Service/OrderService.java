@@ -719,11 +719,12 @@ public class OrderService {
     }
 
     @Transactional
-    public void completeOrder(Integer orderId) {
+    public void completeOrder(Integer orderId, Integer userId) {
         Orders order = orderRepository.findOrderById(orderId);
         if (order == null) {
             throw new ApiException("Order not found");
         }
+        validateBuyerOrderNeighborhood(order, userId);
         if (order.getStatus().equals("COMPLETED")) {
             throw new ApiException("Order is already completed");
         }
@@ -731,13 +732,16 @@ public class OrderService {
             throw new ApiException("Cancelled order cannot be completed");
         }
 
+        boolean restoreStock = "PAID".equals(order.getStatus());
         order.setStatus("COMPLETED");
-        for (OrderItem orderItem : orderItemRepository.findOrderItemsByOrdersId(order.getId())) {
-            if (orderItem.getType().equals("RENT") && !Boolean.TRUE.equals(orderItem.getOwnerConfirmedReturn()) && orderItem.getMarketPlaceItem() != null) {
-                MarketPlaceItem item = orderItem.getMarketPlaceItem();
-                item.setQuantity(item.getQuantity() + orderItem.getQuantity());
-                item.setStatus("AVAILABLE");
-                marketPlaceItemRepository.save(item);
+        if (restoreStock) {
+            for (OrderItem orderItem : orderItemRepository.findOrderItemsByOrdersId(order.getId())) {
+                if (orderItem.getType().equals("RENT") && !Boolean.TRUE.equals(orderItem.getOwnerConfirmedReturn()) && orderItem.getMarketPlaceItem() != null) {
+                    MarketPlaceItem item = orderItem.getMarketPlaceItem();
+                    item.setQuantity(item.getQuantity() + orderItem.getQuantity());
+                    item.setStatus("AVAILABLE");
+                    marketPlaceItemRepository.save(item);
+                }
             }
         }
 
@@ -745,11 +749,12 @@ public class OrderService {
     }
 
     @Transactional
-    public void cancelOrder(Integer orderId) {
+    public void cancelOrder(Integer orderId, Integer userId) {
         Orders order = orderRepository.findOrderById(orderId);
         if (order == null) {
             throw new ApiException("Order not found");
         }
+        validateBuyerOrderNeighborhood(order, userId);
         if (order.getStatus().equals("COMPLETED")) {
             throw new ApiException("Completed order cannot be cancelled");
         }
@@ -757,13 +762,16 @@ public class OrderService {
             throw new ApiException("Order is already cancelled");
         }
 
+        boolean restoreStock = "PAID".equals(order.getStatus());
         order.setStatus("CANCELLED");
-        for (OrderItem orderItem : orderItemRepository.findOrderItemsByOrdersId(order.getId())) {
-            if (orderItem.getMarketPlaceItem() != null && !Boolean.TRUE.equals(orderItem.getOwnerConfirmedReturn())) {
-                MarketPlaceItem item = orderItem.getMarketPlaceItem();
-                item.setQuantity(item.getQuantity() + orderItem.getQuantity());
-                item.setStatus("AVAILABLE");
-                marketPlaceItemRepository.save(item);
+        if (restoreStock) {
+            for (OrderItem orderItem : orderItemRepository.findOrderItemsByOrdersId(order.getId())) {
+                if (orderItem.getMarketPlaceItem() != null && !Boolean.TRUE.equals(orderItem.getOwnerConfirmedReturn())) {
+                    MarketPlaceItem item = orderItem.getMarketPlaceItem();
+                    item.setQuantity(item.getQuantity() + orderItem.getQuantity());
+                    item.setStatus("AVAILABLE");
+                    marketPlaceItemRepository.save(item);
+                }
             }
         }
 

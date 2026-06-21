@@ -108,6 +108,9 @@ public class MarketPlaceItemService {
         if (user == null) {
             throw new ApiException("User not found");
         }
+        if (user.getNeighborhood() == null) {
+            throw new ApiException("User neighborhood is required");
+        }
 
         MarketPlaceItem marketPlaceItem = new MarketPlaceItem();
         marketPlaceItem.setTitle(marketPlaceItemInDTO.getTitle());
@@ -165,6 +168,12 @@ public class MarketPlaceItemService {
         if (user == null) {
             throw new ApiException("User not found");
         }
+        if (user.getNeighborhood() == null) {
+            throw new ApiException("User neighborhood is required");
+        }
+        if (oldMarketPlaceItem.getUser() == null || !oldMarketPlaceItem.getUser().getId().equals(userId)) {
+            throw new ApiException("Only the item owner can update item");
+        }
 
         oldMarketPlaceItem.setTitle(marketPlaceItemInDTO.getTitle());
         oldMarketPlaceItem.setDescription(marketPlaceItemInDTO.getDescription());
@@ -173,16 +182,27 @@ public class MarketPlaceItemService {
         oldMarketPlaceItem.setRentPrice(marketPlaceItemInDTO.getRentPrice());
         oldMarketPlaceItem.setDepositAmount(marketPlaceItemInDTO.getDepositAmount());
         oldMarketPlaceItem.setQuantity(marketPlaceItemInDTO.getQuantity());
-        oldMarketPlaceItem.setUser(user);
 
         marketPlaceItemRepository.save(oldMarketPlaceItem);
     }
 
-    public void deleteMarketPlaceItem(Integer id) {
+    public void deleteMarketPlaceItem(Integer id, Integer userId) {
         MarketPlaceItem marketPlaceItem = marketPlaceItemRepository.findMarketPlaceItemById(id);
 
         if (marketPlaceItem == null) {
             throw new ApiException("Market place item not found");
+        }
+
+        User user = userRepository.findUserById(userId);
+
+        if (user == null) {
+            throw new ApiException("User not found");
+        }
+        if (user.getNeighborhood() == null) {
+            throw new ApiException("User neighborhood is required");
+        }
+        if (marketPlaceItem.getUser() == null || !marketPlaceItem.getUser().getId().equals(userId)) {
+            throw new ApiException("Only the item owner can delete item");
         }
 
         marketPlaceItemRepository.delete(marketPlaceItem);

@@ -21,6 +21,7 @@ public class MarketPlaceItemController {
         return ResponseEntity.status(200).body(new ApiResponse("Market place item added"));
     }
 
+    // TODO SECURITY: ADMIN/DEBUG general listing. User-facing listing should use /user/{userId}/get for neighborhood isolation.
     @GetMapping("/get")
     public ResponseEntity<?> getAllMarketPlaceItems() {
         return ResponseEntity.status(200).body(marketPlaceItemService.getAllMarketPlaceItems());
@@ -36,6 +37,7 @@ public class MarketPlaceItemController {
         return ResponseEntity.status(200).body(marketPlaceItemService.getPersonalizedRecommendations(userId));
     }
 
+    // TODO SECURITY: ADMIN/DEBUG product details. User-facing details should use /user/{userId}/item/{id}.
     @GetMapping("/{id}")
     public ResponseEntity<?> getMarketPlaceItemById(@PathVariable Integer id) {
         return ResponseEntity.status(200).body(marketPlaceItemService.getMarketPlaceItemById(id));
@@ -51,6 +53,7 @@ public class MarketPlaceItemController {
         return ResponseEntity.status(200).body(marketPlaceItemService.getSimilarProducts(marketPlaceItemId, userId));
     }
 
+    // TODO SECURITY: ADMIN/DEBUG type filter. User-facing filter should use /user/{userId}/type/{type}.
     @GetMapping("/type/{type}")
     public ResponseEntity<?> getMarketPlaceItemsByType(@PathVariable String type) {
         return ResponseEntity.status(200).body(marketPlaceItemService.getMarketPlaceItemsByType(type));
@@ -77,9 +80,9 @@ public class MarketPlaceItemController {
         return ResponseEntity.status(200).body(new ApiResponse("Market place item updated"));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteMarketPlaceItem(@PathVariable Integer id) {
-        marketPlaceItemService.deleteMarketPlaceItem(id);
+    @DeleteMapping("/delete/{id}/{userId}")
+    public ResponseEntity<?> deleteMarketPlaceItem(@PathVariable Integer id, @PathVariable Integer userId) {
+        marketPlaceItemService.deleteMarketPlaceItem(id, userId);
         return ResponseEntity.status(200).body(new ApiResponse("Market place item deleted"));
     }
 }

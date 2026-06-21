@@ -14,17 +14,21 @@ import org.springframework.web.bind.annotation.*;
 public class OrderItemController {
     private final OrderItemService orderItemService;
 
+    // TODO SECURITY: These manual OrderItem CRUD endpoints must be ADMIN/DEBUG only after Spring Security.
+    // Normal users should create order items only through cart checkout so payment, stock, and insurance logic is not bypassed.
     @PostMapping("/add")
     public ResponseEntity<?> addOrderItem(@RequestBody @Valid OrderItemInDTO orderItemInDTO) {
         orderItemService.addOrderItem(orderItemInDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Order item added"));
     }
 
+    // TODO SECURITY: ADMIN/DEBUG only. This exposes all order items across users.
     @GetMapping("/get")
     public ResponseEntity<?> getAllOrderItems() {
         return ResponseEntity.status(200).body(orderItemService.getAllOrderItems());
     }
 
+    // TODO SECURITY: ADMIN/DEBUG only. Do not expose direct order item updates to normal users.
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateOrderItem(@PathVariable Integer id, @RequestBody @Valid OrderItemInDTO orderItemInDTO) {
         orderItemService.updateOrderItem(id, orderItemInDTO);
@@ -46,6 +50,7 @@ public class OrderItemController {
         return ResponseEntity.status(200).body(orderItemService.ownerConfirmDamaged(orderItemId, userId));
     }
 
+    // TODO SECURITY: ADMIN/DEBUG only. Deleting order items manually can break checkout/payment history.
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteOrderItem(@PathVariable Integer id) {
         orderItemService.deleteOrderItem(id);

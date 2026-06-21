@@ -21,6 +21,8 @@ public interface IssueReportRepository extends JpaRepository<IssueReport, Intege
 
     List<IssueReport> findIssueReportsByReporterId(Integer reporterId);
 
+    List<IssueReport> findByReporterIdAndReportNeighborhood_Id(Integer reporterId, Integer neighborhoodId);
+
     // TEMP TEST FIX: Added only to satisfy MayorCandidateService during marketplace/invoice testing.
     // Revisit with the owner of mayor/issue-report work before keeping permanently.
 
@@ -53,4 +55,22 @@ public interface IssueReportRepository extends JpaRepository<IssueReport, Intege
     Integer countByReporter_Neighborhood_Id(Integer neighborhoodId);
 
     List<IssueReport> findByReportNeighborhood_Id(Integer neighborhoodId);
+
+    List<IssueReport> findByReportNeighborhood_IdAndStatus(Integer neighborhoodId, String status);
+
+    List<IssueReport> findByReportNeighborhood_IdAndPriority(Integer neighborhoodId, String priority);
+
+    List<IssueReport> findByReportNeighborhood_IdAndCategory(Integer neighborhoodId, String category);
+
+    @Query("""
+        select i from IssueReport i
+        where i.reportNeighborhood.id = :neighborhoodId
+        and (
+            lower(i.title) like lower(concat('%', :keyword, '%'))
+            or lower(i.description) like lower(concat('%', :keyword, '%'))
+            or lower(i.detectedDistrictName) like lower(concat('%', :keyword, '%'))
+            or lower(i.detectedStreetName) like lower(concat('%', :keyword, '%'))
+        )
+    """)
+    List<IssueReport> searchIssueReportsByNeighborhood(@Param("neighborhoodId") Integer neighborhoodId, @Param("keyword") String keyword);
 }
