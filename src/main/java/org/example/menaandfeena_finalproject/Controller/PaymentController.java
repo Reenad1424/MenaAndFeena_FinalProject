@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.OrderPaymentRequestDTO;
 import org.example.menaandfeena_finalproject.DTO.In.PaymentRequestDTO;
+import org.example.menaandfeena_finalproject.DTO.Out.PaymentInvoiceDTO;
 import org.example.menaandfeena_finalproject.Service.OrderService;
 import org.example.menaandfeena_finalproject.Service.PaymentService;
 import org.springframework.http.HttpStatus;
@@ -17,19 +18,6 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentController {
 
     private final PaymentService paymentService;
-    private final OrderService orderService;
-
-    // In-app payment: the user submits card details for a specific order on our own page.
-    // The amount is read from the order on the server, never from this request body.
-    @PostMapping("/order/{orderId}")
-    public ResponseEntity<?> payForOrder(@PathVariable Integer orderId, @RequestParam Integer userId, @RequestBody @Valid OrderPaymentRequestDTO orderPaymentRequest) {
-        return ResponseEntity.status(200).body(orderService.payOrderWithCard(orderId, userId, orderPaymentRequest));
-    }
-
-    @PostMapping("/order/{orderId}/sync")
-    public ResponseEntity<?> syncOrderPayment(@PathVariable Integer orderId, @RequestParam Integer userId) {
-        return ResponseEntity.status(200).body(orderService.syncOrderPayment(orderId, userId));
-    }
 
     @PostMapping("/card")
     public ResponseEntity<?> processPayment(@RequestBody @Valid PaymentRequestDTO paymentRequest) {
@@ -43,6 +31,21 @@ public class PaymentController {
                 .body(paymentService.getPaymentStatus(id));
     }
 
+//    @GetMapping("/invoice/{id}")
+//    public ResponseEntity getPaymentInvoice(@PathVariable String id) {
+//
+//        return ResponseEntity.status(200).body(paymentService.getPaymentInvoice(id));
+//    }
+
+
+// original
+//    @GetMapping("/get-status/{id}")
+//    public ResponseEntity<?> getPaymentStatus(@PathVariable String id) {
+//
+//        return ResponseEntity.status(HttpStatus.OK)
+//                .body(paymentService.getPaymentStatus(id));
+//    }
+
     @GetMapping("/get")
     public ResponseEntity<?> getAllPayments() {
         return ResponseEntity.status(200).body(paymentService.getAllPayments());
@@ -53,4 +56,28 @@ public class PaymentController {
         paymentService.deletePayment(id);
         return ResponseEntity.status(200).body(new ApiResponse("Payment deleted"));
     }
+
+
+
+ // Walaa
+    @PostMapping("/pay-event/{registrationId}")
+    public ResponseEntity payEventRegistration(@PathVariable Integer registrationId,
+                                               @RequestBody @Valid OrderPaymentRequestDTO card) {
+
+        return ResponseEntity.status(200).body(paymentService.payEventRegistration(registrationId, card));
+    }
+
+// Walaa
+
+    @GetMapping("/callback")
+    public ResponseEntity paymentCallback(@RequestParam String id,
+                                          @RequestParam String status,
+                                          @RequestParam(required = false) String message) {
+
+        paymentService.handlePaymentCallback(id, status);
+        return ResponseEntity.status(200).body(new ApiResponse("Payment callback handled successfully"));
+    }
+
+
+
 }

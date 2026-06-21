@@ -5,19 +5,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MoyasarChargeOutDTO {
+public class AnnouncementOutDTO {
 
-//    private String status;
-//    private Integer amount;
-//    private String transactionUrl;
-
-    private String moyasarPaymentId;
+    private Integer id;
+    private String title;
+    private String content;
     private String status;
-    private Integer amount;
-    private String transactionUrl;
-}
+    private LocalDate createdAt;
+    private String publisherName;
 
+}

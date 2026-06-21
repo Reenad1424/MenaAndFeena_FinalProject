@@ -63,4 +63,34 @@ public class EventController {
         return ResponseEntity.status(200).body(eventService.getEventById(id));
     }
 
+
+
+
+    @PostMapping("/create/{userId}")
+    public ResponseEntity createEvent(@PathVariable Integer userId, @Valid @RequestBody Event event) {
+        eventService.createEvent(userId, event);
+        return ResponseEntity.status(200).body(new ApiResponse("Event created successfully"));
+
+    }
+
+
+
+    @GetMapping("/recommend/{userId}")
+    public ResponseEntity recommendEvent(@PathVariable Integer userId) {
+
+        return ResponseEntity.status(200).body(eventService.recommendEventForUser(userId));
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

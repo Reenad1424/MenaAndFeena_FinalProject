@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class PaymentOutDTO {
-    private Integer id;
+    private Integer paymentId;
     private Integer amount;
     private Integer platformFee;
     private Integer sellerAmount;

@@ -61,6 +61,11 @@ public class Initiative {
     private String category;
 
     @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User user;
+
+    @ManyToOne
     @JoinColumn(name = "neighborhood_id")
     private Neighborhood neighborhood;
 

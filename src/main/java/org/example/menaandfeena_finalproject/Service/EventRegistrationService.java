@@ -2,6 +2,7 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
+import org.example.menaandfeena_finalproject.DTO.Out.EventRegistrationOutDTO;
 import org.example.menaandfeena_finalproject.Model.Event;
 import org.example.menaandfeena_finalproject.Model.EventRegistration;
 import org.example.menaandfeena_finalproject.Model.FamilyMember;
@@ -24,8 +25,11 @@ public class EventRegistrationService {
     private final FamilyMemberRepository familyMemberRepository;
 
 
-    public List<EventRegistration> getAllEventRegistrations() {
-        return eventRegistrationRepository.findAll();
+    public List<EventRegistrationOutDTO> getAllEventRegistrations() {
+        return eventRegistrationRepository.findAll()
+                .stream()
+                .map(this::convertToOutDTO)
+                .toList();
     }
 
     public void addEventRegistration(EventRegistration eventRegistration) {
@@ -76,7 +80,13 @@ public class EventRegistrationService {
 
        registration.setUser(user);
        registration.setEvent(event);
-       registration.setStatus("CONFIRMED");
+
+       if (event.getIsPaid()) {
+           registration.setStatus("PENDING");
+       } else {
+           registration.setStatus("CONFIRMED");
+       }
+
        registration.setRegisteredAt(LocalDate.now());
 
        eventRegistrationRepository.save(registration);
@@ -86,7 +96,6 @@ public class EventRegistrationService {
    // Walaa
 
     public void registerFamilyMember(Integer familyMemberId, Integer eventId) {
-
         FamilyMember familyMember = familyMemberRepository.findFamilyMemberById(familyMemberId);
 
         if (familyMember == null) {
@@ -101,14 +110,32 @@ public class EventRegistrationService {
         EventRegistration registration = new EventRegistration();
         registration.setUser(familyMember.getUser());
         registration.setEvent(event);
-        registration.setStatus("CONFIRMED");
+
+        if (event.getIsPaid()) {
+            registration.setStatus("PENDING");
+        } else {
+            registration.setStatus("CONFIRMED");
+        }
         registration.setRegisteredAt(LocalDate.now());
         eventRegistrationRepository.save(registration);
 
     }
 
 
-
+// Walaa
+private EventRegistrationOutDTO convertToOutDTO(EventRegistration registration) {
+    return new EventRegistrationOutDTO(
+            registration.getId(),
+            registration.getStatus(),
+            registration.getRegisteredAt(),
+            registration.getUser().getId(),
+            registration.getUser().getFullName(),
+            registration.getEvent().getId(),
+            registration.getEvent().getTitle(),
+            registration.getEvent().getIsPaid(),
+            registration.getEvent().getPrice()
+    );
+}
 
 
 

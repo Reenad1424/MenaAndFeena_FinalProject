@@ -284,8 +284,8 @@ public class OrderService {
         String description = "Marketplace order #" + order.getId();
         MoyasarChargeOutDTO charge = paymentService.chargeCard(moyasarAmount, "SAR", card, description);
 
-        if (charge.getId() != null) {
-            payment.setTransactionId(charge.getId());
+        if (charge.getMoyasarPaymentId() != null) {
+            payment.setTransactionId(charge.getMoyasarPaymentId());
         }
         if (charge.getTransactionUrl() != null) {
             payment.setPaymentUrl(charge.getTransactionUrl());

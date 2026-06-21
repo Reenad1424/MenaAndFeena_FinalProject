@@ -60,6 +60,18 @@ public class InitiativeController {
 
 
 
+    @PostMapping("/create/{userId}")
+    public ResponseEntity createInitiative(@PathVariable Integer userId, @Valid @RequestBody Initiative initiative) {
+
+        initiativeService.createInitiative(userId, initiative);
+
+        return ResponseEntity.status(200).body(new ApiResponse("Initiative created successfully"));
+    }
+
+
+
+
+
 
 
 }

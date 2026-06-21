@@ -2,6 +2,8 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
+import org.example.menaandfeena_finalproject.DTO.In.ReviewInDTO;
+import org.example.menaandfeena_finalproject.DTO.Out.ReviewOutDTO;
 import org.example.menaandfeena_finalproject.Model.Event;
 import org.example.menaandfeena_finalproject.Model.Initiative;
 import org.example.menaandfeena_finalproject.Model.Review;
@@ -64,7 +66,7 @@ public class ReviewService {
 
 // Walaa
 
-    public void addEventReview(Integer userId, Integer eventId, Review review) {
+    public void addEventReview(Integer userId, Integer eventId, ReviewInDTO reviewInDTO) {
 
         User user = userRepository.findUserById(userId);
 
@@ -77,37 +79,156 @@ public class ReviewService {
         if (event == null) {
             throw new ApiException("Event not found");
         }
-
+        Review review = new Review();
+        review.setComment(reviewInDTO.getComment());
+        review.setRating(reviewInDTO.getRating());
+        review.setCreatedAt(LocalDate.now());
         review.setUser(user);
         review.setEvent(event);
-        review.setCreatedAt(LocalDate.now());
-
         reviewRepository.save(review);
+
     }
 
 
 // Walaa
-public List<Review> getEventReviews(Integer eventId) {
+public List<ReviewOutDTO> getEventReviews(Integer eventId) {
+
     Event event = eventRepository.findEventById(eventId);
+
     if (event == null) {
         throw new ApiException("Event not found");
     }
-    return reviewRepository.findByEvent_Id(eventId);
+
+    return reviewRepository.findByEvent_Id(eventId)
+            .stream()
+            .map(this::convertToOutDTO)
+            .toList();
 }
 
 
 // Walaa
-public List<Review> getInitiativeReviews(Integer initiativeId) {
+public List<ReviewOutDTO> getInitiativeReviews(Integer initiativeId) {
 
     Initiative initiative = initiativeRepository.findInitiativeById(initiativeId);
     if (initiative == null) {
         throw new ApiException("Initiative not found");
     }
-    return reviewRepository.findByInitiative_Id(initiativeId);
+    return reviewRepository.findByInitiative_Id(initiativeId)
+            .stream()
+            .map(this::convertToOutDTO)
+            .toList();
 
 }
 
 // Walaa
+
+//    public List<ReviewOutDTO> getEventReviewsNewest(Integer eventId) {
+//
+//        Event event = eventRepository.findEventById(eventId);
+//
+//        if (event == null) {
+//            throw new ApiException("Event not found");
+//        }
+//
+//        return reviewRepository
+//                .findByEvent_IdOrderByCreatedAtDesc(eventId)
+//                .stream()
+//                .map(this::convertToOutDTO)
+//                .toList();
+//    }
+
+
+    //Walaa
+
+    public List<ReviewOutDTO> getEventReviewsNewest(Integer eventId) {
+
+        Event event = eventRepository.findEventById(eventId);
+
+        if (event == null) {
+            throw new ApiException("Event not found");
+        }
+
+        return reviewRepository.findByEvent_IdOrderByCreatedAtDesc(eventId)
+                .stream()
+                .map(this::convertToOutDTO)
+                .toList();
+    }
+
+// Walaa
+   public Double getAverageRating(Integer eventId) {
+
+    Event event = eventRepository.findEventById(eventId);
+
+    if (event == null) {
+        throw new ApiException("Event not found");
+    }
+
+    return reviewRepository.getAverageRatingByEventId(eventId);
+}
+
+// Walaa
+    public Double getPositiveRatio(Integer eventId) {
+
+        Event event = eventRepository.findEventById(eventId);
+
+        if (event == null) {
+            throw new ApiException("Event not found");
+        }
+
+        Integer totalReviews = reviewRepository.countByEvent_Id(eventId);
+        if (totalReviews == 0) {
+            return 0.0;
+        }
+        Integer positiveReviews = reviewRepository.countByEvent_IdAndRatingGreaterThanEqual(eventId,4);
+        return (positiveReviews * 100.0) / totalReviews;
+
+    }
+
+
+
+// Walaa
+public Double getAverageRatingByInitiative(Integer initiativeId) {
+    Initiative initiative = initiativeRepository.findInitiativeById(initiativeId);
+    if (initiative == null) {
+        throw new ApiException("Initiative not found");
+    }
+    return reviewRepository.getAverageRatingByInitiativeId(initiativeId);
+
+}
+
+// Walaa
+
+    public Double getPositiveRatioByInitiative(Integer initiativeId) {
+
+        Initiative initiative = initiativeRepository.findInitiativeById(initiativeId);
+
+        if (initiative == null) {
+            throw new ApiException("Initiative not found");
+        }
+        Integer totalReviews = reviewRepository.countByInitiative_Id(initiativeId);
+
+        if (totalReviews == 0) {
+            return 0.0;
+        }
+        Integer positiveReviews = reviewRepository.countByInitiative_IdAndRatingGreaterThanEqual(initiativeId, 4);
+
+        return (positiveReviews * 100.0) / totalReviews;
+
+    }
+
+
+
+// Walaa
+
+    private ReviewOutDTO convertToOutDTO(Review review) {
+        return new ReviewOutDTO(
+                review.getId(),
+                review.getComment(),
+                review.getCreatedAt(),
+                review.getRating()
+        );
+    }
+
 
 
 

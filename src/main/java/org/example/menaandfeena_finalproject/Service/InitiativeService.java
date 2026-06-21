@@ -3,7 +3,9 @@ package org.example.menaandfeena_finalproject.Service;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
 import org.example.menaandfeena_finalproject.Model.Initiative;
+import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.InitiativeRepository;
+import org.example.menaandfeena_finalproject.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -13,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InitiativeService {
     private final InitiativeRepository initiativeRepository;
-
+    private final UserRepository userRepository;
     public List<Initiative> getAllInitiatives() {
         return initiativeRepository.findAll();
     }
@@ -67,6 +69,23 @@ public Initiative getInitiativeById(Integer id) {
     }
     return initiative;
 
+}
+
+
+
+// Walaa
+public void createInitiative(Integer userId, Initiative initiative) {
+
+    User user = userRepository.findUserById(userId);
+
+    if (user == null) {
+        throw new ApiException("User not found");
+    }
+
+    initiative.setUser(user);
+    initiative.setStatus("ACTIVE");
+
+    initiativeRepository.save(initiative);
 }
 
 

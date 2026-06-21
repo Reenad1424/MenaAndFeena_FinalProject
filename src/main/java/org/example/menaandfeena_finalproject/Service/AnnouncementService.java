@@ -2,6 +2,8 @@ package org.example.menaandfeena_finalproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
+import org.example.menaandfeena_finalproject.DTO.In.AnnouncementInDTO;
+import org.example.menaandfeena_finalproject.DTO.Out.AnnouncementOutDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.PublisherContactOutDTO;
 import org.example.menaandfeena_finalproject.Model.Announcement;
 import org.example.menaandfeena_finalproject.Model.User;
@@ -18,9 +20,16 @@ public class AnnouncementService {
 
     private final AnnouncementRepository announcementRepository;
     private final UserRepository userRepository;
+    private final GeminiService geminiService;
+    private final OpenAIService openAIService;
 
-    public List<Announcement> getAllAnnouncements() {
-        return announcementRepository.findAll();
+
+    public List<AnnouncementOutDTO> getAllAnnouncements() {
+
+        return announcementRepository.findAll()
+                .stream()
+                .map(this::convertToOutDTO)
+                .toList();
     }
 
     public void addAnnouncement(Announcement announcement) {
@@ -55,7 +64,7 @@ public class AnnouncementService {
 
     //Walaa
 
-    public void createAnnouncement(Integer userId, Announcement announcement) {
+    public void createAnnouncement(Integer userId, AnnouncementInDTO announcementInDTO) {
 
         User user = userRepository.findUserById(userId);
 
@@ -63,29 +72,94 @@ public class AnnouncementService {
             throw new ApiException("User not found");
         }
 
+        Announcement announcement = new Announcement();
+
+        announcement.setTitle(announcementInDTO.getTitle());
+        announcement.setContent(announcementInDTO.getContent());
+
+//        String aiResult = openAIService.askAI(
+//                "You are a moderation system. Return only REJECTED if the text contains drugs, narcotics, weapons, scams, fraud, insults, offensive language, adult content, or prohibited sales. Return only APPROVED otherwise.",
+//                "Title: " + announcementInDTO.getTitle() +
+//                        "\nContent: " + announcementInDTO.getContent()
+//        );
+//       System.out.println("AI RESULT = " + aiResult);
+
         announcement.setUser(user);
-        announcement.setStatus("PENDING"); // عشان الAi لازم يراجعه
+        announcement.setStatus("PENDING");  // عشان الAi لازم يراجعه
         announcement.setCreatedAt(LocalDate.now());
+
         announcementRepository.save(announcement);
+       // return aiResult.trim().toUpperCase();
     }
 
+
+   // Walaa
+
+    public void moderateAnnouncement(Integer announcementId) {
+
+        Announcement announcement = announcementRepository.findAnnouncementById(announcementId);
+
+        if (announcement == null) {
+            throw new ApiException("Announcement not found");
+        }
+
+
+        String aiResult = openAIService.askAI(
+                "You are a moderation system. Return only REJECTED if the text contains drugs, narcotics, weapons, scams, fraud, insults, offensive language, adult content, or prohibited sales. Return only APPROVED otherwise.",
+                "Title: " + announcement.getTitle() +
+                        "\nContent: " + announcement.getContent()
+        );
+
+        announcement.setStatus(aiResult.trim().toUpperCase());
+        announcementRepository.save(announcement);
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // Walaa
-  public List<Announcement> searchAnnouncements(String keyword) {
-      return announcementRepository.findByTitleContainingIgnoreCase(keyword);
+  public List<AnnouncementOutDTO> searchAnnouncements(String keyword) {
+
+      return announcementRepository
+              .findByTitleContainingIgnoreCase(keyword)
+              .stream()
+              .map(this::convertToOutDTO)
+              .toList();
   }
 
 
 
-
 //Walaa
-public Announcement getAnnouncementById(Integer id) { // عرض تفاصيل الاعلان
-    Announcement announcement = announcementRepository.findAnnouncementById(id);
-    if (announcement == null) {
-        throw new ApiException("Announcement not found");
-    }
-          return announcement;
 
-}
+    public AnnouncementOutDTO getAnnouncementById(Integer id) {  // عرض تفاصيل الاعلان
+
+        Announcement announcement = announcementRepository.findAnnouncementById(id);
+
+        if (announcement == null) {
+            throw new ApiException("Announcement not found");
+        }
+
+        return convertToOutDTO(announcement);
+    }
+
+
 
 // Walaa
 public PublisherContactOutDTO getPublisherContact(Integer announcementId) { // نجيب صاحب الاعلان
@@ -103,13 +177,42 @@ public PublisherContactOutDTO getPublisherContact(Integer announcementId) { // �
 
     );
 }
+//Walaa
+    private AnnouncementOutDTO convertToOutDTO(Announcement announcement) {
+
+        return new AnnouncementOutDTO(
+                announcement.getId(),
+                announcement.getTitle(),
+                announcement.getContent(),
+                announcement.getStatus(),
+                announcement.getCreatedAt(),
+                announcement.getUser().getFullName()
+        );
+    }
+
+//Walaa
+//public String testAI() {
+//    return geminiService.moderateAnnouncement(
+//            "بيع أثاث مستعمل",
+//            "طاولة وكراسي بحالة ممتازة للتواصل"
+//    );
+//}
 
 
 
 
+    public String testOpenAI() {
 
-
-
+        return openAIService.askAI(
+//                "Act as a strict announcement moderation system for a neighborhood platform. " +
+//                        "Reject only if the announcement contains insults, offensive language, scam, fraud, illegal/prohibited sales, or inappropriate content. " +
+//                        "Otherwise approve it. " +
+//                        "Return only one word: APPROVED or REJECTED.",
+//                "Title: بيع أثاث مستعمل\nContent: طاولة وكراسي بحالة ممتازة للتواصل"
+                "You are a moderation system. Return only REJECTED if the text contains drugs. Return only APPROVED otherwise.",
+                "أبيع مخدرات للتواصل"
+        );
+    }
 
 
 

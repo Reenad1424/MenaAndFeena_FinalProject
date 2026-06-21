@@ -78,4 +78,8 @@ public class Event {
     private User creator;
 
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User user;
 }
