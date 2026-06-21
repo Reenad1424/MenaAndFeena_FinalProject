@@ -33,6 +33,8 @@ public class WhatsAppService {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
+        // TODO: This sends the WhatsApp message once without reading the response.
+        // Later we should remove this call and keep only the call below to avoid sending duplicate messages.
         restTemplate.postForEntity(url, request, String.class);
 
         ResponseEntity<String> response =

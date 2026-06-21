@@ -11,6 +11,8 @@ import org.example.menaandfeena_finalproject.Model.MayorProfile;
 import org.example.menaandfeena_finalproject.Model.Neighborhood;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ElectionRoundService {
 
+    private static final Logger log = LoggerFactory.getLogger(ElectionRoundService.class);
+
     private final ElectionRoundRepository electionRoundRepository;
     private final UserRepository userRepository;
     private final MayorCandidateRepository mayorCandidateRepository;
@@ -28,6 +32,7 @@ public class ElectionRoundService {
     private final MayorProfileRepository mayorProfileRepository;
     private final NeighborhoodRepository neighborhoodRepository;
     private final EmailService emailService;
+    private final WhatsAppService whatsAppService;
 
     //Reenad
     // =========================
@@ -282,6 +287,30 @@ public class ElectionRoundService {
                 savedMayorProfile,
                 winnerVotes
         );
+        trySendMayorAppointmentWhatsApp(winningUser, savedMayorProfile);
+    }
+
+    private void trySendMayorAppointmentWhatsApp(User mayor, MayorProfile mayorProfile) {
+        try {
+            if (mayor.getPhone() == null || mayor.getPhone().isBlank()) {
+                return;
+            }
+
+            String neighborhoodName =
+                    mayorProfile.getNeighborhood() == null
+                            ? "your neighborhood"
+                            : mayorProfile.getNeighborhood().getName();
+
+            String message =
+                    "Congratulations " + mayor.getFullName() + "\n\n" +
+                            "You have been appointed as mayor of " + neighborhoodName + ".\n" +
+                            "Term start: " + mayorProfile.getStartDate() + "\n" +
+                            "Term end: " + mayorProfile.getEndDate();
+
+            whatsAppService.sendWhatsAppMessage(mayor.getPhone(), message);
+        } catch (Exception e) {
+            log.error("Mayor appointment WhatsApp failed for user id {}.", mayor.getId(), e);
+        }
     }
 
 

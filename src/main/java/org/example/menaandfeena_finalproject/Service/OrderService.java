@@ -59,6 +59,7 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final EmailService emailService;
+    private final WhatsAppService whatsAppService;
     private final PaymentService paymentService;
 
     public List<OrderOutDTO> getAllOrders() {
@@ -438,6 +439,7 @@ public class OrderService {
         }
 
         trySendInvoiceEmail(order);
+        trySendInvoiceWhatsApp(order);
 
         return buildOrderOutDTO(order);
     }
@@ -454,6 +456,26 @@ public class OrderService {
             );
         } catch (Exception e) {
             log.error("Invoice email failed for paid order id {}. Payment/order updates were kept.", order.getId(), e);
+        }
+    }
+
+    private void trySendInvoiceWhatsApp(Orders order) {
+        try {
+            User buyer = order.getUser();
+            if (buyer == null || buyer.getPhone() == null || buyer.getPhone().isBlank()) {
+                return;
+            }
+
+            String message =
+                    "Mena And Feena invoice\n\n" +
+                            "Invoice number: " + order.getInvoiceNumber() + "\n" +
+                            "Order status: " + order.getStatus() + "\n" +
+                            "Total amount: " + formatAmount(order.getTotalAmount()) + "\n\n" +
+                            "Your invoice PDF was sent to your email.";
+
+            whatsAppService.sendWhatsAppMessage(buyer.getPhone(), message);
+        } catch (Exception e) {
+            log.error("Invoice WhatsApp message failed for paid order id {}. Payment/order updates were kept.", order.getId(), e);
         }
     }
 
