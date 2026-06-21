@@ -4,79 +4,122 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.MayorProfileInDTO;
+import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Service.MayorProfileService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/mayor-profile")
+@RequestMapping("/api/v1/mayor-profiles")
 @RequiredArgsConstructor
 public class MayorProfileController {
+
     private final MayorProfileService mayorProfileService;
 
-    @GetMapping("/get")
+    @GetMapping("/get-all")
     public ResponseEntity<?> getAllMayorProfiles() {
-        return ResponseEntity.status(200)
-                .body(mayorProfileService.getAllMayorProfiles());
+        return ResponseEntity.status(200).body(
+                mayorProfileService.getAllMayorProfiles()
+        );
     }
 
     @PostMapping("/add")
-    public ResponseEntity<?> addMayorProfile(@Valid @RequestBody MayorProfileInDTO mayorProfileInDTO) {
-
+    public ResponseEntity<?> addMayorProfile(
+            @Valid @RequestBody MayorProfileInDTO mayorProfileInDTO
+    ) {
         mayorProfileService.addMayorProfile(mayorProfileInDTO);
 
-        return ResponseEntity.status(200).body(new ApiResponse("Mayor profile added successfully"));
+        return ResponseEntity.status(201).body(
+                new ApiResponse("Mayor profile added successfully")
+        );
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateMayorProfile(@PathVariable Integer id, @Valid @RequestBody MayorProfileInDTO mayorProfileInDTO) {
-
-        mayorProfileService.updateMayorProfile(id, mayorProfileInDTO);
-
-        return ResponseEntity.status(200).body(new ApiResponse("Mayor profile updated successfully"));
-    }
-
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteMayorProfile(@PathVariable Integer id) {
-
-        mayorProfileService.deleteMayorProfile(id);
-
-        return ResponseEntity.status(200).body(new ApiResponse("Mayor profile deleted successfully"));
-    }
-
-        @GetMapping("/analytics/{id}")
-        public ResponseEntity<?> getAnalytics(@PathVariable Integer id) {
-            return ResponseEntity.status(200).body(mayorProfileService.getMayorAnalytics(id));
-        }
-
-        @GetMapping("/reports/{id}")
-        public ResponseEntity<?> getReports(@PathVariable Integer id) {
-            return ResponseEntity.status(200).body(mayorProfileService.getMayorReports(id));
-        }
-    @GetMapping("/weekly/{id}")
-    public void weekly(@PathVariable Integer id) {
-        mayorProfileService.sendWeeklyReport(id);
-    }
-
-    @GetMapping("/performance/{id}")
-    public void performance(@PathVariable Integer id) {
-        mayorProfileService.sendPerformanceReport(id);
-    }
-
-    @GetMapping("/satisfaction/{id}")
-    public void satisfaction(@PathVariable Integer id) {
-        mayorProfileService.sendSatisfactionReport(id);
-    }
-
-    @PostMapping("/resend-appointment-email/{mayorId}")
-    public ResponseEntity<?> resendMayorAppointmentEmail(
-            @PathVariable Integer mayorId
+    @PutMapping("/update/{mayorProfileId}")
+    public ResponseEntity<?> updateMayorProfile(
+            @PathVariable Integer mayorProfileId,
+            @Valid @RequestBody MayorProfileInDTO mayorProfileInDTO
     ) {
-        mayorProfileService.resendMayorAppointmentEmail(mayorId);
+        mayorProfileService.updateMayorProfile(
+                mayorProfileId,
+                mayorProfileInDTO
+        );
+
+        return ResponseEntity.status(200).body(
+                new ApiResponse("Mayor profile updated successfully")
+        );
+    }
+
+    @DeleteMapping("/delete/{mayorProfileId}")
+    public ResponseEntity<?> deleteMayorProfile(
+            @PathVariable Integer mayorProfileId
+    ) {
+        mayorProfileService.deleteMayorProfile(mayorProfileId);
+
+        return ResponseEntity.status(200).body(
+                new ApiResponse("Mayor profile deleted successfully")
+        );
+    }
+
+    @GetMapping("/analytics")
+    public ResponseEntity<?> getAnalytics(
+            @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.status(200).body(
+                mayorProfileService.getMayorAnalytics(user.getId())
+        );
+    }
+
+    @GetMapping("/reports")
+    public ResponseEntity<?> getReports(
+            @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.status(200).body(
+                mayorProfileService.getMayorReports(user.getId())
+        );
+    }
+
+    @GetMapping("/weekly")
+    public ResponseEntity<?> weekly(
+            @AuthenticationPrincipal User user
+    ) {
+        mayorProfileService.sendWeeklyReport(user.getId());
+
+        return ResponseEntity.status(200).body(
+                new ApiResponse("تم إرسال التقرير الأسبوعي للعمدة")
+        );
+    }
+
+    @GetMapping("/performance")
+    public ResponseEntity<?> performance(
+            @AuthenticationPrincipal User user
+    ) {
+        mayorProfileService.sendPerformanceReport(user.getId());
+
+        return ResponseEntity.status(200).body(
+                new ApiResponse("تم إرسال تقرير أداء الحي للعمدة")
+        );
+    }
+
+    @GetMapping("/satisfaction")
+    public ResponseEntity<?> satisfaction(
+            @AuthenticationPrincipal User user
+    ) {
+        mayorProfileService.sendSatisfactionReport(user.getId());
+
+        return ResponseEntity.status(200).body(
+                new ApiResponse("تم إرسال تقرير رضا السكان للعمدة")
+        );
+    }
+
+    @PostMapping("/resend-appointment-email")
+    public ResponseEntity<?> resendMayorAppointmentEmail(
+            @AuthenticationPrincipal User user
+    ) {
+        mayorProfileService.resendMayorAppointmentEmail(user.getId());
 
         return ResponseEntity.status(200).body(
                 new ApiResponse("تم إعادة إرسال رسالة تنصيب العمدة")
         );
     }
-    }
-
+}
