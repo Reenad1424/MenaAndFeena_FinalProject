@@ -96,8 +96,46 @@ public class ConfigSecurity {
                                 "/api/v1/neighborhoods/get-all",
                                 "/api/v1/neighborhoods/add",
                                 "/api/v1/neighborhoods/update/**",
-                                "/api/v1/neighborhoods/delete/**"
+                                "/api/v1/neighborhoods/delete/**",
+                                "/api/v1/election-rounds/delete/**",
+                                "/api/v1/issue-reports/get-all",
+                                "/api/v1/issue-reports/admin/**",
+                                "/api/v1/issue-reports/status/**",
+                                "/api/v1/issue-reports/priority/**",
+                                "/api/v1/issue-reports/category/**",
+                                "/api/v1/issue-reports/admin/neighborhood/**",
+                                "/api/v1/issue-reports/search",
+                                "/api/v1/issue-reports/delete/**",
+                                "/api/v1/orders/get",
+                                "/api/v1/orders/delete/**",
+                                "/api/v1/carts/get",
+                                "/api/v1/carts/delete/**",
+                                "/api/v1/cart-items/get",
+                                "/api/v1/cart-items/delete/**",
+                                "/api/v1/order-items/add",
+                                "/api/v1/order-items/get",
+                                "/api/v1/order-items/update/**",
+                                "/api/v1/order-items/delete/**",
+                                "/api/v1/marketplace/get",
+                                "/api/v1/marketplace/admin/**",
+                                "/api/v1/marketplace/type/**",
+                                "/api/v1/marketplace-images/add",
+                                "/api/v1/marketplace-images/upload/**",
+                                "/api/v1/marketplace-images/get",
+                                "/api/v1/insurance/**"
                         ).hasAuthority("ADMIN")
+
+                        // =========================
+                        // MAYOR ONLY
+                        // =========================
+
+                        .requestMatchers(
+                                "/api/v1/mayor-profiles/**",
+                                "/api/v1/mayor-reports/**",
+                                "/api/v1/issue-reports/mayor-report/**",
+                                "/api/v1/issue-reports/{id}/start-progress",
+                                "/api/v1/issue-reports/{id}/complete"
+                        ).hasAuthority("MAYOR")
 
                         // =========================
                         // USER + MAYOR
@@ -114,6 +152,15 @@ public class ConfigSecurity {
                                 "/api/v1/family-members/**",
                                 "/api/v1/landmarks/sync",
                                 "/api/v1/landmarks/nearby",
+                                "/api/v1/landmarks/dashboard",
+                                "/api/v1/issue-reports/**",
+                                "/api/v1/tickets/**",
+                                "/api/v1/orders/**",
+                                "/api/v1/carts/**",
+                                "/api/v1/order-items/**",
+                                "/api/v1/marketplace/**",
+                                "/api/v1/marketplace-images/**",
+                                "/api/v1/inquiry/**",
                                 "/api/v1/landmarks/dashboard",
                                 "/api/v1/mayor-votes/vote/**",
                                 "/api/v1/mayor-candidates/get-all",

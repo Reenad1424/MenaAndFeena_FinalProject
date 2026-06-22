@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/event-registration")
 @RequiredArgsConstructor
-public class EventRegistrationControlle {
+public class EventRegistrationController {
 
     private final EventRegistrationService eventRegistrationService;
 
@@ -52,13 +52,14 @@ public class EventRegistrationControlle {
         return ResponseEntity.status(200).body(new ApiResponse("Family member registered successfully"));
     }
 
+    @GetMapping("/my/{userId}")
+    public ResponseEntity<?> getMyEventRegistrations(@PathVariable Integer userId) {
+        return ResponseEntity.status(200).body(eventRegistrationService.getMyEventRegistrations(userId));
+    }
 
-
-
-
-
-
-
-
+    @GetMapping("/event/{eventId}/attendees/{ownerId}")
+    public ResponseEntity<?> getEventAttendees(@PathVariable Integer eventId, @PathVariable Integer ownerId) {
+        return ResponseEntity.status(200).body(eventRegistrationService.getEventAttendees(eventId, ownerId));
+    }
 
 }

@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -30,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PaymentService {
     private final EventRegistrationRepository eventRegistrationRepository;
+    private final TicketService ticketService;
     @Value("${moyasar.api.key}")
 
     private String apiKey;
@@ -226,7 +226,8 @@ public class PaymentService {
 
         if (result.getStatus().equalsIgnoreCase("paid")) {
             registration.setStatus("CONFIRMED");
-            eventRegistrationRepository.save(registration);
+            EventRegistration savedRegistration = eventRegistrationRepository.save(registration);
+            ticketService.createTicketIfMissing(savedRegistration);
         }
 
         return result;
@@ -252,7 +253,8 @@ public class PaymentService {
 
             if (registration != null) {
                 registration.setStatus("CONFIRMED");
-                eventRegistrationRepository.save(registration);
+                EventRegistration savedRegistration = eventRegistrationRepository.save(registration);
+                ticketService.createTicketIfMissing(savedRegistration);
             }
 
         } else {
@@ -323,12 +325,5 @@ public class PaymentService {
             throw new ApiException("Could not build payment invoice: " + e.getMessage());
         }
     }
-
-
-
-
-
-
-
 
 }

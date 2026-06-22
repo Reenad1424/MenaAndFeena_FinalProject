@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.MarketPlaceItemImageInDTO;
+import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Service.MarketPlaceItemImageService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,9 +32,11 @@ public class MarketPlaceItemImageController {
         return ResponseEntity.status(200).body(new ApiResponse("Product image uploaded"));
     }
 
-    @PostMapping(value = "/user/{userId}/product/{marketPlaceItemId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadProductImageFile(@PathVariable Integer userId, @PathVariable Integer marketPlaceItemId, @RequestParam("image") MultipartFile image) {
-        return ResponseEntity.status(200).body(marketPlaceItemImageService.uploadProductImageFile(userId, marketPlaceItemId, image));
+    @PostMapping(value = "/product/{marketPlaceItemId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadProductImageFile(@PathVariable Integer marketPlaceItemId,
+                                                    @RequestParam("image") MultipartFile image,
+                                                    @AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(marketPlaceItemImageService.uploadProductImageFile(user.getId(), marketPlaceItemId, image));
     }
 
     // TODO SECURITY: ADMIN/DEBUG general listing.
@@ -46,17 +50,18 @@ public class MarketPlaceItemImageController {
         return ResponseEntity.status(200).body(marketPlaceItemImageService.getAllImagesOfProduct(marketPlaceItemId));
     }
 
-    // TODO SECURITY: ADMIN/DEBUG only. User-facing flow should upload a new validated image file.
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateMarketPlaceItemImage(@PathVariable Integer id, @RequestBody @Valid MarketPlaceItemImageInDTO marketPlaceItemImageInDTO) {
-        marketPlaceItemImageService.updateMarketPlaceItemImage(id, marketPlaceItemImageInDTO);
+    public ResponseEntity<?> updateMarketPlaceItemImage(@PathVariable Integer id,
+                                                        @AuthenticationPrincipal User user,
+                                                        @RequestBody @Valid MarketPlaceItemImageInDTO marketPlaceItemImageInDTO) {
+        marketPlaceItemImageService.updateMarketPlaceItemImage(id, user.getId(), marketPlaceItemImageInDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Market place item image updated"));
     }
 
-    // TODO SECURITY: ADMIN/DEBUG only unless later changed to an owner-scoped delete endpoint.
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteMarketPlaceItemImage(@PathVariable Integer id) {
-        marketPlaceItemImageService.deleteMarketPlaceItemImage(id);
+    public ResponseEntity<?> deleteMarketPlaceItemImage(@PathVariable Integer id,
+                                                        @AuthenticationPrincipal User user) {
+        marketPlaceItemImageService.deleteMarketPlaceItemImage(id, user.getId());
         return ResponseEntity.status(200).body(new ApiResponse("Market place item image deleted"));
     }
 }

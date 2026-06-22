@@ -11,13 +11,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/mayor-profiles")
+@RequestMapping("/api/v1/mayor-profile")
 @RequiredArgsConstructor
 public class MayorProfileController {
-
     private final MayorProfileService mayorProfileService;
 
-    @GetMapping("/get-all")
+    @GetMapping("/get")
     public ResponseEntity<?> getAllMayorProfiles() {
         return ResponseEntity.status(200).body(
                 mayorProfileService.getAllMayorProfiles()

@@ -3,6 +3,7 @@ package org.example.menaandfeena_finalproject.Service;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
 import org.example.menaandfeena_finalproject.DTO.In.EventRegistrationInDTO;
+import org.example.menaandfeena_finalproject.DTO.Out.EventAttendeeOutDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.EventRegistrationOutDTO;
 import org.example.menaandfeena_finalproject.Model.Event;
 import org.example.menaandfeena_finalproject.Model.EventRegistration;
@@ -15,6 +16,7 @@ import org.example.menaandfeena_finalproject.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,6 +26,7 @@ public class EventRegistrationService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final FamilyMemberRepository familyMemberRepository;
+    private final TicketService ticketService;
 
 
     public List<EventRegistrationOutDTO> getAllEventRegistrations() {
@@ -65,7 +68,10 @@ public class EventRegistrationService {
             eventRegistration.setFamilyMember(familyMember);
         }
 
-        eventRegistrationRepository.save(eventRegistration);
+        EventRegistration savedRegistration = eventRegistrationRepository.save(eventRegistration);
+        if ("CONFIRMED".equals(savedRegistration.getStatus())) {
+            ticketService.createTicketIfMissing(savedRegistration);
+        }
     }
 
     public void updateEventRegistration(Integer id, EventRegistrationInDTO dto) {
@@ -163,7 +169,10 @@ public class EventRegistrationService {
 
        registration.setRegisteredAt(LocalDate.now());
 
-       eventRegistrationRepository.save(registration);
+       EventRegistration savedRegistration = eventRegistrationRepository.save(registration);
+       if ("CONFIRMED".equals(savedRegistration.getStatus())) {
+           ticketService.createTicketIfMissing(savedRegistration);
+       }
    }
 
 
@@ -217,8 +226,46 @@ public class EventRegistrationService {
             registration.setStatus("CONFIRMED");
         }
         registration.setRegisteredAt(LocalDate.now());
-        eventRegistrationRepository.save(registration);
+        EventRegistration savedRegistration = eventRegistrationRepository.save(registration);
+        if ("CONFIRMED".equals(savedRegistration.getStatus())) {
+            ticketService.createTicketIfMissing(savedRegistration);
+        }
 
+    }
+
+    public List<EventRegistrationOutDTO> getMyEventRegistrations(Integer userId) {
+        User user = userRepository.findUserById(userId);
+        if (user == null) {
+            throw new ApiException("User not found");
+        }
+
+        return eventRegistrationRepository.findByUserId(userId)
+                .stream()
+                .map(this::convertToOutDTO)
+                .toList();
+    }
+
+    public List<EventAttendeeOutDTO> getEventAttendees(Integer eventId, Integer ownerId) {
+        User owner = userRepository.findUserById(ownerId);
+        if (owner == null) {
+            throw new ApiException("User not found");
+        }
+
+        Event event = eventRepository.findEventById(eventId);
+        if (event == null) {
+            throw new ApiException("Event not found");
+        }
+
+        if (event.getUser() == null || !event.getUser().getId().equals(ownerId)) {
+            throw new ApiException("Only the event owner can view attendees");
+        }
+
+        List<EventAttendeeOutDTO> attendees = new ArrayList<>();
+        for (EventRegistration registration : eventRegistrationRepository.findByEventId(eventId)) {
+            attendees.add(ticketService.toAttendeeOutDTO(registration));
+        }
+
+        return attendees;
     }
 
 

@@ -141,10 +141,64 @@ public class MarketPlaceItemImageService {
         marketPlaceItemImageRepository.save(image);
     }
 
+    public void updateMarketPlaceItemImage(Integer id, Integer userId, MarketPlaceItemImageInDTO marketPlaceItemImageInDTO) {
+        User user = userRepository.findUserById(userId);
+        if (user == null) {
+            throw new ApiException("User not found");
+        }
+
+        MarketPlaceItemImage image = marketPlaceItemImageRepository.findMarketPlaceItemImageById(id);
+        if (image == null) {
+            throw new ApiException("Market place item image not found");
+        }
+
+        MarketPlaceItem currentItem = image.getMarketPlaceItem();
+        if (currentItem == null) {
+            throw new ApiException("Market place item not found");
+        }
+        if (currentItem.getUser() == null || !currentItem.getUser().getId().equals(user.getId())) {
+            throw new ApiException("Marketplace item does not belong to this user");
+        }
+
+        MarketPlaceItem newItem = marketPlaceItemRepository.findMarketPlaceItemById(marketPlaceItemImageInDTO.getMarketPlaceItemId());
+        if (newItem == null) {
+            throw new ApiException("Market place item not found");
+        }
+        if (newItem.getUser() == null || !newItem.getUser().getId().equals(user.getId())) {
+            throw new ApiException("Marketplace item does not belong to this user");
+        }
+
+        image.setImageUrl(marketPlaceItemImageInDTO.getImageUrl());
+        image.setMarketPlaceItem(newItem);
+        marketPlaceItemImageRepository.save(image);
+    }
+
     public void deleteMarketPlaceItemImage(Integer id) {
         MarketPlaceItemImage image = marketPlaceItemImageRepository.findMarketPlaceItemImageById(id);
         if (image == null) {
             throw new ApiException("Market place item image not found");
+        }
+
+        marketPlaceItemImageRepository.delete(image);
+    }
+
+    public void deleteMarketPlaceItemImage(Integer id, Integer userId) {
+        User user = userRepository.findUserById(userId);
+        if (user == null) {
+            throw new ApiException("User not found");
+        }
+
+        MarketPlaceItemImage image = marketPlaceItemImageRepository.findMarketPlaceItemImageById(id);
+        if (image == null) {
+            throw new ApiException("Market place item image not found");
+        }
+
+        MarketPlaceItem item = image.getMarketPlaceItem();
+        if (item == null) {
+            throw new ApiException("Market place item not found");
+        }
+        if (item.getUser() == null || !item.getUser().getId().equals(user.getId())) {
+            throw new ApiException("Marketplace item does not belong to this user");
         }
 
         marketPlaceItemImageRepository.delete(image);

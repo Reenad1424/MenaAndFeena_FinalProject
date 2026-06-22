@@ -4,10 +4,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.IssueReportInDTO;
+import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Service.IssueReportService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,92 +20,97 @@ public class IssueReportController {
 
     private final IssueReportService issueReportService;
 
+    // ADMIN/DEBUG
     @GetMapping("/get-all")
     public ResponseEntity<?> getAll() {
         return ResponseEntity.status(200).body(issueReportService.getAll());
     }
 
-    @PostMapping("/user/{reporterId}/add")
-    public ResponseEntity<?> createIssueReport(@PathVariable Integer reporterId, @RequestBody @Valid IssueReportInDTO issueReportInDTO) {
-        return ResponseEntity.status(200).body(issueReportService.createIssueReport(reporterId, issueReportInDTO));
+    @PostMapping("/add")
+    public ResponseEntity<?> createIssueReport(@AuthenticationPrincipal User user,
+                                               @RequestBody @Valid IssueReportInDTO issueReportInDTO) {
+        return ResponseEntity.status(200).body(issueReportService.createIssueReport(user.getId(), issueReportInDTO));
     }
 
-    @GetMapping("/{id}")
+    // ADMIN/DEBUG
+    @GetMapping("/admin/{id}")
     public ResponseEntity<?> getIssueReportById(@PathVariable Integer id) {
         return ResponseEntity.status(200).body(issueReportService.getIssueReportById(id));
     }
 
+    // ADMIN/DEBUG
     @GetMapping("/status/{status}")
     public ResponseEntity<?> getIssueReportsByStatus(@PathVariable String status) {
         return ResponseEntity.status(200).body(issueReportService.getIssueReportsByStatus(status));
     }
 
+    // ADMIN/DEBUG
     @GetMapping("/priority/{priority}")
     public ResponseEntity<?> getIssueReportsByPriority(@PathVariable String priority) {
         return ResponseEntity.status(200).body(issueReportService.getIssueReportsByPriority(priority));
     }
 
+    // ADMIN/DEBUG
     @GetMapping("/category/{category}")
     public ResponseEntity<?> getIssueReportsByCategory(@PathVariable String category) {
         return ResponseEntity.status(200).body(issueReportService.getIssueReportsByCategory(category));
     }
 
-    @GetMapping("/my/{userId}")
-    public ResponseEntity<?> getMyIssueReports(@PathVariable Integer userId) {
-        // TODO: later this will use the authenticated user from Spring Security/JWT.
-        return ResponseEntity.status(200).body(issueReportService.getMyIssueReports(userId));
+    @GetMapping("/my")
+    public ResponseEntity<?> getMyIssueReports(@AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(issueReportService.getMyIssueReports(user.getId()));
     }
 
-    @GetMapping("/user/{userId}/neighborhood")
-    public ResponseEntity<?> getUserNeighborhoodReports(@PathVariable Integer userId) {
-        return ResponseEntity.status(200).body(issueReportService.getUserNeighborhoodReports(userId));
+    @GetMapping("/neighborhood")
+    public ResponseEntity<?> getUserNeighborhoodReports(@AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(issueReportService.getUserNeighborhoodReports(user.getId()));
     }
 
-    @GetMapping("/user/{userId}/my-reports")
-    public ResponseEntity<?> getUserMyReports(@PathVariable Integer userId) {
-        return ResponseEntity.status(200).body(issueReportService.getUserMyReports(userId));
+    @GetMapping("/my-reports")
+    public ResponseEntity<?> getUserMyReports(@AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(issueReportService.getUserMyReports(user.getId()));
     }
 
-    @GetMapping("/user/{userId}/report/{reportId}")
-    public ResponseEntity<?> getUserIssueReportById(@PathVariable Integer userId, @PathVariable Integer reportId) {
-        // TODO: راجع لاحقاً عزل الأحياء هنا؛ المفترض أن المستخدم لا يستطيع فتح بلاغ خارج حيه.
-        // حالياً نترك المنطق كما هو للاختبار، وبعد تطبيق JWT سنربطه بالمستخدم المسجل دخوله.
-        return ResponseEntity.status(200).body(issueReportService.getUserIssueReportById(userId, reportId));
+    @GetMapping("/report/{reportId}")
+    public ResponseEntity<?> getUserIssueReportById(@AuthenticationPrincipal User user,
+                                                    @PathVariable Integer reportId) {
+        return ResponseEntity.status(200).body(issueReportService.getUserIssueReportById(user.getId(), reportId));
     }
 
-    @PostMapping(value = "/user/{userId}/report/{reportId}/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadIssueReportImage(@PathVariable Integer userId, @PathVariable Integer reportId, @RequestParam("image") MultipartFile image) {
-        return ResponseEntity.status(200).body(issueReportService.uploadIssueReportImage(userId, reportId, image));
+    @PostMapping(value = "/report/{reportId}/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadIssueReportImage(@AuthenticationPrincipal User user,
+                                                    @PathVariable Integer reportId,
+                                                    @RequestParam("image") MultipartFile image) {
+        return ResponseEntity.status(200).body(issueReportService.uploadIssueReportImage(user.getId(), reportId, image));
     }
 
-    @GetMapping("/user/{userId}/status/{status}")
-    public ResponseEntity<?> getUserIssueReportsByStatus(@PathVariable Integer userId, @PathVariable String status) {
-        return ResponseEntity.status(200).body(issueReportService.getUserIssueReportsByStatus(userId, status));
+    @GetMapping("/me/status/{status}")
+    public ResponseEntity<?> getUserIssueReportsByStatus(@AuthenticationPrincipal User user,
+                                                         @PathVariable String status) {
+        return ResponseEntity.status(200).body(issueReportService.getUserIssueReportsByStatus(user.getId(), status));
     }
 
-    @GetMapping("/user/{userId}/priority/{priority}")
-    public ResponseEntity<?> getUserIssueReportsByPriority(@PathVariable Integer userId, @PathVariable String priority) {
-        return ResponseEntity.status(200).body(issueReportService.getUserIssueReportsByPriority(userId, priority));
+    @GetMapping("/me/priority/{priority}")
+    public ResponseEntity<?> getUserIssueReportsByPriority(@AuthenticationPrincipal User user,
+                                                           @PathVariable String priority) {
+        return ResponseEntity.status(200).body(issueReportService.getUserIssueReportsByPriority(user.getId(), priority));
     }
 
-    @GetMapping("/user/{userId}/category/{category}")
-    public ResponseEntity<?> getUserIssueReportsByCategory(@PathVariable Integer userId, @PathVariable String category) {
-        return ResponseEntity.status(200).body(issueReportService.getUserIssueReportsByCategory(userId, category));
+    @GetMapping("/me/category/{category}")
+    public ResponseEntity<?> getUserIssueReportsByCategory(@AuthenticationPrincipal User user,
+                                                           @PathVariable String category) {
+        return ResponseEntity.status(200).body(issueReportService.getUserIssueReportsByCategory(user.getId(), category));
     }
 
-    @GetMapping("/user/{userId}/search")
-    public ResponseEntity<?> searchUserIssueReports(@PathVariable Integer userId, @RequestParam String keyword) {
-        return ResponseEntity.status(200).body(issueReportService.searchUserIssueReports(userId, keyword));
+    @GetMapping("/me/search")
+    public ResponseEntity<?> searchUserIssueReports(@AuthenticationPrincipal User user,
+                                                    @RequestParam String keyword) {
+        return ResponseEntity.status(200).body(issueReportService.searchUserIssueReports(user.getId(), keyword));
     }
 
-    @GetMapping("/mayor-report/{userId}/pdf")
-    public ResponseEntity<?> generateMayorIssueReportPdf(@PathVariable Integer userId) {
-        // TODO: راجع لاحقاً تحقق صلاحية العمدة؛ يجب أن يعمل فقط للعمدة الفعال في نفس الحي.
-        // حالياً userId مؤقت قبل Spring Security/JWT، وبعدها سيستبدل بالمستخدم المصادق عليه.
-        // هذا endpoint مخصص لتحميل تقرير PDF للعمدة.
-        // الـ Service هو الذي يتحقق من صلاحية العمدة ويولد محتوى الـ PDF كـ byte[].
-        // هنا في الـ Controller نجهز فقط استجابة HTTP: نوع الملف PDF واسم الملف عند التحميل.
-        byte[] pdfBytes = issueReportService.generateMayorIssueReportPdf(userId);
+    @GetMapping("/mayor-report/pdf")
+    public ResponseEntity<?> generateMayorIssueReportPdf(@AuthenticationPrincipal User user) {
+        byte[] pdfBytes = issueReportService.generateMayorIssueReportPdf(user.getId());
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
@@ -112,39 +119,37 @@ public class IssueReportController {
         return ResponseEntity.status(200).headers(headers).body(pdfBytes);
     }
 
-    @PostMapping("/mayor-report/{userId}/pdf/email")
-    public ResponseEntity<?> sendMayorIssueReportPdfEmail(@PathVariable Integer userId) {
-        // هذا endpoint منفصل عن التحميل: يولد نفس تقرير PDF ويرسله كمرفق على إيميل العمدة.
-        // فصلناه حتى نقدر نختبر التحميل وحده، ونختبر الإرسال بالبريد وحده بدون خلط بين السلوكين.
-        issueReportService.sendMayorIssueReportPdfEmail(userId);
+    @PostMapping("/mayor-report/pdf/email")
+    public ResponseEntity<?> sendMayorIssueReportPdfEmail(@AuthenticationPrincipal User user) {
+        issueReportService.sendMayorIssueReportPdfEmail(user.getId());
         return ResponseEntity.status(200).body(new ApiResponse("Issue report PDF sent to mayor email"));
     }
 
-    @GetMapping("/neighborhood/{neighborhoodId}")
+    // ADMIN/DEBUG
+    @GetMapping("/admin/neighborhood/{neighborhoodId}")
     public ResponseEntity<?> getIssueReportsByNeighborhood(@PathVariable Integer neighborhoodId) {
         return ResponseEntity.status(200).body(issueReportService.getIssueReportsByNeighborhood(neighborhoodId));
     }
 
+    // ADMIN/DEBUG
     @GetMapping("/search")
     public ResponseEntity<?> searchIssueReports(@RequestParam String keyword) {
         return ResponseEntity.status(200).body(issueReportService.searchIssueReports(keyword));
     }
 
-    // TODO: بعد إضافة Spring Security/JWT نحذف userId من الرابط ونأخذ العمدة من المستخدم المسجل دخوله.
-    @PutMapping("/{id}/start-progress/{userId}")
-    public ResponseEntity<?> startProgress(@PathVariable Integer id, @PathVariable Integer userId) {
-        issueReportService.startProgress(id, userId);
+    @PutMapping("/{id}/start-progress")
+    public ResponseEntity<?> startProgress(@PathVariable Integer id, @AuthenticationPrincipal User user) {
+        issueReportService.startProgress(id, user.getId());
         return ResponseEntity.status(200).body(new ApiResponse("Issue report moved to in progress successfully"));
     }
 
-    // TODO: بعد إضافة Spring Security/JWT نحذف userId من الرابط ونأخذ العمدة من المستخدم المسجل دخوله.
-    @PutMapping("/{id}/complete/{userId}")
-    public ResponseEntity<?> completeReport(@PathVariable Integer id, @PathVariable Integer userId) {
-        issueReportService.completeReport(id, userId);
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<?> completeReport(@PathVariable Integer id, @AuthenticationPrincipal User user) {
+        issueReportService.completeReport(id, user.getId());
         return ResponseEntity.status(200).body(new ApiResponse("Issue report completed successfully"));
     }
 
-    // TODO: بعد إضافة Spring Security/JWT هذا endpoint يجب أن يكون للـ ADMIN فقط لأنه يعدل بيانات البلاغ كاملة.
+    // ADMIN/DEBUG
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         issueReportService.delete(id);

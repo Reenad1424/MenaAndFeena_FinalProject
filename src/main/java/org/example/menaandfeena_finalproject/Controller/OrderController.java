@@ -6,11 +6,13 @@ import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.Api.ApiException;
 import org.example.menaandfeena_finalproject.DTO.In.OrderPaymentRequestDTO;
 import org.example.menaandfeena_finalproject.Model.Orders;
+import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.OrderRepository;
 import org.example.menaandfeena_finalproject.Service.OrderService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,42 +23,46 @@ public class OrderController {
     private final OrderService orderService;
     private final OrderRepository orderRepository;
 
-    @PostMapping("/checkout-cart/{userId}")
-    public ResponseEntity<?> checkoutCart(@PathVariable Integer userId) {
-        return ResponseEntity.status(200).body(orderService.checkoutCart(userId));
+    @PostMapping("/checkout-cart")
+    public ResponseEntity<?> checkoutCart(@AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(orderService.checkoutCart(user.getId()));
     }
 
     @GetMapping("/my-orders")
-    public ResponseEntity<?> getMyOrders(@RequestParam Integer userId) {
-        return ResponseEntity.status(200).body(orderService.getMyOrders(userId));
+    public ResponseEntity<?> getMyOrders(@AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(orderService.getMyOrders(user.getId()));
     }
 
     @GetMapping("/my-sales")
-    public ResponseEntity<?> getMySales(@RequestParam Integer userId) {
-        return ResponseEntity.status(200).body(orderService.getMySales(userId));
+    public ResponseEntity<?> getMySales(@AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(orderService.getMySales(user.getId()));
     }
 
-    @PutMapping("/complete/{orderId}/{userId}")
-    public ResponseEntity<?> completeOrder(@PathVariable Integer orderId, @PathVariable Integer userId) {
-        orderService.completeOrder(orderId, userId);
+    @PutMapping("/complete/{orderId}")
+    public ResponseEntity<?> completeOrder(@PathVariable Integer orderId,
+                                           @AuthenticationPrincipal User user) {
+        orderService.completeOrder(orderId, user.getId());
         return ResponseEntity.status(200).body(new ApiResponse("Order completed"));
     }
 
-    @PutMapping("/cancel/{orderId}/{userId}")
-    public ResponseEntity<?> cancelOrder(@PathVariable Integer orderId, @PathVariable Integer userId) {
-        orderService.cancelOrder(orderId, userId);
+    @PutMapping("/cancel/{orderId}")
+    public ResponseEntity<?> cancelOrder(@PathVariable Integer orderId,
+                                         @AuthenticationPrincipal User user) {
+        orderService.cancelOrder(orderId, user.getId());
         return ResponseEntity.status(200).body(new ApiResponse("Order cancelled"));
     }
 
-    @PostMapping("/{orderId}/user/{userId}/payment")
-    public ResponseEntity<?> payOrderWithCard(@PathVariable Integer orderId, @PathVariable Integer userId,
+    @PostMapping("/{orderId}/payment")
+    public ResponseEntity<?> payOrderWithCard(@PathVariable Integer orderId,
+                                              @AuthenticationPrincipal User user,
                                               @RequestBody @Valid OrderPaymentRequestDTO card) {
-        return ResponseEntity.status(200).body(orderService.payOrderWithCard(orderId, userId, card));
+        return ResponseEntity.status(200).body(orderService.payOrderWithCard(orderId, user.getId(), card));
     }
 
-    @PostMapping("/{orderId}/user/{userId}/payment/sync")
-    public ResponseEntity<?> syncOrderPayment(@PathVariable Integer orderId, @PathVariable Integer userId) {
-        return ResponseEntity.status(200).body(orderService.syncOrderPayment(orderId, userId));
+    @PostMapping("/{orderId}/payment/sync")
+    public ResponseEntity<?> syncOrderPayment(@PathVariable Integer orderId,
+                                              @AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(orderService.syncOrderPayment(orderId, user.getId()));
     }
 
     // TODO SECURITY: ADMIN/DEBUG only. Normal users should use /my-orders or /my-sales.
@@ -65,20 +71,21 @@ public class OrderController {
         return ResponseEntity.status(200).body(orderService.getAllOrders());
     }
 
-    // TODO SECURITY: ADMIN/DEBUG only. User-facing order details should include user ownership validation.
     @GetMapping("/{orderId}")
-    public ResponseEntity<?> getOrderById(@PathVariable Integer orderId) {
-        return ResponseEntity.status(200).body(orderService.getOrderById(orderId));
+    public ResponseEntity<?> getOrderById(@PathVariable Integer orderId,
+                                          @AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(orderService.getOrderById(orderId, user.getId()));
     }
 
     @GetMapping("/{orderId}/invoice/pdf")
-    public ResponseEntity<?> generateInvoicePdf(@PathVariable Integer orderId, @RequestParam Integer userId) {
+    public ResponseEntity<?> generateInvoicePdf(@PathVariable Integer orderId,
+                                                @AuthenticationPrincipal User user) {
         Orders order = orderRepository.findOrderById(orderId);
         if (order == null) {
             throw new ApiException("Order not found");
         }
 
-        byte[] pdfBytes = orderService.generateInvoicePdf(orderId, userId);
+        byte[] pdfBytes = orderService.generateInvoicePdf(orderId, user.getId());
         return ResponseEntity.status(200)
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"invoice-" + order.getInvoiceNumber() + ".pdf\"")

@@ -1,6 +1,7 @@
 package org.example.menaandfeena_finalproject.Model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -28,13 +28,9 @@ public class EventRegistration {
 
     private LocalDate registeredAt;
 
-    @Column(columnDefinition = "varchar(100) unique")
-    private String ticketCode;
-
-    @Column(columnDefinition = "boolean default false")
-    private Boolean checkedIn = false;
-
-    private LocalDateTime checkedInAt;
+    @OneToOne(mappedBy = "eventRegistration", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Ticket ticket;
 
     @ManyToOne
     @JoinColumn(name = "family_member_id")

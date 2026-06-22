@@ -7,6 +7,8 @@ import org.example.menaandfeena_finalproject.DTO.In.MayorProfileInDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.*;
 import org.example.menaandfeena_finalproject.Model.*;
 import org.example.menaandfeena_finalproject.Repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -17,6 +19,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MayorProfileService {
+    private static final Logger log = LoggerFactory.getLogger(MayorProfileService.class);
+
     private final MayorProfileRepository mayorProfileRepository;
     private final UserRepository userRepository;
     private final NeighborhoodRepository neighborhoodRepository;
@@ -27,6 +31,7 @@ public class MayorProfileService {
     private final OpenAIService openAIService;
     private final PdfService pdfService;
     private final EmailService emailService;
+    private final WhatsAppService whatsAppService;
 
     public List<MayorProfile> getAllMayorProfiles() {
         return mayorProfileRepository.findAll();
@@ -79,7 +84,31 @@ public class MayorProfileService {
         user.setMayorEndDate(endDate);
         userRepository.save(user);
 
-        mayorProfileRepository.save(mayorProfile);
+        MayorProfile savedMayorProfile = mayorProfileRepository.save(mayorProfile);
+        trySendMayorAppointmentWhatsApp(user, savedMayorProfile);
+    }
+
+    private void trySendMayorAppointmentWhatsApp(User mayor, MayorProfile mayorProfile) {
+        try {
+            if (mayor.getPhone() == null || mayor.getPhone().isBlank()) {
+                return;
+            }
+
+            String neighborhoodName =
+                    mayorProfile.getNeighborhood() == null
+                            ? "your neighborhood"
+                            : mayorProfile.getNeighborhood().getName();
+
+            String message =
+                    "Congratulations " + mayor.getFullName() + "\n\n" +
+                            "You have been appointed as mayor of " + neighborhoodName + ".\n" +
+                            "Term start: " + mayorProfile.getStartDate() + "\n" +
+                            "Term end: " + mayorProfile.getEndDate();
+
+            whatsAppService.sendWhatsAppMessage(mayor.getPhone(), message);
+        } catch (Exception e) {
+            log.error("Mayor appointment WhatsApp failed for user id {}.", mayor.getId(), e);
+        }
     }
 
     public void updateMayorProfile(Integer id, MayorProfileInDTO dto) {

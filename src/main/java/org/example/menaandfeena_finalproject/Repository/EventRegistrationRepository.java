@@ -1,9 +1,7 @@
 package org.example.menaandfeena_finalproject.Repository;
 
 
-import com.fasterxml.jackson.annotation.JacksonAnnotation;
 import org.example.menaandfeena_finalproject.Model.EventRegistration;
-import org.example.menaandfeena_finalproject.Model.InitiativeParticipation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +14,7 @@ public interface EventRegistrationRepository extends JpaRepository<EventRegistra
     boolean existsByUserIdAndEventIdAndStatus(Integer userId, Integer eventId, String status);
     boolean existsByFamilyMemberIdAndEventId(Integer familyMemberId, Integer eventId);
     int countByEventId(Integer eventId);
+    List<EventRegistration> findByEventId(Integer eventId);
 
     int countByUserIdAndStatus(Integer id, String confirmed);
 

@@ -4,8 +4,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.OrderItemInDTO;
+import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Service.OrderItemService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,19 +37,22 @@ public class OrderItemController {
         return ResponseEntity.status(200).body(new ApiResponse("Order item updated"));
     }
 
-    @PutMapping("/{orderItemId}/renter-confirm-return/{userId}")
-    public ResponseEntity<?> renterConfirmReturn(@PathVariable Integer orderItemId, @PathVariable Integer userId) {
-        return ResponseEntity.status(200).body(orderItemService.renterConfirmReturn(orderItemId, userId));
+    @PutMapping("/{orderItemId}/renter-confirm-return")
+    public ResponseEntity<?> renterConfirmReturn(@PathVariable Integer orderItemId,
+                                                 @AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(orderItemService.renterConfirmReturn(orderItemId, user.getId()));
     }
 
-    @PutMapping("/{orderItemId}/owner-confirm-return/{userId}")
-    public ResponseEntity<?> ownerConfirmReturn(@PathVariable Integer orderItemId, @PathVariable Integer userId) {
-        return ResponseEntity.status(200).body(orderItemService.ownerConfirmReturn(orderItemId, userId));
+    @PutMapping("/{orderItemId}/owner-confirm-return")
+    public ResponseEntity<?> ownerConfirmReturn(@PathVariable Integer orderItemId,
+                                                @AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(orderItemService.ownerConfirmReturn(orderItemId, user.getId()));
     }
 
-    @PutMapping("/{orderItemId}/owner-confirm-damaged/{userId}")
-    public ResponseEntity<?> ownerConfirmDamaged(@PathVariable Integer orderItemId, @PathVariable Integer userId) {
-        return ResponseEntity.status(200).body(orderItemService.ownerConfirmDamaged(orderItemId, userId));
+    @PutMapping("/{orderItemId}/owner-confirm-damaged")
+    public ResponseEntity<?> ownerConfirmDamaged(@PathVariable Integer orderItemId,
+                                                 @AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(orderItemService.ownerConfirmDamaged(orderItemId, user.getId()));
     }
 
     // TODO SECURITY: ADMIN/DEBUG only. Deleting order items manually can break checkout/payment history.
