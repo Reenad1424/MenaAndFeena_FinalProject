@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.DTO.Out;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +16,7 @@ public class EventRegistrationOutDTO {
 
     private Integer registrationid;
     private String status;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate registeredAt;
 
     private Integer userId;

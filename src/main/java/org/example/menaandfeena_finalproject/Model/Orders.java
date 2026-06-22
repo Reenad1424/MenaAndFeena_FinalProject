@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -22,6 +23,7 @@ public class Orders {
     private String invoiceNumber;
 
     @Column(columnDefinition = "date not null")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate orderDate;
 
     // PENDING_PAYMENT, PAYMENT_FAILED, PAID, ACTIVE, COMPLETED, CANCELLED
@@ -31,6 +33,7 @@ public class Orders {
     @Column(columnDefinition = "int not null")
     private Integer totalAmount;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL)

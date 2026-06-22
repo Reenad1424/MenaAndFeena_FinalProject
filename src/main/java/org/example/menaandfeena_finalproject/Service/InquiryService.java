@@ -36,7 +36,7 @@ public class InquiryService {
 
     // Abdullah
 
-    public InquiryOutDTO createMarketplaceInquiry(Integer itemId, Integer requesterId) {
+    public InquiryOutDTO createMarketplaceInquiry(Integer itemId, Integer requesterId, InquiryMessageInDTO firstMessage) {
         User requester = userRepository.findUserById(requesterId);
 
         if (requester == null) {
@@ -71,6 +71,9 @@ public class InquiryService {
         Inquiry existingInquiry = inquiryRepository.findInquiryByRequesterAndTargetUserAndMarketPlaceItemAndStatus(requester, targetUser, item, OPEN);
 
         if (existingInquiry != null) {
+            // الاستفسار موجود مسبقاً: نضيف الرسالة الأولى إن وُجدت ثم نرجعه.
+            saveFirstMessageIfPresent(existingInquiry, requester, firstMessage);
+
             Integer requesterIdOut = existingInquiry.getRequester() == null ? null : existingInquiry.getRequester().getId();
             Integer targetUserIdOut = existingInquiry.getTargetUser() == null ? null : existingInquiry.getTargetUser().getId();
             Integer marketPlaceItemIdOut = existingInquiry.getMarketPlaceItem() == null ? null : existingInquiry.getMarketPlaceItem().getId();
@@ -89,6 +92,8 @@ public class InquiryService {
         inquiry.setAnnouncement(null);
 
         Inquiry savedInquiry = inquiryRepository.save(inquiry);
+        // ننشئ الاستفسار مع رسالته الأولى في نفس الطلب (إن أُرسلت رسالة).
+        saveFirstMessageIfPresent(savedInquiry, requester, firstMessage);
         Integer requesterIdOut = savedInquiry.getRequester() == null ? null : savedInquiry.getRequester().getId();
         Integer targetUserIdOut = savedInquiry.getTargetUser() == null ? null : savedInquiry.getTargetUser().getId();
         Integer marketPlaceItemIdOut = savedInquiry.getMarketPlaceItem() == null ? null : savedInquiry.getMarketPlaceItem().getId();
@@ -97,7 +102,7 @@ public class InquiryService {
         return new InquiryOutDTO(savedInquiry.getId(), savedInquiry.getSubject(), savedInquiry.getStatus(), savedInquiry.getCreatedAt(), requesterIdOut, targetUserIdOut, marketPlaceItemIdOut, announcementIdOut);
     }
 
-    public InquiryOutDTO createAnnouncementInquiry(Integer announcementId, Integer requesterId) {
+    public InquiryOutDTO createAnnouncementInquiry(Integer announcementId, Integer requesterId, InquiryMessageInDTO firstMessage) {
         User requester = userRepository.findUserById(requesterId);
 
         if (requester == null) {
@@ -123,6 +128,8 @@ public class InquiryService {
         Inquiry existingInquiry = inquiryRepository.findInquiryByRequesterAndTargetUserAndAnnouncementAndStatus(requester, targetUser, announcement, OPEN);
 
         if (existingInquiry != null) {
+            saveFirstMessageIfPresent(existingInquiry, requester, firstMessage);
+
             Integer requesterIdOut = existingInquiry.getRequester() == null ? null : existingInquiry.getRequester().getId();
             Integer targetUserIdOut = existingInquiry.getTargetUser() == null ? null : existingInquiry.getTargetUser().getId();
             Integer marketPlaceItemIdOut = existingInquiry.getMarketPlaceItem() == null ? null : existingInquiry.getMarketPlaceItem().getId();
@@ -141,12 +148,26 @@ public class InquiryService {
         inquiry.setAnnouncement(announcement);
 
         Inquiry savedInquiry = inquiryRepository.save(inquiry);
+        saveFirstMessageIfPresent(savedInquiry, requester, firstMessage);
         Integer requesterIdOut = savedInquiry.getRequester() == null ? null : savedInquiry.getRequester().getId();
         Integer targetUserIdOut = savedInquiry.getTargetUser() == null ? null : savedInquiry.getTargetUser().getId();
         Integer marketPlaceItemIdOut = savedInquiry.getMarketPlaceItem() == null ? null : savedInquiry.getMarketPlaceItem().getId();
         Integer announcementIdOut = savedInquiry.getAnnouncement() == null ? null : savedInquiry.getAnnouncement().getId();
 
         return new InquiryOutDTO(savedInquiry.getId(), savedInquiry.getSubject(), savedInquiry.getStatus(), savedInquiry.getCreatedAt(), requesterIdOut, targetUserIdOut, marketPlaceItemIdOut, announcementIdOut);
+    }
+
+    // ينشئ الرسالة الأولى للاستفسار إن أُرسلت مع طلب الإنشاء (الاستفسار يُنشأ مع رسالته).
+    private void saveFirstMessageIfPresent(Inquiry inquiry, User sender, InquiryMessageInDTO firstMessage) {
+        if (firstMessage == null || firstMessage.getContent() == null || firstMessage.getContent().isBlank()) {
+            return;
+        }
+        InquiryMessage message = new InquiryMessage();
+        message.setContent(firstMessage.getContent());
+        message.setSentAt(LocalDateTime.now());
+        message.setSender(sender);
+        message.setInquiry(inquiry);
+        inquiryMessageRepository.save(message);
     }
 
     public InquiryMessageOutDTO addMessage(Integer inquiryId, Integer senderId, InquiryMessageInDTO inquiryMessageInDTO) {

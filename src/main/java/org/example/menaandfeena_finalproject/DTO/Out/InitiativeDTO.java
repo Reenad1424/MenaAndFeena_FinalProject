@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.DTO.Out;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +14,7 @@ public class InitiativeDTO {
     private Integer id;
     private String title;
     private String description;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
     private String status;
     private Integer maxParticipants;

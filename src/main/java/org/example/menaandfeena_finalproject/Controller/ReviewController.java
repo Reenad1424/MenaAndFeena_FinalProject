@@ -21,13 +21,6 @@ public class ReviewController {
         return ResponseEntity.status(200).body(reviewService.getAllReviews());
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<?> addReview(@Valid @RequestBody ReviewInDTO reviewInDTO) {
-
-        reviewService.addReview(reviewInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Review added successfully"));
-
-    }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateReview(@PathVariable Integer id, @Valid @RequestBody ReviewInDTO reviewInDTO) {

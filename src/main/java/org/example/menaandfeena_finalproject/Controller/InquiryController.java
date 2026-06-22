@@ -19,14 +19,16 @@ public class InquiryController {
 
     @PostMapping("/marketplace/{itemId}/create")
     public ResponseEntity<?> createMarketplaceInquiry(@PathVariable Integer itemId,
-                                                      @AuthenticationPrincipal User user) {
-        return ResponseEntity.status(200).body(inquiryService.createMarketplaceInquiry(itemId, user.getId()));
+                                                      @AuthenticationPrincipal User user,
+                                                      @RequestBody(required = false) @Valid InquiryMessageInDTO firstMessage) {
+        return ResponseEntity.status(200).body(inquiryService.createMarketplaceInquiry(itemId, user.getId(), firstMessage));
     }
 
     @PostMapping("/announcement/{announcementId}/create")
     public ResponseEntity<?> createAnnouncementInquiry(@PathVariable Integer announcementId,
-                                                       @AuthenticationPrincipal User user) {
-        return ResponseEntity.status(200).body(inquiryService.createAnnouncementInquiry(announcementId, user.getId()));
+                                                       @AuthenticationPrincipal User user,
+                                                       @RequestBody(required = false) @Valid InquiryMessageInDTO firstMessage) {
+        return ResponseEntity.status(200).body(inquiryService.createAnnouncementInquiry(announcementId, user.getId(), firstMessage));
     }
 
     @PostMapping("/{inquiryId}/message")

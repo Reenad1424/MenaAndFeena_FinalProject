@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -23,9 +24,11 @@ public class CartItem {
     private Integer rentalDays;
 
     @Column(columnDefinition = "date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 
     @Column(columnDefinition = "date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
     @ManyToOne

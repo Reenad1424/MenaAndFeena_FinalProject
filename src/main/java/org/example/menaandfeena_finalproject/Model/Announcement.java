@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -34,6 +35,7 @@ public class Announcement {
     private String status;
 
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate createdAt;
 
     @ManyToOne

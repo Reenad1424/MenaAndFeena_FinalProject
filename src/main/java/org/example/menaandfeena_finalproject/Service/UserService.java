@@ -37,9 +37,9 @@ public class UserService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
 
-    private final RestTemplate restTemplate = new RestTemplate();
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final NominatimService nominatimService;
 
     @Value("${app.support.email}")
     private String supportEmail;
@@ -666,83 +666,24 @@ public class UserService {
             Double lat,
             Double lon
     ) {
+        // نعيد استخدام NominatimService بدل تكرار منطق reverse geocoding هنا.
+        Map<String, String> location = nominatimService.detectLocationFromCoordinates(lat, lon);
 
-        try {
+        String district = location.get("district");
+        String city = location.get("city");
 
-            String url =
-                    String.format(
-                            "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=%s&lon=%s&accept-language=ar",
-                            lat,
-                            lon
-                    );
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("User-Agent", "ManaWaFina/1.0");
-
-            HttpEntity<String> entity =
-                    new HttpEntity<>(headers);
-
-            ResponseEntity<Map> response =
-                    restTemplate.exchange(
-                            url,
-                            HttpMethod.GET,
-                            entity,
-                            Map.class
-                    );
-
-            Map<String, Object> body =
-                    response.getBody();
-
-            if (body == null || !body.containsKey("address")) {
-                throw new ApiException("لم يتم العثور على بيانات العنوان من الإحداثيات");
-            }
-
-            Map<String, Object> address =
-                    (Map<String, Object>) body.get("address");
-
-            String district =
-                    (String) address.getOrDefault(
-                            "suburb",
-                            address.getOrDefault(
-                                    "neighbourhood",
-                                    address.getOrDefault(
-                                            "city_district",
-                                            null
-                                    )
-                            )
-                    );
-
-            String city =
-                    (String) address.getOrDefault(
-                            "city",
-                            address.getOrDefault(
-                                    "town",
-                                    address.getOrDefault(
-                                            "state",
-                                            null
-                                    )
-                            )
-                    );
-
-            if (district == null || district.isBlank()) {
-                throw new ApiException("لم يتم تحديد الحي من الإحداثيات");
-            }
-
-            if (city == null || city.isBlank()) {
-                throw new ApiException("لم يتم تحديد المدينة من الإحداثيات");
-            }
-
-            return Map.of(
-                    "district", district,
-                    "city", city
-            );
-
-        } catch (ApiException e) {
-            throw e;
-
-        } catch (Exception e) {
-            throw new ApiException("تعذر تحديد الحي من الإحداثيات حالياً");
+        if (district == null || district.isBlank()) {
+            throw new ApiException("لم يتم تحديد الحي من الإحداثيات");
         }
+
+        if (city == null || city.isBlank()) {
+            throw new ApiException("لم يتم تحديد المدينة من الإحداثيات");
+        }
+
+        return Map.of(
+                "district", district,
+                "city", city
+        );
     }
 
     private LastActivityDTO getLastActivity(User user) {

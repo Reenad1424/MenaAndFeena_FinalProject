@@ -18,19 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class MarketPlaceItemImageController {
     private final MarketPlaceItemImageService marketPlaceItemImageService;
 
-    // TODO SECURITY: ADMIN/DEBUG only. Normal product image upload should use the multipart user/product endpoint.
-    @PostMapping("/add")
-    public ResponseEntity<?> addMarketPlaceItemImage(@RequestBody @Valid MarketPlaceItemImageInDTO marketPlaceItemImageInDTO) {
-        marketPlaceItemImageService.addMarketPlaceItemImage(marketPlaceItemImageInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Market place item image added"));
-    }
-
-    // TODO SECURITY: ADMIN/DEBUG only. This JSON upload stores a URL directly and bypasses file validation.
-    @PostMapping("/upload/{marketPlaceItemId}")
-    public ResponseEntity<?> uploadProductImage(@PathVariable Integer marketPlaceItemId, @RequestBody @Valid MarketPlaceItemImageInDTO marketPlaceItemImageInDTO) {
-        marketPlaceItemImageService.uploadProductImage(marketPlaceItemId, marketPlaceItemImageInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Product image uploaded"));
-    }
 
     @PostMapping(value = "/product/{marketPlaceItemId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadProductImageFile(@PathVariable Integer marketPlaceItemId,

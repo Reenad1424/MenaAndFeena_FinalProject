@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -24,8 +25,10 @@ public class Ticket {
     @Column(columnDefinition = "boolean default false")
     private Boolean checkedIn = false;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime checkedInAt;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime issuedAt;
 
     @OneToOne

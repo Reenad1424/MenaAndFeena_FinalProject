@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,6 +25,7 @@ public class Review {
     @Column(columnDefinition = "varchar(500) not null")
     private String comment;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate createdAt;
 
 

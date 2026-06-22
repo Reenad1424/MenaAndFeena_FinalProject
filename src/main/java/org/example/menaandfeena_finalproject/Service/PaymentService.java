@@ -34,6 +34,10 @@ public class PaymentService {
 
     private String apiKey;
 
+    // رابط callback لدفع Moyasar؛ يُقرأ من الإعدادات (مع قيمة افتراضية) حتى يسهل تغييره بين التطوير والإنتاج.
+    @Value("${app.payment.callback-url:http://localhost:8080/api/v1/payment/callback}")
+    private String paymentCallbackUrl;
+
     private static final String MOYASAR_API_URL = "https://api.moyasar.com/v1/payments/";
 
     private final PaymentRepository paymentRepository;
@@ -64,7 +68,7 @@ public class PaymentService {
     // يرسل بيانات البطاقة إلى Moyasar ويرجع الرد الخام كما هو.
     public ResponseEntity<String> processPayment(PaymentRequestDTO paymentRequest) {
         String url = "https://api.moyasar.com/v1/payments";
-        String callbackUrl = paymentRequest.getCallbackurl() == null ? "http://localhost:8080/api/v1/payment/callback" : paymentRequest.getCallbackurl();
+        String callbackUrl = paymentRequest.getCallbackurl() == null ? paymentCallbackUrl : paymentRequest.getCallbackurl();
         String description = paymentRequest.getDescription() == null ? "" : paymentRequest.getDescription();
 
         // Moyasar يحتاج بيانات البطاقة بصيغة form-urlencoded.
@@ -146,8 +150,7 @@ public class PaymentService {
     // amount لازم يكون بالهللات، ويرجع رقم دفع Moyasar والحالة ورابط 3DS إذا وجد.
     public MoyasarChargeOutDTO chargeCard(Integer amount, String currency, OrderPaymentRequestDTO card, String description) {
         String url = "https://api.moyasar.com/v1/payments";
-       // String callbackUrl = "http://localhost:8080/api/v1/payment/callback";
-        String callbackUrl = "http://localhost:8089/api/v1/payment/callback";
+        String callbackUrl = paymentCallbackUrl;
 
         // هذا طلب الدفع الحقيقي الخاص بالسوق، والمبلغ يتم تجهيزه في OrderService.
         String requestBody =
@@ -213,10 +216,13 @@ public class PaymentService {
                 "Payment for event: " + event.getTitle()
         );
 
+        // Platform takes a 5% commission from the total; the seller receives the remaining 95%.
+        int platformFee = (int) Math.round(amountInHalalas * 0.05);
+
         Payment payment = new Payment();
         payment.setAmount(amountInHalalas);
-        payment.setPlatformFee(0);
-        payment.setSellerAmount(amountInHalalas);
+        payment.setPlatformFee(platformFee);
+        payment.setSellerAmount(amountInHalalas - platformFee);
         payment.setStatus(result.getStatus().equalsIgnoreCase("paid") ? "PAID" : "PENDING");
         payment.setTransactionId(result.getMoyasarPaymentId());
         payment.setPaymentUrl(result.getTransactionUrl());

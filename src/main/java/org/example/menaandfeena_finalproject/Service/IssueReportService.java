@@ -8,11 +8,14 @@ import org.example.menaandfeena_finalproject.Api.ApiException;
 import org.example.menaandfeena_finalproject.DTO.In.IssueReportInDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.IssueReportOutDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.IssueReportSummaryOutDTO;
+import org.example.menaandfeena_finalproject.DTO.Out.IssueReportTimelineOutDTO;
 import org.example.menaandfeena_finalproject.Model.IssueReport;
+import org.example.menaandfeena_finalproject.Model.IssueReportTimeline;
 import org.example.menaandfeena_finalproject.Model.MayorProfile;
 import org.example.menaandfeena_finalproject.Model.Neighborhood;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.IssueReportRepository;
+import org.example.menaandfeena_finalproject.Repository.IssueReportTimelineRepository;
 import org.example.menaandfeena_finalproject.Repository.MayorProfileRepository;
 import org.example.menaandfeena_finalproject.Repository.NeighborhoodRepository;
 import org.example.menaandfeena_finalproject.Repository.UserRepository;
@@ -48,6 +51,7 @@ public class IssueReportService {
     private final OpenAIService openAIService;
     private final NominatimService nominatimService;
     private final EmailService emailService;
+    private final IssueReportTimelineRepository issueReportTimelineRepository;
 
     // يقرأ مسار مجلد الرفع من application.properties حتى نغيره بسهولة حسب بيئة التشغيل.
     @Value("${app.upload.dir}")
@@ -106,6 +110,8 @@ public class IssueReportService {
         String title = "بلاغ جديد";
         String category = "OTHER";
         String priority = "NON_URGENT";
+        // نتتبّع إن نجح تصنيف الذكاء الاصطناعي فعلاً حتى نضيف خطوة AI_CLASSIFIED فقط عند النجاح.
+        boolean aiClassified = false;
 
         if (aiResult != null) {
             // Expected AI response format: TITLE|CATEGORY|PRIORITY, for example إنارة معطلة في الشارع|LIGHTING|URGENT.
@@ -120,6 +126,7 @@ public class IssueReportService {
                     title = aiTitle;
                     category = aiCategory;
                     priority = aiPriority;
+                    aiClassified = true;
                 }
             }
         }
@@ -132,6 +139,15 @@ public class IssueReportService {
         issueReport.setReportNeighborhood(reporter.getNeighborhood());
 
         IssueReport savedIssueReport = issueReportRepository.save(issueReport);
+
+        // أول خطوة في سجل التتبّع: إنشاء البلاغ. ثم خطوة تصنيف الذكاء الاصطناعي (فقط عند نجاح التصنيف).
+        LocalDateTime createdBase = LocalDateTime.now();
+        addTimelineEntry(savedIssueReport, "REPORT_CREATED", "تم إنشاء البلاغ", "تم استلام البلاغ من المستخدم", createdBase);
+        if (aiClassified) {
+            // نزيد الوقت بمقدار ميكروثانية بسيط حتى تأتي خطوة التصنيف بعد خطوة الإنشاء في الترتيب.
+            addTimelineEntry(savedIssueReport, "AI_CLASSIFIED", "تم تصنيفه بواسطة AI", "تم تصنيف البلاغ وتحديد الأولوية", createdBase.plusNanos(1_000_000));
+        }
+
         return mapToOutDTO(savedIssueReport);
     }
 
@@ -462,6 +478,9 @@ public class IssueReportService {
 
         report.setStatus("IN_PROGRESS");
         issueReportRepository.save(report);
+
+        // خطوة التتبّع: تحوّل البلاغ إلى قيد المعالجة.
+        addTimelineEntry(report, "IN_PROGRESS", "قيد المعالجة", "تم تحويل البلاغ للفريق المختص وجاري العمل على الحل", LocalDateTime.now());
     }
 
     public void completeReport(Integer reportId, Integer userId) {
@@ -504,6 +523,9 @@ public class IssueReportService {
 
         report.setStatus("COMPLETED");
         issueReportRepository.save(report);
+
+        // خطوة التتبّع: تم حل البلاغ وإغلاقه.
+        addTimelineEntry(report, "COMPLETED", "تم الحل", "تم إغلاق البلاغ بعد حل المشكلة", LocalDateTime.now());
     }
 
     // يولد تقرير PDF للعمدة بشكل مباشر من بيانات البلاغات الحالية، لذلك لا نحتاج Entity أو جدول جديد.
@@ -636,13 +658,14 @@ public class IssueReportService {
             builder.useFastMode();
             builder.useUnicodeBidiSplitter(new ICUBidiSplitter.ICUBidiSplitterFactory());
             builder.useUnicodeBidiReorderer(new ICUBidiReorderer());
+            builder.defaultTextDirection(PdfRendererBuilder.TextDirection.RTL);
             builder.useFont(() -> {
                 try {
-                    return new ClassPathResource("fonts/tahoma.ttf").getInputStream();
+                    return new ClassPathResource("fonts/NotoNaskhArabic-Regular.ttf").getInputStream();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-            }, "MayorReportArabic");
+            }, "Noto Naskh Arabic");
             builder.withHtmlContent(buildMayorReportHtml(neighborhood.getName(), totalReports, openReports, inProgressReports, completedReports, urgentReports, nonUrgentReports, periodicReports, mostCommonCategory, mostAffectedStreet, mostAffectedDistrict, aiAnalysis), null);
             builder.toStream(outputStream);
             builder.run();
@@ -703,39 +726,50 @@ public class IssueReportService {
                 <head>
                     <meta charset="UTF-8" />
                     <style>
-                        @page { margin: 26px; }
+                        * {
+                            font-family: 'Noto Naskh Arabic', sans-serif;
+                            box-sizing: border-box;
+                        }
+                        @page { margin: 0; }
                         body {
-                            font-family: 'MayorReportArabic', sans-serif;
                             direction: rtl;
                             unicode-bidi: embed;
                             text-align: right;
-                            background: #fef9f3;
+                            background: #FAE9CD;
                             color: #333333;
                             font-size: 14px;
                             line-height: 1.8;
+                            padding: 35px 28px;
                         }
-                        .card {
-                            background: #ffffff;
-                            border-top: 5px solid #e8923d;
-                            padding: 28px;
-                            border-radius: 10px;
-                        }
-                        h1 {
-                            color: #23613a;
-                            font-size: 25px;
+                        .title {
+                            color: #2e7d32;
+                            font-size: 30px;
+                            font-weight: bold;
                             margin: 0 0 8px 0;
                             text-align: center;
                         }
-                        .meta {
+                        .subtitle {
                             color: #777777;
                             text-align: center;
-                            margin-bottom: 24px;
+                            margin-bottom: 22px;
+                        }
+                        .line {
+                            height: 1px;
+                            background: #e5dfcf;
+                            margin: 20px 0;
+                        }
+                        .card {
+                            background: #fffdf8;
+                            border: 1px solid #eadfcb;
+                            border-radius: 18px;
+                            padding: 28px 30px;
                         }
                         h2 {
-                            color: #e8923d;
+                            color: #2e7d32;
                             font-size: 18px;
+                            font-weight: bold;
                             margin: 22px 0 10px 0;
-                            border-bottom: 1px solid #eeeeee;
+                            border-bottom: 1px solid #eadfcb;
                             padding-bottom: 6px;
                         }
                         table {
@@ -746,29 +780,36 @@ public class IssueReportService {
                             margin-top: 8px;
                         }
                         th, td {
-                            border: 1px solid #eeeeee;
+                            border: 1px solid #eadfcb;
                             padding: 10px;
                             direction: rtl;
                             unicode-bidi: embed;
                             text-align: right;
                         }
                         th {
-                            background: #fdf0e2;
-                            color: #3a3a3a;
+                            background: #e8f5e9;
+                            color: #2e7d32;
+                            font-weight: bold;
+                            width: 45%%;
                         }
                         .analysis {
-                            background: #f8fbf7;
-                            border: 1px solid #dfeade;
+                            background: #ffffff;
+                            border: 1px solid #eadfcb;
                             padding: 16px;
-                            border-radius: 8px;
+                            border-radius: 14px;
+                            line-height: 2;
                             white-space: pre-line;
                         }
                     </style>
                 </head>
                 <body>
+                    <div class="title">تقرير بلاغات الحي الذكي</div>
+                    <div class="subtitle">تحليل شامل لبلاغات الحي بحسب الحالة والأولوية والمناطق الأكثر تأثراً</div>
+
+                    <div class="line"></div>
+
                     <div class="card">
-                        <h1>تقرير بلاغات الحي الذكي</h1>
-                        <div class="meta">
+                        <div class="meta" style="color:#777777; text-align:center; margin-bottom:8px;">
                             <div>اسم الحي: %s</div>
                             <div>تاريخ التوليد: %s</div>
                         </div>
@@ -836,6 +877,54 @@ public class IssueReportService {
             return "لا يوجد";
         }
         return HtmlUtils.htmlEscape(value.toString(), StandardCharsets.UTF_8.name());
+    }
+
+    // =========================================================================
+    // سجل تتبّع البلاغ (Issue Report Timeline / Tracking)
+    //
+    // - IssueReport.status يخزّن الحالة الحالية للبلاغ (OPEN / IN_PROGRESS / COMPLETED).
+    // - IssueReportTimeline يخزّن خطوات التتبّع التاريخية (متى أُنشئ، متى صُنّف، متى عُولج، متى حُلّ).
+    // - الفرونت إند يستخدم endpoint الـ timeline لرسم شريط تقدّم البلاغ (Progress Tracker).
+    // - الفكرة مشابهة لتتبّع الشحنات (Shipment Tracking).
+    // =========================================================================
+
+    // نضيف خطوة جديدة في سجل التتبّع مع تجنّب تكرار نفس المرحلة لنفس البلاغ.
+    private void addTimelineEntry(IssueReport report, String stage, String title, String description, LocalDateTime createdAt) {
+        if (report == null || report.getId() == null) {
+            return;
+        }
+        // لا نكرّر نفس المرحلة لنفس البلاغ (حسب متطلبات منع التكرار).
+        if (issueReportTimelineRepository.existsByIssueReport_IdAndStage(report.getId(), stage)) {
+            return;
+        }
+        IssueReportTimeline entry = new IssueReportTimeline();
+        entry.setStage(stage);
+        entry.setTitle(title);
+        entry.setDescription(description);
+        entry.setCreatedAt(createdAt);
+        entry.setIssueReport(report);
+        issueReportTimelineRepository.save(entry);
+    }
+
+    // إرجاع كل خطوات تتبّع البلاغ مرتبة تصاعدياً حسب وقت الإنشاء.
+    // كل خطوة مخزّنة تمثّل مرحلة حدثت فعلاً، لذلك completed = true لكل الخطوات المعادة.
+    public List<IssueReportTimelineOutDTO> getReportTimeline(Integer issueReportId) {
+        IssueReport report = issueReportRepository.findIssueReportById(issueReportId);
+        if (report == null) {
+            throw new ApiException("Issue report not found");
+        }
+        List<IssueReportTimelineOutDTO> out = new ArrayList<>();
+        for (IssueReportTimeline entry : issueReportTimelineRepository.findByIssueReport_IdOrderByCreatedAtAsc(issueReportId)) {
+            out.add(new IssueReportTimelineOutDTO(
+                    entry.getId(),
+                    entry.getStage(),
+                    entry.getTitle(),
+                    entry.getDescription(),
+                    entry.getCreatedAt(),
+                    true
+            ));
+        }
+        return out;
     }
 
 }

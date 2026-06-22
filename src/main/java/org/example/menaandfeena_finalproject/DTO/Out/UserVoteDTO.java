@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.DTO.Out;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class UserVoteDTO {
 
     private String electionStatus;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime votedAt;
 
 }

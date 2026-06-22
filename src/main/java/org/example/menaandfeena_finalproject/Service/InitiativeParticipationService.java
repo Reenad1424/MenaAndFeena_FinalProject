@@ -11,6 +11,8 @@ import org.example.menaandfeena_finalproject.Repository.FamilyMemberRepository;
 import org.example.menaandfeena_finalproject.Repository.InitiativeParticipationRepository;
 import org.example.menaandfeena_finalproject.Repository.InitiativeRepository;
 import org.example.menaandfeena_finalproject.Repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,10 +21,15 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class InitiativeParticipationService {
+
+    private static final Logger log = LoggerFactory.getLogger(InitiativeParticipationService.class);
+
     private final InitiativeParticipationRepository initiativeParticipationRepository;
     private final UserRepository userRepository;
     private final InitiativeRepository initiativeRepository;
     private final FamilyMemberRepository familyMemberRepository;
+    private final OpenAIService openAIService;
+    private final WhatsAppService whatsAppService;
 
     public List<InitiativeParticipation> getAllInitiativeParticipations() {
         return initiativeParticipationRepository.findAll();
@@ -124,6 +131,38 @@ public class InitiativeParticipationService {
         participation.setJoinedAt(LocalDate.now());
 
         initiativeParticipationRepository.save(participation);
+
+        // رسالة ترحيب يولّدها الذكاء الاصطناعي وتُرسل عبر واتساب (best-effort: لا تُفشل الانضمام إن تعثّرت).
+        trySendInitiativeWelcome(user, initiative);
+    }
+
+    // يولّد رسالة ترحيب عربية قصيرة بالذكاء الاصطناعي ويرسلها للمستخدم عند انضمامه للمبادرة.
+    private void trySendInitiativeWelcome(User user, Initiative initiative) {
+        try {
+            if (user.getPhone() == null || user.getPhone().isBlank()) {
+                return;
+            }
+
+            String systemPrompt =
+                    "أنت مساعد ودود لمنصة حي ذكي. اكتب رسالة ترحيب عربية قصيرة (سطر إلى سطرين) " +
+                            "لشكر الجار على انضمامه لمبادرة تطوعية وتحفيزه. " +
+                            "أعد نص الرسالة فقط بدون أي تنسيق أو علامات اقتباس.";
+            String userContent =
+                    "اسم الجار: " + (user.getFullName() == null ? "جارنا العزيز" : user.getFullName()) +
+                            "\nاسم المبادرة: " + initiative.getTitle();
+
+            String aiMessage = openAIService.askAI(systemPrompt, userContent);
+
+            // رسالة احتياطية إن تعذّر الذكاء الاصطناعي.
+            if (aiMessage == null || aiMessage.isBlank() || "ERROR_FALLBACK".equals(aiMessage)) {
+                aiMessage = "شكراً لانضمامك إلى مبادرة \"" + initiative.getTitle() + "\". نسعد بمشاركتك في خدمة الحي!";
+            }
+
+            whatsAppService.sendWhatsAppMessage(user.getPhone(), aiMessage.trim());
+        } catch (Exception e) {
+            log.error("Initiative welcome WhatsApp failed for user id {}. Join was kept.",
+                    user == null ? null : user.getId(), e);
+        }
     }
 
     // Walaa

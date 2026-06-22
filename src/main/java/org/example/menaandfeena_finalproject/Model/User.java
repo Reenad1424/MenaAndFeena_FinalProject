@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -43,6 +44,7 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String nationalId;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthDate;
 
     private String gender;
@@ -52,6 +54,7 @@ public class User implements UserDetails {
     private Integer yearsInNeighborhood;
 
     @CreationTimestamp
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate createdAt=LocalDate.now();
 
     private Double latitude;
@@ -122,8 +125,10 @@ public class User implements UserDetails {
 
     private String role = "USER";
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate mayorStartDate;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate mayorEndDate;
 
     private Boolean mayorActive;

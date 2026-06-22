@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.DTO.Out;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import java.util.List;
 public class OrderOutDTO {
     private Integer id;
     private String invoiceNumber;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate orderDate;
     private String status;
     private Integer totalAmount;

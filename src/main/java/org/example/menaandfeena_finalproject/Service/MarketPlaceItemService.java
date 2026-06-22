@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
 import org.example.menaandfeena_finalproject.DTO.In.MarketPlaceItemInDTO;
+import org.example.menaandfeena_finalproject.DTO.In.PriceSuggestionInDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.MarketPlaceItemOutDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.MarketplaceSellerSummaryOutDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.MarketplaceRecommendationOutDTO;
+import org.example.menaandfeena_finalproject.DTO.Out.PriceSuggestionOutDTO;
 import org.example.menaandfeena_finalproject.Model.Cart;
 import org.example.menaandfeena_finalproject.Model.CartItem;
 import org.example.menaandfeena_finalproject.Model.Inquiry;
@@ -705,5 +707,139 @@ public class MarketPlaceItemService {
         }
 
         return recommendations;
+    }
+
+    // Suggests a fair price for a marketplace item using AI, based on similar
+    // AVAILABLE items of the same type within the requester's own neighborhood.
+    public PriceSuggestionOutDTO suggestPrice(Integer userId, PriceSuggestionInDTO dto) {
+        User user = userRepository.findUserById(userId);
+        if (user == null) {
+            throw new ApiException("User not found");
+        }
+        if (user.getNeighborhood() == null) {
+            throw new ApiException("User neighborhood is required");
+        }
+
+        String type = dto.getType();
+        boolean isRent = "RENT".equals(type);
+
+        // Collect comparable items: same neighborhood, same type, available, in stock.
+        List<MarketPlaceItem> comparables = new ArrayList<>();
+        List<String> comparableLines = new ArrayList<>();
+        List<Integer> priceSamples = new ArrayList<>();
+        for (MarketPlaceItem item : marketPlaceItemRepository.findAll()) {
+            Integer itemNeighborhoodId = item.getUser() == null || item.getUser().getNeighborhood() == null
+                    ? null : item.getUser().getNeighborhood().getId();
+            boolean sameNeighborhood = user.getNeighborhood().getId().equals(itemNeighborhoodId);
+            boolean sameType = type.equals(item.getType());
+            boolean available = "AVAILABLE".equals(item.getStatus());
+            boolean inStock = item.getQuantity() != null && item.getQuantity() > 0;
+
+            if (sameNeighborhood && sameType && available && inStock) {
+                Integer relevantPrice = isRent ? item.getRentPrice() : item.getPrice();
+                if (relevantPrice != null && relevantPrice > 0) {
+                    priceSamples.add(relevantPrice);
+                }
+                comparables.add(item);
+                comparableLines.add("title: " + item.getTitle()
+                        + " | description: " + item.getDescription()
+                        + " | price: " + item.getPrice()
+                        + " | rentPrice: " + item.getRentPrice()
+                        + " | deposit: " + item.getDepositAmount());
+            }
+        }
+
+        Integer minPrice = priceSamples.isEmpty() ? null : Collections.min(priceSamples);
+        Integer maxPrice = priceSamples.isEmpty() ? null : Collections.max(priceSamples);
+        Integer avgPrice = priceSamples.isEmpty() ? null
+                : (int) Math.round(priceSamples.stream().mapToInt(Integer::intValue).average().orElse(0));
+
+        // No comparable data in the neighborhood: return a statistical-empty response.
+        if (comparables.isEmpty()) {
+            return new PriceSuggestionOutDTO(
+                    type, null, null, null, null, null, 0,
+                    "لا توجد منتجات مشابهة من نفس النوع في حيّك حالياً لاقتراح سعر بناءً عليها. يمكنك تحديد السعر يدوياً."
+            );
+        }
+
+        String systemPrompt = """
+                You are a pricing assistant for a neighborhood marketplace. You suggest a fair price
+                for a new item based ONLY on the comparable items provided (same neighborhood, same type).
+                Rules:
+                - Base the suggestion on the provided comparable prices; stay within or near their range.
+                - Do not invent unrealistic values.
+                - For SELL items suggest "suggestedPrice" (and set rent fields to null).
+                - For RENT items suggest "suggestedRentPrice" and "suggestedDeposit" (and set suggestedPrice to null).
+                - All prices are integers in SAR.
+                - "reason" must be a short sentence written in Arabic.
+                Return STRICT JSON only, no markdown, in this exact shape:
+                {"suggestedPrice":0,"suggestedRentPrice":0,"suggestedDeposit":0,"reason":"سبب عربي قصير"}
+                """;
+
+        String userContent = "New item to price:\n"
+                + "title: " + dto.getTitle()
+                + " | description: " + dto.getDescription()
+                + " | type: " + type
+                + "\n\nComparable items in the same neighborhood (type " + type + "):\n"
+                + String.join("\n", comparableLines)
+                + "\n\nObserved comparable " + (isRent ? "rent " : "") + "prices -> min: " + minPrice
+                + ", max: " + maxPrice + ", average: " + avgPrice
+                + "\n\nSuggest a fair price for the new item.";
+
+        Integer suggestedPrice = null;
+        Integer suggestedRentPrice = null;
+        Integer suggestedDeposit = null;
+        String reason = null;
+
+        try {
+            String aiResponse = openAIService.askAI(systemPrompt, userContent);
+            if (aiResponse != null && !"ERROR_FALLBACK".equals(aiResponse)) {
+                String json = aiResponse.trim();
+                if (json.startsWith("```")) {
+                    json = json.replace("```json", "").replace("```", "").trim();
+                }
+                ObjectMapper objectMapper = new ObjectMapper();
+                Map<String, Object> parsed = objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
+                if (isRent) {
+                    suggestedRentPrice = toInteger(parsed.get("suggestedRentPrice"));
+                    suggestedDeposit = toInteger(parsed.get("suggestedDeposit"));
+                } else {
+                    suggestedPrice = toInteger(parsed.get("suggestedPrice"));
+                }
+                reason = parsed.get("reason") == null ? null : parsed.get("reason").toString();
+            }
+        } catch (Exception ignored) {
+        }
+
+        // Fallback to the neighborhood average if the AI did not return a usable value.
+        if (isRent && suggestedRentPrice == null) {
+            suggestedRentPrice = avgPrice;
+        }
+        if (!isRent && suggestedPrice == null) {
+            suggestedPrice = avgPrice;
+        }
+        if (reason == null || reason.isBlank()) {
+            reason = "تم اقتراح السعر بناءً على متوسط أسعار " + comparables.size()
+                    + " منتجاً مشابهاً من نفس النوع في حيّك.";
+        }
+
+        return new PriceSuggestionOutDTO(
+                type, suggestedPrice, suggestedRentPrice, suggestedDeposit,
+                minPrice, maxPrice, comparables.size(), reason
+        );
+    }
+
+    private Integer toInteger(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        try {
+            return (int) Math.round(Double.parseDouble(value.toString().trim()));
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

@@ -22,11 +22,6 @@ public class EventRegistrationController {
         return ResponseEntity.status(200).body(eventRegistrationService.getAllEventRegistrations());
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<?> addEventRegistration(@Valid @RequestBody EventRegistrationInDTO eventRegistrationInDTO) {
-        eventRegistrationService.addEventRegistration(eventRegistrationInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Event registration added successfully"));
-    }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateEventRegistration(@PathVariable Integer id,

@@ -236,10 +236,13 @@ public class OrderService {
         // the user enters card details on our own page, which calls POST /api/v1/payment/order/{orderId}.
         String description = "Marketplace cart checkout order #" + savedOrder.getId();
 
+        // Platform takes a 5% commission from the total; the seller receives the remaining 95%.
+        int platformFee = (int) Math.round(totalAmount * 0.05);
+
         Payment payment = new Payment();
         payment.setAmount(totalAmount);
-        payment.setPlatformFee(0);
-        payment.setSellerAmount(totalAmount);
+        payment.setPlatformFee(platformFee);
+        payment.setSellerAmount(totalAmount - platformFee);
         payment.setStatus("INITIATED");
         // transactionId is NOT NULL in the schema; use a placeholder until Moyasar returns the real id at payment time.
         payment.setTransactionId("INIT-" + savedOrder.getId());
@@ -475,14 +478,22 @@ public class OrderService {
                 return;
             }
 
-            String message =
+            // نولّد ملف الفاتورة PDF ونرسله كمستند فعلي عبر واتساب (base64) بدلاً من رسالة نصية فقط.
+            byte[] invoicePdf = generateInvoicePdf(order.getId());
+            String documentBase64 = "data:application/pdf;base64," + Base64.getEncoder().encodeToString(invoicePdf);
+
+            String caption =
                     "Mena And Feena invoice\n\n" +
                             "Invoice number: " + order.getInvoiceNumber() + "\n" +
                             "Order status: " + order.getStatus() + "\n" +
-                            "Total amount: " + formatAmount(order.getTotalAmount()) + "\n\n" +
-                            "Your invoice PDF was sent to your email.";
+                            "Total amount: " + formatAmount(order.getTotalAmount());
 
-            whatsAppService.sendWhatsAppMessage(buyer.getPhone(), message);
+            whatsAppService.sendWhatsAppDocument(
+                    buyer.getPhone(),
+                    "invoice-" + order.getInvoiceNumber() + ".pdf",
+                    documentBase64,
+                    caption
+            );
         } catch (Exception e) {
             log.error("Invoice WhatsApp message failed for paid order id {}. Payment/order updates were kept.", order.getId(), e);
         }
@@ -585,13 +596,14 @@ public class OrderService {
             builder.useFastMode();
             builder.useUnicodeBidiSplitter(new ICUBidiSplitter.ICUBidiSplitterFactory());
             builder.useUnicodeBidiReorderer(new ICUBidiReorderer());
+            builder.defaultTextDirection(PdfRendererBuilder.TextDirection.RTL);
             builder.useFont(() -> {
                 try {
-                    return new ClassPathResource("fonts/tahoma.ttf").getInputStream();
+                    return new ClassPathResource("fonts/NotoNaskhArabic-Regular.ttf").getInputStream();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-            }, "InvoiceArabic");
+            }, "Noto Naskh Arabic");
             builder.withHtmlContent(buildInvoiceHtml(order), null);
             builder.toStream(outputStream);
             builder.run();

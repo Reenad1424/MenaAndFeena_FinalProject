@@ -7,9 +7,12 @@ import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.EventInDTO;
 import org.example.menaandfeena_finalproject.Model.Event;
 import org.example.menaandfeena_finalproject.Service.EventService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.multipart.MultipartFile;
 import org.example.menaandfeena_finalproject.Model.User;
 import java.time.LocalDate;
 import java.util.List;
@@ -26,13 +29,7 @@ public class EventController {
         return ResponseEntity.status(200).body(eventService.getAllEvents());
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<?> addEvent(@Valid @RequestBody EventInDTO eventInDTO) {
-        eventService.addEvent(eventInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Event added successfully"));
-    }
-
-    @PutMapping("/update/{id}")
+@PutMapping("/update/{id}")
     public ResponseEntity<?> updateEvent(@PathVariable Integer id, @Valid @RequestBody EventInDTO eventInDTO) {
         eventService.updateEvent(id, eventInDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Event updated successfully"));
@@ -65,6 +62,24 @@ public class EventController {
         return ResponseEntity.status(200).body(eventService.getEventById(id));
     }
 
+    // كل الميزات المعرّفة مسبقاً (لعرضها كـ checkboxes في الفرونت إند).
+    @GetMapping("/features")
+    public ResponseEntity<?> getAllFeatures() {
+        return ResponseEntity.status(200).body(eventService.getAllFeatures());
+    }
+
+    // الميزات المختارة لفعالية معيّنة.
+    @GetMapping("/{eventId}/features")
+    public ResponseEntity<?> getEventFeatures(@PathVariable Integer eventId) {
+        return ResponseEntity.status(200).body(eventService.getEventFeatures(eventId));
+    }
+
+    // برنامج الفعالية مرتباً حسب sortOrder ثم الوقت.
+    @GetMapping("/{eventId}/schedule")
+    public ResponseEntity<?> getEventSchedule(@PathVariable Integer eventId) {
+        return ResponseEntity.status(200).body(eventService.getEventSchedule(eventId));
+    }
+
 
 
 //
@@ -81,6 +96,13 @@ public class EventController {
         User user = (User) authentication.getPrincipal();
         eventService.createEvent(user.getId(), eventInDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Event created successfully"));
+    }
+
+    @PostMapping(value = "/{eventId}/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadEventImage(@AuthenticationPrincipal User user,
+                                              @PathVariable Integer eventId,
+                                              @RequestParam("image") MultipartFile image) {
+        return ResponseEntity.status(200).body(eventService.uploadEventImage(user.getId(), eventId, image));
     }
 
 

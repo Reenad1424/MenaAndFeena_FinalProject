@@ -6,9 +6,12 @@ import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.InitiativeInDTO;
 import org.example.menaandfeena_finalproject.Service.InitiativeService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.multipart.MultipartFile;
 import org.example.menaandfeena_finalproject.Model.User;
 
 @RestController
@@ -21,12 +24,6 @@ public class InitiativeController {
     @GetMapping("/get")
     public ResponseEntity<?> getAllInitiatives() {
         return ResponseEntity.status(200).body(initiativeService.getAllInitiatives());
-    }
-
-    @PostMapping("/add")
-    public ResponseEntity<?> addInitiative(@Valid @RequestBody InitiativeInDTO initiativeInDTO) {
-        initiativeService.addInitiative(initiativeInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Initiative added successfully"));
     }
 
     @PutMapping("/update/{id}")
@@ -80,6 +77,13 @@ public class InitiativeController {
         initiativeService.createInitiative(user.getId(), initiativeInDTO);
 
         return ResponseEntity.status(200).body(new ApiResponse("Initiative created successfully"));
+    }
+
+    @PostMapping(value = "/{initiativeId}/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadInitiativeImage(@AuthenticationPrincipal User user,
+                                                   @PathVariable Integer initiativeId,
+                                                   @RequestParam("image") MultipartFile image) {
+        return ResponseEntity.status(200).body(initiativeService.uploadInitiativeImage(user.getId(), initiativeId, image));
     }
 
 

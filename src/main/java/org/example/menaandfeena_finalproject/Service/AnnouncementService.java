@@ -122,6 +122,9 @@ public class AnnouncementService {
         if (announcement.getUser() == null || !announcement.getUser().getId().equals(userId)) {
             throw new ApiException("Only the announcement owner can moderate announcement");
         }
+        if (!"PENDING".equals(announcement.getStatus())) {
+            throw new ApiException("Only pending announcements can be moderated");
+        }
 
         String aiResult = openAIService.askAI(
                 "You are a moderation system. Return only REJECTED if the text contains drugs, narcotics, weapons, scams, fraud, insults, offensive language, adult content, or prohibited sales. Return only APPROVED otherwise.",

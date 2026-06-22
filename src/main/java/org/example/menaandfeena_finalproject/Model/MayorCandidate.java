@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -18,6 +19,7 @@ public class MayorCandidate {
     private Integer id;
 
     @Column(columnDefinition = "datetime not null")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime appliedAt;
 
     // PENDING, APPROVED, REJECTED

@@ -1,6 +1,7 @@
 package org.example.menaandfeena_finalproject.Model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,12 +28,16 @@ public class Initiative {
     @Column(columnDefinition = "varchar(500) not null")
     private String description;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
 
     private Integer maxParticipants;
 
     @Column(columnDefinition = "varchar(20) not null")
     private String status;
+
+    @Column(columnDefinition = "varchar(500)")
+    private String imageUrl;
 
     @OneToMany(mappedBy = "initiative", cascade = CascadeType.ALL)
     @JsonIgnore

@@ -28,7 +28,8 @@ public class NominatimService {
                     + "?format=jsonv2"
                     + "&lat=" + latitude
                     + "&lon=" + longitude
-                    + "&addressdetails=1";
+                    + "&addressdetails=1"
+                    + "&accept-language=ar";
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("User-Agent", "MenaAndFeena/1.0");
@@ -42,12 +43,16 @@ public class NominatimService {
             Map address = (Map) response.getBody().get("address");
             String street = firstAddressValue(address, "road", "pedestrian", "footway", "residential", "neighbourhood");
             String district = firstAddressValue(address, "suburb", "city_district", "district", "neighbourhood", "quarter");
+            String city = firstAddressValue(address, "city", "town", "state");
 
             if (street != null && !street.isBlank()) {
                 detectedLocation.put("street", street);
             }
             if (district != null && !district.isBlank()) {
                 detectedLocation.put("district", district);
+            }
+            if (city != null && !city.isBlank()) {
+                detectedLocation.put("city", city);
             }
         } catch (Exception e) {
             return detectedLocation;

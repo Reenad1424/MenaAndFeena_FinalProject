@@ -759,7 +759,7 @@ public void sendPerformanceReport(Integer mayorId) {
 body {
     direction: rtl;
     text-align: right;
-    background: #ffffff;
+    background: #FAE9CD;
     color: #333333;
     font-size: 14px;
     padding: 25px;
@@ -953,7 +953,7 @@ td {
 body {
     direction: rtl;
     text-align: right;
-    background: #ffffff;
+    background: #FAE9CD;
     color: #333333;
     font-size: 14px;
     padding: 25px;
@@ -1177,7 +1177,7 @@ body {
 body {
     direction: rtl;
     text-align: right;
-    background: #ffffff;
+    background: #FAE9CD;
     color: #333333;
     font-size: 14px;
     padding: 25px;

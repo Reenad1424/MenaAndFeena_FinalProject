@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.DTO.Out;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import java.time.LocalDate;
@@ -11,5 +12,6 @@ public class UserRegisterResponseDto {
     private String email;
     private String detectedNeighborhoodName; // اسم الحي الذي تم لقطه وتخزينه تلقائياً
     private String city;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate createdAt;
 }

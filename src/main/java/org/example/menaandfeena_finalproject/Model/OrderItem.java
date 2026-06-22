@@ -1,4 +1,5 @@
 package org.example.menaandfeena_finalproject.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -36,17 +37,21 @@ public class OrderItem {
     private Integer subtotal;
 
     @Column(columnDefinition = "date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 
     @Column(columnDefinition = "date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
     private Boolean renterConfirmedReturn = false;
 
     private Boolean ownerConfirmedReturn = false;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime renterConfirmedReturnAt;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime ownerConfirmedReturnAt;
 
     // NOT_RETURNED, WAITING_OWNER_CONFIRMATION, RETURNED, DAMAGED

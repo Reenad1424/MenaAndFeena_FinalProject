@@ -76,22 +76,25 @@ public class IssueReportController {
         return ResponseEntity.status(200).body(issueReportService.getUserIssueReportById(user.getId(), reportId));
     }
 
+    // سجل تتبّع البلاغ مرتباً حسب وقت الإنشاء (لرسم شريط التقدّم في الفرونت إند).
+    @GetMapping("/{issueReportId}/timeline")
+    public ResponseEntity<?> getReportTimeline(@PathVariable Integer issueReportId) {
+        return ResponseEntity.status(200).body(issueReportService.getReportTimeline(issueReportId));
+    }
+
     @PostMapping(value = "/report/{reportId}/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadIssueReportImage(@AuthenticationPrincipal User user,
-                                                    @PathVariable Integer reportId,
+    public ResponseEntity<?> uploadIssueReportImage(@AuthenticationPrincipal User user, @PathVariable Integer reportId,
                                                     @RequestParam("image") MultipartFile image) {
         return ResponseEntity.status(200).body(issueReportService.uploadIssueReportImage(user.getId(), reportId, image));
     }
 
     @GetMapping("/me/status/{status}")
-    public ResponseEntity<?> getUserIssueReportsByStatus(@AuthenticationPrincipal User user,
-                                                         @PathVariable String status) {
+    public ResponseEntity<?> getUserIssueReportsByStatus(@AuthenticationPrincipal User user, @PathVariable String status) {
         return ResponseEntity.status(200).body(issueReportService.getUserIssueReportsByStatus(user.getId(), status));
     }
 
     @GetMapping("/me/priority/{priority}")
-    public ResponseEntity<?> getUserIssueReportsByPriority(@AuthenticationPrincipal User user,
-                                                           @PathVariable String priority) {
+    public ResponseEntity<?> getUserIssueReportsByPriority(@AuthenticationPrincipal User user, @PathVariable String priority) {
         return ResponseEntity.status(200).body(issueReportService.getUserIssueReportsByPriority(user.getId(), priority));
     }
 

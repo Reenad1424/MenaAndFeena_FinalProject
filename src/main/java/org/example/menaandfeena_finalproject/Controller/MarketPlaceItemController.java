@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.MarketPlaceItemInDTO;
+import org.example.menaandfeena_finalproject.DTO.In.PriceSuggestionInDTO;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Service.MarketPlaceItemService;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,13 @@ public class MarketPlaceItemController {
                                                 @RequestBody @Valid MarketPlaceItemInDTO marketPlaceItemInDTO) {
         marketPlaceItemService.addMarketPlaceItem(user.getId(), marketPlaceItemInDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Market place item added"));
+    }
+
+    // AI-suggested price based on similar items of the same type in the user's neighborhood.
+    @PostMapping("/suggest-price")
+    public ResponseEntity<?> suggestPrice(@AuthenticationPrincipal User user,
+                                          @RequestBody @Valid PriceSuggestionInDTO priceSuggestionInDTO) {
+        return ResponseEntity.status(200).body(marketPlaceItemService.suggestPrice(user.getId(), priceSuggestionInDTO));
     }
 
     // TODO SECURITY: ADMIN/DEBUG general listing. User-facing listing should use /user/get for neighborhood isolation.

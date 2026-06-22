@@ -21,14 +21,6 @@ public class InitiativeParticipationController {
         return ResponseEntity.status(200).body(initiativeParticipationService.getAllInitiativeParticipations());
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<?> addInitiativeParticipation(
-            @Valid @RequestBody InitiativeParticipationInDTO initiativeParticipationInDTO) {
-
-        initiativeParticipationService.addInitiativeParticipation(initiativeParticipationInDTO);
-
-        return ResponseEntity.status(200).body(new ApiResponse("Initiative participation added successfully"));
-    }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateInitiativeParticipation(

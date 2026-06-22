@@ -1,151 +1,228 @@
 package org.example.menaandfeena_finalproject.Service;
 
 
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfWriter;
+import com.openhtmltopdf.bidi.support.ICUBidiReorderer;
+import com.openhtmltopdf.bidi.support.ICUBidiSplitter;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.DTO.Out.PaymentInvoiceDTO;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import com.lowagie.text.Font;
-import java.awt.Color;
-import com.lowagie.text.Element;
-import com.lowagie.text.Document;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfWriter;
-import org.springframework.stereotype.Service;
-import com.lowagie.text.Image;
+import org.springframework.util.StreamUtils;
+import org.springframework.web.util.HtmlUtils;
+
 import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayOutputStream;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfPCell;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 @Service
 @RequiredArgsConstructor
 public class PdfInvoiceService {
     private final PaymentService paymentService;
 
     public byte[] generateInvoice(String paymentId) throws Exception {
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
         PaymentInvoiceDTO invoice = paymentService.getPaymentInvoice(paymentId);
-        return generateInvoicePdf(invoice, out);
+        return generateInvoicePdf(invoice);
     }
 
     public byte[] generateInvoiceForUser(String paymentId, Integer userId) throws Exception {
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
         PaymentInvoiceDTO invoice = paymentService.getPaymentInvoiceForUser(paymentId, userId);
-        return generateInvoicePdf(invoice, out);
+        return generateInvoicePdf(invoice);
     }
 
-    private byte[] generateInvoicePdf(PaymentInvoiceDTO invoice, ByteArrayOutputStream out) throws Exception {
+    private byte[] generateInvoicePdf(PaymentInvoiceDTO invoice) throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        Document document = new Document();
+        PdfRendererBuilder builder = new PdfRendererBuilder();
+        builder.useFastMode();
+        builder.useUnicodeBidiSplitter(new ICUBidiSplitter.ICUBidiSplitterFactory());
+        builder.useUnicodeBidiReorderer(new ICUBidiReorderer());
+        builder.defaultTextDirection(PdfRendererBuilder.TextDirection.RTL);
+        builder.useFont(() -> {
+            try {
+                return new ClassPathResource("fonts/NotoNaskhArabic-Regular.ttf").getInputStream();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }, "Noto Naskh Arabic");
 
-        PdfWriter.getInstance(document, out);
+        builder.withHtmlContent(buildInvoiceHtml(invoice), null);
+        builder.toStream(out);
+        builder.run();
 
-        document.open();
-        String logoPath = "src/main/resources/static/images/logo.jpeg";
-
-        Image logo = Image.getInstance(logoPath);
-        logo.scaleToFit(120, 120);
-        logo.setAlignment(Image.ALIGN_CENTER);
-
-        document.add(logo);
-        document.add(new Paragraph(" "));
-
-        Font titleFont = new Font(
-                Font.HELVETICA,
-                18,
-                Font.BOLD,
-                new Color(34, 139, 34)
-        );
-
-        Paragraph title = new Paragraph(
-                "Mena & Feena Event Payment Invoice",
-                titleFont
-        );
-
-        title.setAlignment(Element.ALIGN_CENTER);
-        document.add(title);
-        Paragraph line = new Paragraph(
-                "________________________________________"
-        );
-
-        line.setAlignment(Element.ALIGN_CENTER);
-
-        line.getFont().setColor(new Color(34, 139, 34));
-
-        document.add(line);
-        document.add(new Paragraph(" "));
-        document.add(new Paragraph(" "));
-        document.add(new Paragraph(" "));
-        PdfPTable table = new PdfPTable(2);
-        PdfPCell cell1 = new PdfPCell();
-        PdfPCell cell2 = new PdfPCell();
-        table.setWidthPercentage(100);
-        table.setSpacingBefore(10);
-        table.setSpacingAfter(10);
-        table.addCell(createCell("Payment ID", true));
-        table.addCell(createCell(invoice.getMoyasarPaymentId(), false));
-        table.addCell(createCell("Event", true));
-        table.addCell(createCell(invoice.getEventTitle(), false));
-
-        table.addCell(createCell("Amount", true));
-        table.addCell(createCell(invoice.getAmount(), false));
-
-        table.addCell(createCell("Status", true));
-        table.addCell(createCell("✓ " + invoice.getPaymentStatus().toUpperCase(), false));
-        table.addCell(createCell("Card Company", true));
-        table.addCell(createCell(invoice.getCardCompany(), false));
-
-        table.addCell(createCell("Card Holder", true));
-        table.addCell(createCell(invoice.getCardHolderName(), false));
-
-        table.addCell(createCell("Date", true));
-        table.addCell(createCell(invoice.getCreatedAt(), false));
-
-        document.add(table);
-        document.add(new Paragraph(" "));
-
-        Paragraph thankYou = new Paragraph(
-                "Thank you for using Mena & Feena",
-                new Font(Font.HELVETICA, 12, Font.ITALIC)
-        );
-
-        thankYou.setAlignment(Element.ALIGN_CENTER);
-
-        document.add(thankYou);
-        document.close();
         return out.toByteArray();
-
     }
 
+    private String buildInvoiceHtml(PaymentInvoiceDTO invoice) throws Exception {
+        byte[] logoBytes = StreamUtils.copyToByteArray(
+                new ClassPathResource("static/images/logo.jpeg").getInputStream()
+        );
+        String logoSrc = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(logoBytes);
 
-    private PdfPCell createCell(String text, boolean label) {
-        Font font = new Font(Font.HELVETICA, 11, label ? Font.BOLD : Font.NORMAL);
+        String status = invoice.getPaymentStatus() == null
+                ? "لا يوجد"
+                : invoice.getPaymentStatus().toUpperCase();
 
-        PdfPCell cell = new PdfPCell(new Paragraph(text, font));
+        return """
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8" />
+<style>
+* {
+    font-family: "Noto Naskh Arabic";
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-        if (label) {
-            cell.setBackgroundColor(new Color(220, 237, 200));
-        } else {
-            cell.setBackgroundColor(new Color(250, 246, 238));
+@page { margin: 0; }
+
+body {
+    direction: rtl;
+    text-align: right;
+    background: #FAE9CD;
+    color: #333333;
+    font-size: 14px;
+    padding: 35px 28px;
+}
+
+.wrap {
+    width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.head {
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.logo {
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    margin-bottom: 14px;
+}
+
+.title {
+    color: #2e7d32;
+    font-size: 30px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #777777;
+    font-size: 15px;
+}
+
+.line {
+    height: 1px;
+    background: #e5dfcf;
+    margin: 20px 0;
+}
+
+.card {
+    background: #fffdf8;
+    border: 1px solid #eadfcb;
+    border-radius: 18px;
+    padding: 30px 34px;
+}
+
+.card-title {
+    color: #2e7d32;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.status-badge {
+    display: inline-block;
+    margin-bottom: 18px;
+    padding: 4px 16px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #2e7d32;
+    background: #e8f5e9;
+    border-radius: 12px;
+}
+
+table.details {
+    width: 100%%;
+    border-collapse: collapse;
+}
+
+table.details th {
+    text-align: right;
+    color: #2e7d32;
+    font-weight: bold;
+    width: 38%%;
+    padding: 13px 0;
+    border-bottom: 1px solid #f1ece0;
+    vertical-align: top;
+}
+
+table.details td {
+    text-align: left;
+    color: #555555;
+    padding: 13px 0;
+    border-bottom: 1px solid #f1ece0;
+    vertical-align: top;
+}
+
+.thanks {
+    color: #777777;
+    text-align: center;
+    margin-top: 22px;
+    font-size: 14px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="head">
+        <img class="logo" src="%s" alt="Mena And Feena" />
+        <div class="title">فاتورة دفع فعالية</div>
+        <div class="subtitle">شكراً للمساهمة في دعم فعاليات وأنشطة الحي السكني.</div>
+    </div>
+
+    <div class="line"></div>
+
+    <div class="card">
+        <div class="card-title">تفاصيل الدفع</div>
+        <span class="status-badge">%s</span>
+
+        <table class="details">
+            <tr><th>رقم العملية</th><td>%s</td></tr>
+            <tr><th>الفعالية</th><td>%s</td></tr>
+            <tr><th>المبلغ</th><td>%s</td></tr>
+            <tr><th>شركة البطاقة</th><td>%s</td></tr>
+            <tr><th>حامل البطاقة</th><td>%s</td></tr>
+            <tr><th>التاريخ</th><td>%s</td></tr>
+        </table>
+    </div>
+
+    <div class="thanks">شكراً لاستخدامك مينا وفينا</div>
+</div>
+</body>
+</html>
+""".formatted(
+                logoSrc,
+                html(status),
+                html(invoice.getMoyasarPaymentId()),
+                html(invoice.getEventTitle()),
+                html(invoice.getAmount()),
+                html(invoice.getCardCompany()),
+                html(invoice.getCardHolderName()),
+                html(invoice.getCreatedAt())
+        );
+    }
+
+    private String html(Object value) {
+        if (value == null) {
+            return "لا يوجد";
         }
-
-        cell.setPadding(8);
-        cell.setBorderColor(new Color(243, 156, 18));
-
-        return cell;
+        return HtmlUtils.htmlEscape(value.toString(), StandardCharsets.UTF_8.name());
     }
-
-
-
-
-
-
-
-
-
-
-
 }
