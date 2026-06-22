@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.AnnouncementInDTO;
+import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Service.AnnouncementService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/v1/announcement")
@@ -20,25 +22,66 @@ public class AnnouncementController {
         return ResponseEntity.status(200).body(announcementService.getAllAnnouncements());
     }
 
-    @PutMapping("/update/{id}/{userId}")
-    public ResponseEntity<?> updateAnnouncement(@PathVariable Integer id, @PathVariable Integer userId, @Valid @RequestBody AnnouncementInDTO announcementInDTO) {
+//    @PutMapping("/update/{id}/{userId}")
+//    public ResponseEntity<?> updateAnnouncement(@PathVariable Integer id, @PathVariable Integer userId, @Valid @RequestBody AnnouncementInDTO announcementInDTO) {
+//
+//        announcementService.updateAnnouncement(id, userId, announcementInDTO);
+//        return ResponseEntity.status(200).body(new ApiResponse("Announcement updated successfully"));
+//    }
 
-        announcementService.updateAnnouncement(id, userId, announcementInDTO);
+
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateAnnouncement(Authentication authentication,
+                                                @PathVariable Integer id,
+                                                @Valid @RequestBody AnnouncementInDTO announcementInDTO) {
+
+        User user = (User) authentication.getPrincipal();
+
+        announcementService.updateAnnouncement(id, user.getId(), announcementInDTO);
+
         return ResponseEntity.status(200).body(new ApiResponse("Announcement updated successfully"));
     }
 
-    @DeleteMapping("/delete/{id}/{userId}")
-    public ResponseEntity<?> deleteAnnouncement(@PathVariable Integer id, @PathVariable Integer userId) {
-        announcementService.deleteAnnouncement(id, userId);
+
+
+
+//    @DeleteMapping("/delete/{id}/{userId}")
+//    public ResponseEntity<?> deleteAnnouncement(@PathVariable Integer id, @PathVariable Integer userId) {
+//        announcementService.deleteAnnouncement(id, userId);
+//        return ResponseEntity.status(200).body(new ApiResponse("Announcement deleted successfully"));
+//    }
+
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteAnnouncement(Authentication authentication,
+                                                @PathVariable Integer id) {
+
+        User user = (User) authentication.getPrincipal();
+
+        announcementService.deleteAnnouncement(id, user.getId());
+
         return ResponseEntity.status(200).body(new ApiResponse("Announcement deleted successfully"));
     }
 
 
-    @PostMapping("/create/{userId}")
-    public ResponseEntity<?> createAnnouncement(@PathVariable Integer userId, @Valid @RequestBody AnnouncementInDTO announcementInDTO) {
-        announcementService.createAnnouncement(userId, announcementInDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Announcement created successfully"));
+//    @PostMapping("/create/{userId}")
+//    public ResponseEntity<?> createAnnouncement(@PathVariable Integer userId, @Valid @RequestBody AnnouncementInDTO announcementInDTO) {
+//        announcementService.createAnnouncement(userId, announcementInDTO);
+//        return ResponseEntity.status(200).body(new ApiResponse("Announcement created successfully"));
+//
+//    }
 
+
+    @PostMapping("/create")
+    public ResponseEntity<?> createAnnouncement(Authentication authentication,
+                                                @Valid @RequestBody AnnouncementInDTO announcementInDTO) {
+
+        User user = (User) authentication.getPrincipal();
+
+        announcementService.createAnnouncement(user.getId(), announcementInDTO);
+
+        return ResponseEntity.status(200).body(new ApiResponse("Announcement created successfully"));
     }
 
 
@@ -61,11 +104,6 @@ public class AnnouncementController {
 //
 //        return ResponseEntity.status(200).body(new ApiResponse(result));
 //    }
-
-
-
-
-
 
     @GetMapping("/search")
     public ResponseEntity<?> searchAnnouncements(@RequestParam String keyword) {
@@ -95,7 +133,6 @@ public class AnnouncementController {
     public ResponseEntity<?> testOpenAI() {
         return ResponseEntity.status(200).body(announcementService.testOpenAI());
     }
-
 
 
 }

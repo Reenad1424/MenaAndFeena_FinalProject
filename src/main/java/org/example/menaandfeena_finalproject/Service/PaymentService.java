@@ -185,13 +185,15 @@ public class PaymentService {
 
     // Walaa
 
-    public MoyasarChargeOutDTO payEventRegistration(Integer registrationId, OrderPaymentRequestDTO card) {
+    public MoyasarChargeOutDTO payEventRegistration(Integer userId, Integer registrationId, OrderPaymentRequestDTO card) {
         EventRegistration registration = eventRegistrationRepository.findEventRegistrationById(registrationId);
 
         if (registration == null) {
             throw new ApiException("Event registration not found");
         }
-
+        if (!registration.getUser().getId().equals(userId)) {
+            throw new ApiException("You can only pay for your own registration");
+        }
         if (!registration.getStatus().equals("PENDING")) {
             throw new ApiException("Only pending registrations can be paid");
         }

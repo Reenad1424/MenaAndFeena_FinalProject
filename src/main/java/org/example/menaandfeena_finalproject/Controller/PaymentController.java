@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.example.menaandfeena_finalproject.Model.User;
 
 @RestController
 @RequestMapping("/api/v1/payment")
@@ -63,12 +65,26 @@ public class PaymentController {
 
 
  // Walaa
-    @PostMapping("/pay-event/{registrationId}")
-    public ResponseEntity<?> payEventRegistration(@PathVariable Integer registrationId,
-                                               @RequestBody @Valid OrderPaymentRequestDTO card) {
+//    @PostMapping("/pay-event/{registrationId}")
+//    public ResponseEntity<?> payEventRegistration(@PathVariable Integer registrationId,
+//                                               @RequestBody @Valid OrderPaymentRequestDTO card) {
+//
+//        return ResponseEntity.status(200).body(paymentService.payEventRegistration(registrationId, card));
+//    }
 
-        return ResponseEntity.status(200).body(paymentService.payEventRegistration(registrationId, card));
+
+    @PostMapping("/pay-event/{registrationId}")
+    public ResponseEntity<?> payEventRegistration(Authentication authentication,
+                                                  @PathVariable Integer registrationId,
+                                                  @RequestBody @Valid OrderPaymentRequestDTO card) {
+
+        User user = (User) authentication.getPrincipal();
+
+        return ResponseEntity.status(200)
+                .body(paymentService.payEventRegistration(user.getId(), registrationId, card));
     }
+
+
 
 // Walaa
 

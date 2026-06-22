@@ -127,11 +127,15 @@ public class InitiativeParticipationService {
     }
 
     // Walaa
-    public void joinFamilyMember(Integer familyMemberId, Integer initiativeId) {
+    public void joinFamilyMember(Integer userId, Integer familyMemberId, Integer initiativeId) {
         FamilyMember familyMember = familyMemberRepository.findFamilyMemberById(familyMemberId);
 
         if (familyMember == null) {
             throw new ApiException("Family member not found");
+        }
+
+        if (!familyMember.getUser().getId().equals(userId)) {
+            throw new ApiException("You can only join your own family members");
         }
 
         Initiative initiative = initiativeRepository.findInitiativeById(initiativeId);

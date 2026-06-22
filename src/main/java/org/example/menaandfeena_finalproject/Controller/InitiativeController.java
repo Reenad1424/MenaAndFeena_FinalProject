@@ -8,6 +8,8 @@ import org.example.menaandfeena_finalproject.DTO.In.InitiativeInDTO;
 import org.example.menaandfeena_finalproject.Service.InitiativeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.example.menaandfeena_finalproject.Model.User;
 
 @RestController
 @RequestMapping("/api/v1/initiative")
@@ -60,17 +62,25 @@ public class InitiativeController {
 
 
 
-    @PostMapping("/create/{userId}")
-    public ResponseEntity<?> createInitiative(@PathVariable Integer userId, @Valid @RequestBody InitiativeInDTO initiativeInDTO) {
+//    @PostMapping("/create/{userId}")
+//    public ResponseEntity<?> createInitiative(@PathVariable Integer userId, @Valid @RequestBody InitiativeInDTO initiativeInDTO) {
+//
+//        initiativeService.createInitiative(userId, initiativeInDTO);
+//
+//        return ResponseEntity.status(200).body(new ApiResponse("Initiative created successfully"));
+//    }
 
-        initiativeService.createInitiative(userId, initiativeInDTO);
+
+    @PostMapping("/create")
+    public ResponseEntity<?> createInitiative(Authentication authentication,
+                                              @Valid @RequestBody InitiativeInDTO initiativeInDTO) {
+
+        User user = (User) authentication.getPrincipal();
+
+        initiativeService.createInitiative(user.getId(), initiativeInDTO);
 
         return ResponseEntity.status(200).body(new ApiResponse("Initiative created successfully"));
     }
-
-
-
-
 
 
 

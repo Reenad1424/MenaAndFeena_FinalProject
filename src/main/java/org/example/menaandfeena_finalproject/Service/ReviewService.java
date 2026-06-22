@@ -81,7 +81,7 @@ public class ReviewService {
         if (user == null) {
             throw new ApiException("User not found");
         }
-
+        System.out.println("JWT USER ID = " + userId);
         Event event = eventRepository.findEventById(eventId);
 
         if (event == null) {

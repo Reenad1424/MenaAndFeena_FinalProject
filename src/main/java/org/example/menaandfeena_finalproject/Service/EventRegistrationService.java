@@ -178,11 +178,15 @@ public class EventRegistrationService {
 
    // Walaa
 
-    public void registerFamilyMember(Integer familyMemberId, Integer eventId) {
+    public void registerFamilyMember(Integer userId, Integer familyMemberId, Integer eventId)  {
         FamilyMember familyMember = familyMemberRepository.findFamilyMemberById(familyMemberId);
 
         if (familyMember == null) {
             throw new ApiException("Family member not found");
+        }
+
+        if (!familyMember.getUser().getId().equals(userId)) {
+            throw new ApiException("You can only register your own family members");
         }
 
         Event event = eventRepository.findEventById(eventId);

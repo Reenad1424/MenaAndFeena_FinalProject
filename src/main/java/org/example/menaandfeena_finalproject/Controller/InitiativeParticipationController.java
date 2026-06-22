@@ -7,6 +7,8 @@ import org.example.menaandfeena_finalproject.DTO.In.InitiativeParticipationInDTO
 import org.example.menaandfeena_finalproject.Service.InitiativeParticipationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.example.menaandfeena_finalproject.Model.User;
 
 @RestController
 @RequestMapping("/api/v1/initiative-participation")
@@ -47,19 +49,51 @@ public class InitiativeParticipationController {
     }
 
 
-    @PostMapping("/join/{userId}/{initiativeId}")
-    public ResponseEntity<?> joinInitiative(@PathVariable Integer userId, @PathVariable Integer initiativeId) {
-        initiativeParticipationService.joinInitiative(userId, initiativeId);
+//    @PostMapping("/join/{userId}/{initiativeId}")
+//    public ResponseEntity<?> joinInitiative(@PathVariable Integer userId, @PathVariable Integer initiativeId) {
+//        initiativeParticipationService.joinInitiative(userId, initiativeId);
+//        return ResponseEntity.status(200).body(new ApiResponse("Joined successfully"));
+//    }
+
+    @PostMapping("/join/{initiativeId}")
+    public ResponseEntity<?> joinInitiative(Authentication authentication,
+                                            @PathVariable Integer initiativeId) {
+
+        User user = (User) authentication.getPrincipal();
+
+        initiativeParticipationService.joinInitiative(user.getId(), initiativeId);
+
         return ResponseEntity.status(200).body(new ApiResponse("Joined successfully"));
     }
 
 
 
+//    @PostMapping("/join-family/{familyMemberId}/{initiativeId}")
+//    public ResponseEntity<?> joinFamilyMember(@PathVariable Integer familyMemberId, @PathVariable Integer initiativeId) {
+//        initiativeParticipationService.joinFamilyMember(familyMemberId, initiativeId);
+//        return ResponseEntity.status(200).body(new ApiResponse("Family member joined successfully"));
+//    }
+
+
+
+
     @PostMapping("/join-family/{familyMemberId}/{initiativeId}")
-    public ResponseEntity<?> joinFamilyMember(@PathVariable Integer familyMemberId, @PathVariable Integer initiativeId) {
-        initiativeParticipationService.joinFamilyMember(familyMemberId, initiativeId);
+    public ResponseEntity<?> joinFamilyMember(Authentication authentication,
+                                              @PathVariable Integer familyMemberId,
+                                              @PathVariable Integer initiativeId) {
+
+        User user = (User) authentication.getPrincipal();
+
+        initiativeParticipationService.joinFamilyMember(
+                user.getId(), familyMemberId, initiativeId
+        );
+
         return ResponseEntity.status(200).body(new ApiResponse("Family member joined successfully"));
     }
+
+
+
+
 
 
 

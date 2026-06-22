@@ -69,6 +69,11 @@ public class ConfigSecurity {
                                 "/api/v1/users/about"
                         ).permitAll()
 
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/payment/callback"
+                        ).permitAll()
+
                         // =========================
                         // ADMIN ONLY
                         // =========================
@@ -167,7 +172,15 @@ public class ConfigSecurity {
                                 "/api/v1/mayor-candidates/round/**",
                                 "/api/v1/mayor-candidates/profile/**",
                                 "/api/v1/mayor-candidates/apply/round/**",
-                                "/api/v1/neighborhoods/dashboard"
+                                "/api/v1/neighborhoods/dashboard",
+                                "/api/v1/review/**",
+                                "/api/v1/announcement/**",
+                                "/api/v1/event/**",
+                                "/api/v1/event-registration/**",
+                                "/api/v1/initiative/**",
+                                "/api/v1/initiative-participation/**",
+                                "/api/v1/payment/pay-event/**",
+                                "/api/v1/payment/invoice-pdf/**"
                         ).hasAnyAuthority("USER", "MAYOR")
 
                         // =========================

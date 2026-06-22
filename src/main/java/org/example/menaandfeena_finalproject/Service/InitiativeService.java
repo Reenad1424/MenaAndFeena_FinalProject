@@ -104,7 +104,4 @@ public void createInitiative(Integer userId, InitiativeInDTO initiativeInDTO) {
 }
 
 
-
-
-
 }

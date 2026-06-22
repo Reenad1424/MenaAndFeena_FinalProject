@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.ReviewInDTO;
+import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Service.ReviewService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/v1/review")
@@ -42,19 +44,59 @@ public class ReviewController {
     }
 
 
-    @PostMapping("/add-event-review/{userId}/{eventId}")
-    public ResponseEntity<?> addEventReview(@PathVariable Integer userId, @PathVariable Integer eventId,
-                                         @Valid @RequestBody ReviewInDTO reviewInDTO) {
-        reviewService.addEventReview(userId, eventId, reviewInDTO);
+//    @PostMapping("/add-event-review/{userId}/{eventId}")
+//    public ResponseEntity<?> addEventReview(@PathVariable Integer userId, @PathVariable Integer eventId,
+//                                         @Valid @RequestBody ReviewInDTO reviewInDTO) {
+//        reviewService.addEventReview(userId, eventId, reviewInDTO);
+//        return ResponseEntity.status(200).body(new ApiResponse("Event review added successfully"));
+//    }
+
+
+    @PostMapping("/add-event-review/{eventId}")
+    public ResponseEntity<?> addEventReview(Authentication authentication,
+                                            @PathVariable Integer eventId,
+                                            @Valid @RequestBody ReviewInDTO reviewInDTO) {
+
+        User user = (User) authentication.getPrincipal();
+
+        reviewService.addEventReview(user.getId(), eventId, reviewInDTO);
+
         return ResponseEntity.status(200).body(new ApiResponse("Event review added successfully"));
     }
 
-    @PostMapping("/add-initiative-review/{userId}/{initiativeId}")
-    public ResponseEntity<?> addInitiativeReview(@PathVariable Integer userId, @PathVariable Integer initiativeId,
-                                              @Valid @RequestBody ReviewInDTO reviewInDTO) {
-        reviewService.addInitiativeReview(userId, initiativeId, reviewInDTO);
+
+
+
+
+//    @PostMapping("/add-initiative-review/{userId}/{initiativeId}")
+//    public ResponseEntity<?> addInitiativeReview(@PathVariable Integer userId, @PathVariable Integer initiativeId,
+//                                              @Valid @RequestBody ReviewInDTO reviewInDTO) {
+//        reviewService.addInitiativeReview(userId, initiativeId, reviewInDTO);
+//        return ResponseEntity.status(200).body(new ApiResponse("Initiative review added successfully"));
+//    }
+
+
+
+
+    @PostMapping("/add-initiative-review/{initiativeId}")
+    public ResponseEntity<?> addInitiativeReview(Authentication authentication,
+                                                 @PathVariable Integer initiativeId,
+                                                 @Valid @RequestBody ReviewInDTO reviewInDTO) {
+
+        User user = (User) authentication.getPrincipal();
+        reviewService.addInitiativeReview(
+                user.getId(),
+                initiativeId,
+                reviewInDTO
+        );
+
         return ResponseEntity.status(200).body(new ApiResponse("Initiative review added successfully"));
     }
+
+
+
+
+
 
 
     @GetMapping("/event/{eventId}")

@@ -9,7 +9,8 @@ import org.example.menaandfeena_finalproject.Model.Event;
 import org.example.menaandfeena_finalproject.Service.EventService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.Authentication;
+import org.example.menaandfeena_finalproject.Model.User;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -66,27 +67,38 @@ public class EventController {
 
 
 
+//
+//    @PostMapping("/create/{userId}")
+//    public ResponseEntity<?> createEvent(@PathVariable Integer userId, @Valid @RequestBody EventInDTO eventInDTO) {
+//        eventService.createEvent(userId, eventInDTO);
+//        return ResponseEntity.status(200).body(new ApiResponse("Event created successfully"));
+//    }
 
-    @PostMapping("/create/{userId}")
-    public ResponseEntity<?> createEvent(@PathVariable Integer userId, @Valid @RequestBody EventInDTO eventInDTO) {
-        eventService.createEvent(userId, eventInDTO);
+    @PostMapping("/create")
+    public ResponseEntity<?> createEvent(Authentication authentication,
+                                         @Valid @RequestBody EventInDTO eventInDTO) {
+
+        User user = (User) authentication.getPrincipal();
+        eventService.createEvent(user.getId(), eventInDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Event created successfully"));
-
     }
 
 
 
-    @GetMapping("/recommend/{userId}")
-    public ResponseEntity<?> recommendEvent(@PathVariable Integer userId) {
+//    @GetMapping("/recommend/{userId}")
+//    public ResponseEntity<?> recommendEvent(@PathVariable Integer userId) {
+//
+//        return ResponseEntity.status(200).body(eventService.recommendEventForUser(userId));
+//    }
 
-        return ResponseEntity.status(200).body(eventService.recommendEventForUser(userId));
+
+    @GetMapping("/recommend")
+    public ResponseEntity<?> recommendEvent(Authentication authentication) {
+
+        User user = (User) authentication.getPrincipal();
+
+        return ResponseEntity.status(200).body(eventService.recommendEventForUser(user.getId()));
     }
-
-
-
-
-
-
 
 
 
