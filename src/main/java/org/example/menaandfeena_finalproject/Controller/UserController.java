@@ -164,36 +164,6 @@ public class UserController {
         );
     }
 
-    /*@GetMapping("/profile/community")
-    public ResponseEntity<?> getCommunityProfile(
-            @AuthenticationPrincipal User user
-    ) {
-
-        return ResponseEntity.status(200).body(
-                userService.getCommunityProfile(user.getId())
-        );
-    }
-
-    @GetMapping("/profile/activities")
-    public ResponseEntity<?> getActivitiesProfile(
-            @AuthenticationPrincipal User user
-    ) {
-
-        return ResponseEntity.status(200).body(
-                userService.getActivitiesProfile(user.getId())
-        );
-    }
-
-    @GetMapping("/profile/reputation")
-    public ResponseEntity<?> getReputationProfile(
-            @AuthenticationPrincipal User user
-    ) {
-
-        return ResponseEntity.status(200).body(
-                userService.getReputationProfile(user.getId())
-        );
-    }*/
-
     @GetMapping("/marketplace/summary")
     public ResponseEntity<?> getMarketplaceSummary(
             @AuthenticationPrincipal User user

@@ -99,7 +99,7 @@ public class EmailService {
                 <h2 style="color:#2e7d32;text-align:center;">تهانينا %s</h2>
                 
                 <p style="font-size:15px;">
-                نبارك لك فوزك في انتخابات عمدة الحي، وتم تعيينك عمدةً لحي <strong>%s</strong>.
+                نبارك لك فوزك في انتخابات عمدة الحي، وتم تعيينك عمدةً لحي🌳🏡 <strong>%s</strong>.
                 </p>
                 
                 <div style="text-align:center;background:#eef8ef; padding:15px; border-radius:12px; margin:20px 0;">
@@ -127,9 +127,18 @@ public class EmailService {
                 <li>تقرير تحليل رضا السكان.</li>
                 </ul>
                 
-                <p style="margin-top:25px;">
-                 يرجى تسجيل الدخول مرة أخرى لتفعيل الصلاحيات الجديدة,نتمنى لك التوفيق في خدمة الحي وسكانه.
-                </p>
+                <div style="text-align:center;background:#fff8e1;padding:15px;border-radius:12px;margin-top:20px;">
+                🔑 تم تفعيل صلاحيات العمدة لحسابك.
+                
+                يرجى تسجيل الخروج ثم تسجيل الدخول مرة أخرى للوصول إلى:
+                
+                <ul>
+                <li>لوحة العمدة</li>
+                <li>التقارير الذكية</li>
+                <li>إدارة البلاغات</li>
+                <li>مؤشرات أداء الحي</li>
+                </ul>
+                </div>
                 
                 <p style="color:#999; font-size:12px;">
                 منصة منا وفينا

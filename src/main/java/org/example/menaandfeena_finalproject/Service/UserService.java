@@ -212,14 +212,28 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         String whatsappMessage =
-                "هلا والله "
-                        + savedUser.getFullName()
-                        + " 👋\n\n"
-                        + "نورت حي "
-                        + neighborhood.getName()
-                        + " 🌟\n\n"
-                        + "تم إنشاء حسابك بنجاح في منصة منا وفينا.";
-
+                """
+                🌞🏡🌳
+        
+                هلا والله %s،
+        
+                تم تسجيلك بنجاح في منصة منا وفينا والانضمام إلى حي %s 💚
+        
+                نؤمن أن الحي القوي يبدأ من سكانه، وأن التعاون يصنع فرقاً حقيقياً.
+        
+                🤝 شارك
+                🌿 بادر
+                📢 اقترح
+                🎉 احضر الفعاليات
+                🗳️ صوت لمن يمثل حيك
+        
+                أهلاً بك بين جيرانك نورت الحي 🌳🏡
+        
+                منا وفينا 💚
+                """.formatted(
+                        savedUser.getFullName(),
+                        neighborhood.getName()
+                );
         try {
 
             whatsAppService.sendWhatsAppMessage(
@@ -362,121 +376,6 @@ public class UserService {
     }
 
     // =========================
-    // PROFILE COMMUNITY
-    // =========================
-
-    /*public UserProfileCommunityDTO getCommunityProfile(Integer userId) {
-
-        User user = getUserOrThrow(userId);
-
-        UserProfileCommunityDTO dto = new UserProfileCommunityDTO();
-
-        dto.setBasicInfo(getBasicProfile(userId));
-
-        dto.setFamilyMembers(
-                user.getFamilyMembers()
-                        .stream()
-                        .map(f ->
-                                new FamilyMemberDTO(
-                                        f.getName(),
-                                        f.getAge(),
-                                        f.getRelation()
-                                )
-                        )
-                        .toList()
-        );
-
-        dto.setLastActivity(getLastActivity(user));
-
-        dto.setVotes(mapVotes(user));
-
-        return dto;
-    }*/
-
-    // =========================
-    // PROFILE ACTIVITIES
-    // =========================
-
-    /*public UserProfileActivitiesDTO getActivitiesProfile(Integer userId) {
-
-        User user = getUserOrThrow(userId);
-
-        UserProfileActivitiesDTO dto = new UserProfileActivitiesDTO();
-
-        dto.setBasicInfo(getBasicProfile(userId));
-
-        dto.setParticipatedEvents(getParticipatedEvents(userId));
-
-        dto.setCreatedEvents(
-                eventRepository.findByCreatorId(userId)
-                        .stream()
-                        .map(e ->
-                                new UserEventDTO(
-                                        e.getId(),
-                                        e.getTitle(),
-                                        e.getDate(),
-                                        e.getStatus(),
-                                        e.getLocation()
-                                )
-                        )
-                        .toList()
-        );
-
-        dto.setParticipatedInitiatives(getParticipatedInitiatives(userId));
-
-        dto.setCreatedInitiatives(
-                initiativeRepository.findByCreatorId(userId)
-                        .stream()
-                        .map(i ->
-                                new UserInitiativeDTO(
-                                        i.getId(),
-                                        i.getTitle(),
-                                        i.getDate(),
-                                        i.getStatus(),
-                                        i.getCategory()
-                                )
-                        )
-                        .toList()
-        );
-
-        return dto;
-    }*/
-
-    // =========================
-    // PROFILE REPUTATION
-    // =========================
-
-   /* public UserProfileReputationDTO getReputationProfile(Integer userId) {
-
-        User user = getUserOrThrow(userId);
-
-        UserProfileReputationDTO dto = new UserProfileReputationDTO();
-
-        dto.setBasicInfo(getBasicProfile(userId));
-
-        dto.setWrittenReviews(
-                user.getReviews()
-                        .stream()
-                        .map(r ->
-                                new UserReviewDTO(
-                                        r.getId(),
-                                        r.getRating(),
-                                        r.getComment(),
-                                        r.getCreatedAt(),
-                                        r.getUser().getFullName()
-                                )
-                        )
-                        .toList()
-        );
-
-        dto.setReceivedReviews(new ArrayList<>());
-
-        dto.setIssueReports(getUserIssues(user));
-
-        return dto;
-    }*/
-
-    // =========================
     // PROFILE MARKETPLACE
     // =========================
     public UserMarketplaceSummaryDTO getMarketplaceSummary(Integer userId) {
@@ -560,18 +459,6 @@ public class UserService {
                 orders
         );
     }
-    /*public List<UserOrderDTO> getMyOrders(Integer userId) {
-
-        getUserOrThrow(userId);
-
-        return getPurchases(userId);
-    }
-    public List<UserOrderDTO> getMyProductOrders(Integer userId) {
-
-        getUserOrThrow(userId);
-
-        return getSales(userId);
-    }*/
 
     // =========================
     // PROFILE FULL
@@ -714,6 +601,63 @@ public class UserService {
                 firstRound.setNeighborhood(neighborhood);
 
                 electionRoundRepository.save(firstRound);
+
+                sendElectionStartedWhatsAppMessages(neighborhood, firstRound);
+            }
+        }
+    }
+    private void sendElectionStartedWhatsAppMessages(
+            Neighborhood neighborhood,
+            ElectionRound electionRound
+    ) {
+
+        List<User> residents =
+                userRepository.findByNeighborhoodId(
+                        neighborhood.getId()
+                );
+
+        for (User resident : residents) {
+
+            if (resident.getPhone() == null ||
+                    resident.getPhone().isBlank()) {
+                continue;
+            }
+
+            String message =
+                    """
+                    🗳️🌳 انتخابات الحي بدأت الآن
+    
+                    هلا والله %s 👋
+    
+                    تم فتح جولة انتخابية جديدة في حي %s 🏡
+    
+                    يمكنك الآن الدخول إلى منصة منا وفينا والاطلاع على المرشحين والتصويت لمن يمثل حيك.
+    
+                    📅 بداية الجولة: %s
+                    📅 نهاية الجولة: %s
+    
+                    صوتك يساهم في بناء حي أكثر تعاوناً وتنظيماً 🤝🌿
+    
+                    منا وفينا 💚
+                    """.formatted(
+                            resident.getFullName(),
+                            neighborhood.getName(),
+                            electionRound.getStartDate(),
+                            electionRound.getEndDate()
+                    );
+
+            try {
+                whatsAppService.sendWhatsAppMessage(
+                        resident.getPhone(),
+                        message
+                );
+            } catch (Exception e) {
+                System.out.println(
+                        "Election WhatsApp failed for user "
+                                + resident.getId()
+                                + ": "
+                                + e.getMessage()
+                );
             }
         }
     }
@@ -957,7 +901,6 @@ public class UserService {
                                 buyerName,
                                 sellerName,
                                 orderItem.getType(),
-                                order.getStatus(),
                                 item.getStatus(),
                                 orderItem.getQuantity(),
                                 orderItem.getUnitPrice(),
@@ -1003,7 +946,6 @@ public class UserService {
                                 buyerName,
                                 item.getUser().getFullName(),
                                 orderItem.getType(),
-                                order.getStatus(),
                                 item.getStatus(),
                                 orderItem.getQuantity(),
                                 orderItem.getUnitPrice(),

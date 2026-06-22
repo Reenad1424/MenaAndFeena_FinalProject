@@ -287,32 +287,65 @@ public class ElectionRoundService {
                 savedMayorProfile,
                 winnerVotes
         );
-        trySendMayorAppointmentWhatsApp(winningUser, savedMayorProfile);
-    }
+        sendMayorAppointmentWhatsApp(
+                winningUser,
+                savedMayorProfile,
+                winnerVotes
+        );    }
 
-    private void trySendMayorAppointmentWhatsApp(User mayor, MayorProfile mayorProfile) {
-        try {
-            if (mayor.getPhone() == null || mayor.getPhone().isBlank()) {
-                return;
-            }
+    private void sendMayorAppointmentWhatsApp(
+            User mayor,
+            MayorProfile mayorProfile,
+            Integer votes
+    ) {
 
-            String neighborhoodName =
-                    mayorProfile.getNeighborhood() == null
-                            ? "your neighborhood"
-                            : mayorProfile.getNeighborhood().getName();
-
-            String message =
-                    "Congratulations " + mayor.getFullName() + "\n\n" +
-                            "You have been appointed as mayor of " + neighborhoodName + ".\n" +
-                            "Term start: " + mayorProfile.getStartDate() + "\n" +
-                            "Term end: " + mayorProfile.getEndDate();
-
-            whatsAppService.sendWhatsAppMessage(mayor.getPhone(), message);
-        } catch (Exception e) {
-            log.error("Mayor appointment WhatsApp failed for user id {}.", mayor.getId(), e);
+        if (mayor.getPhone() == null ||
+                mayor.getPhone().isBlank()) {
+            return;
         }
-    }
 
+        String neighborhoodName =
+                mayorProfile.getNeighborhood() == null
+                        ? "الحي"
+                        : mayorProfile.getNeighborhood().getName();
+
+        String message =
+                """
+                🎉🌳 تهانينا %s
+    
+                تم انتخابك عمدة لحي %s 🏡
+    
+                🗳️ عدد الأصوات: %s
+    
+                📅 بداية الولاية: %s
+                📅 نهاية الولاية: %s
+    
+                🔑 تم تفعيل صلاحيات العمدة لحسابك.
+    
+                يرجى تسجيل الخروج ثم تسجيل الدخول مرة أخرى للوصول إلى:
+    
+                📊 لوحة العمدة
+                📈 التقارير الذكية
+                🚨 إدارة البلاغات
+                😊 مؤشرات رضا السكان
+    
+                نتمنى لك التوفيق في خدمة الحي وسكانه 🤝
+    
+                منا وفينا 💚
+                """
+                        .formatted(
+                                mayor.getFullName(),
+                                neighborhoodName,
+                                votes,
+                                mayorProfile.getStartDate(),
+                                mayorProfile.getEndDate()
+                        );
+
+        whatsAppService.sendWhatsAppMessage(
+                mayor.getPhone(),
+                message
+        );
+    }
 
     private void openNewRoundIfMayorTermExpired(ElectionRound round) {
 

@@ -19,7 +19,7 @@ public class MayorProfile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(columnDefinition = "varchar(20) not null")
     private String status;

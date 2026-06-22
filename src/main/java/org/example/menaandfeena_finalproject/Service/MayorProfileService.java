@@ -85,30 +85,6 @@ public class MayorProfileService {
         userRepository.save(user);
 
         MayorProfile savedMayorProfile = mayorProfileRepository.save(mayorProfile);
-        trySendMayorAppointmentWhatsApp(user, savedMayorProfile);
-    }
-
-    private void trySendMayorAppointmentWhatsApp(User mayor, MayorProfile mayorProfile) {
-        try {
-            if (mayor.getPhone() == null || mayor.getPhone().isBlank()) {
-                return;
-            }
-
-            String neighborhoodName =
-                    mayorProfile.getNeighborhood() == null
-                            ? "your neighborhood"
-                            : mayorProfile.getNeighborhood().getName();
-
-            String message =
-                    "Congratulations " + mayor.getFullName() + "\n\n" +
-                            "You have been appointed as mayor of " + neighborhoodName + ".\n" +
-                            "Term start: " + mayorProfile.getStartDate() + "\n" +
-                            "Term end: " + mayorProfile.getEndDate();
-
-            whatsAppService.sendWhatsAppMessage(mayor.getPhone(), message);
-        } catch (Exception e) {
-            log.error("Mayor appointment WhatsApp failed for user id {}.", mayor.getId(), e);
-        }
     }
 
     public void updateMayorProfile(Integer id, MayorProfileInDTO dto) {
@@ -873,7 +849,10 @@ td {
 </head>
 
 <body>
-
+<div style="text-align:center; margin-bottom:20px;">
+    <img src="file:src/main/resources/static/images/logo.jpeg" style="width:120px;" />
+    <h2 style="margin:10px 0 0 0;">منصة منا وفينا</h2>
+</div>
 <div class="title">التقرير الأسبوعي للبلاغات</div>
 <div class="subtitle">عرض بلاغات سكان الحي خلال هذا الأسبوع</div>
 
@@ -1072,7 +1051,10 @@ body {
 </head>
 
 <body>
-
+<div style="text-align:center; margin-bottom:20px;">
+    <img src="file:src/main/resources/static/images/logo.jpeg" style="width:120px;" />
+    <h2 style="margin:10px 0 0 0;">منصة منا وفينا</h2>
+</div>
 <div class="title">تقرير تقييم أداء الحي</div>
 <div class="subtitle">تحليل شامل لأداء الحي بناءً على البلاغات والخدمات ورضا السكان</div>
 
@@ -1293,7 +1275,10 @@ body {
 </head>
 
 <body>
-
+<div style="text-align:center; margin-bottom:20px;">
+    <img src="file:src/main/resources/static/images/logo.jpeg" style="width:120px;" />
+    <h2 style="margin:10px 0 0 0;">منصة منا وفينا</h2>
+</div>
 <div class="title">تقرير تحليل رضا السكان</div>
 <div class="subtitle">يعرض هذا التقرير نسبة رضا سكان الحي عن الخدمات الأساسية</div>
 

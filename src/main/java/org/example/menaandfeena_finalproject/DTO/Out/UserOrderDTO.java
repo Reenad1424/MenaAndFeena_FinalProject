@@ -23,8 +23,6 @@ public class UserOrderDTO {
 
     private String orderType;
 
-    private String orderStatus;
-
     private String productStatus;
 
     private Integer quantity;
