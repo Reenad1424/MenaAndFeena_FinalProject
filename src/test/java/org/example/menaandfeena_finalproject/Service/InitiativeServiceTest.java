@@ -1,4 +1,4 @@
-package org.example.menaandfeena_finalproject;
+package org.example.menaandfeena_finalproject.Service;
 
 import org.example.menaandfeena_finalproject.Api.ApiException;
 import org.example.menaandfeena_finalproject.DTO.In.InitiativeInDTO;
@@ -6,7 +6,6 @@ import org.example.menaandfeena_finalproject.Model.Initiative;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.InitiativeRepository;
 import org.example.menaandfeena_finalproject.Repository.UserRepository;
-import org.example.menaandfeena_finalproject.Service.InitiativeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

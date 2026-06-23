@@ -1,14 +1,10 @@
-package org.example.menaandfeena_finalproject;
+package org.example.menaandfeena_finalproject.Repository;
 
 import org.assertj.core.api.Assertions;
 import org.example.menaandfeena_finalproject.Model.ElectionRound;
 import org.example.menaandfeena_finalproject.Model.MayorCandidate;
 import org.example.menaandfeena_finalproject.Model.Neighborhood;
 import org.example.menaandfeena_finalproject.Model.User;
-import org.example.menaandfeena_finalproject.Repository.ElectionRoundRepository;
-import org.example.menaandfeena_finalproject.Repository.MayorCandidateRepository;
-import org.example.menaandfeena_finalproject.Repository.NeighborhoodRepository;
-import org.example.menaandfeena_finalproject.Repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

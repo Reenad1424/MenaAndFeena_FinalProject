@@ -1,11 +1,10 @@
-package org.example.menaandfeena_finalproject;
+package org.example.menaandfeena_finalproject.Service;
 
 import org.example.menaandfeena_finalproject.DTO.In.FamilyMemberInDTO;
 import org.example.menaandfeena_finalproject.Model.FamilyMember;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.FamilyMemberRepository;
 import org.example.menaandfeena_finalproject.Repository.UserRepository;
-import org.example.menaandfeena_finalproject.Service.FamilyMemberService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

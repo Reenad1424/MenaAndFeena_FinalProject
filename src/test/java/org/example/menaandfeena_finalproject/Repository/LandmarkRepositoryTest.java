@@ -1,10 +1,8 @@
-package org.example.menaandfeena_finalproject;
+package org.example.menaandfeena_finalproject.Repository;
 
 import org.assertj.core.api.Assertions;
 import org.example.menaandfeena_finalproject.Model.Landmark;
 import org.example.menaandfeena_finalproject.Model.Neighborhood;
-import org.example.menaandfeena_finalproject.Repository.LandmarkRepository;
-import org.example.menaandfeena_finalproject.Repository.NeighborhoodRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

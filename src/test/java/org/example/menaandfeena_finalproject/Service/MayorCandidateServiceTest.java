@@ -1,4 +1,4 @@
-package org.example.menaandfeena_finalproject;
+package org.example.menaandfeena_finalproject.Service;
 
 import org.example.menaandfeena_finalproject.DTO.Out.CandidateDetailsDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.CandidateResponseDto;
@@ -6,8 +6,6 @@ import org.example.menaandfeena_finalproject.DTO.Out.ElectionPageDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.MayorCandidateOutDTO;
 import org.example.menaandfeena_finalproject.Model.*;
 import org.example.menaandfeena_finalproject.Repository.*;
-import org.example.menaandfeena_finalproject.Service.MayorCandidateService;
-import org.example.menaandfeena_finalproject.Service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

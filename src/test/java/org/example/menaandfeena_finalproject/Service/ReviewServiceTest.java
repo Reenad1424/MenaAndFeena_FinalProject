@@ -1,11 +1,9 @@
-package org.example.menaandfeena_finalproject;
+package org.example.menaandfeena_finalproject.Service;
 
 import org.example.menaandfeena_finalproject.DTO.In.ReviewInDTO;
 import org.example.menaandfeena_finalproject.Model.Event;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.*;
-import org.example.menaandfeena_finalproject.Service.OpenAIService;
-import org.example.menaandfeena_finalproject.Service.ReviewService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,14 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.example.menaandfeena_finalproject.Api.ApiException;
 import org.example.menaandfeena_finalproject.Model.*;
-import org.example.menaandfeena_finalproject.Repository.*;
-import org.example.menaandfeena_finalproject.Service.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

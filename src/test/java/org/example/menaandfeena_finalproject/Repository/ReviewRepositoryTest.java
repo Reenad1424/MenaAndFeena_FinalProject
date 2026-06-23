@@ -1,10 +1,9 @@
-package org.example.menaandfeena_finalproject;
+package org.example.menaandfeena_finalproject.Repository;
 
 import org.example.menaandfeena_finalproject.Model.Event;
 import org.example.menaandfeena_finalproject.Model.Initiative;
 import org.example.menaandfeena_finalproject.Model.Review;
 import org.example.menaandfeena_finalproject.Model.User;
-import org.example.menaandfeena_finalproject.Repository.ReviewRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,11 +1,10 @@
-package org.example.menaandfeena_finalproject;
+package org.example.menaandfeena_finalproject.Service;
 
 import org.example.menaandfeena_finalproject.DTO.In.MayorProfileInDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.MayorAnalyticsDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.MayorReportsDTO;
 import org.example.menaandfeena_finalproject.Model.*;
 import org.example.menaandfeena_finalproject.Repository.*;
-import org.example.menaandfeena_finalproject.Service.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
