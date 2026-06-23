@@ -6,6 +6,9 @@ import org.example.menaandfeena_finalproject.Api.ApiResponse;
 import org.example.menaandfeena_finalproject.DTO.In.OrderPaymentRequestDTO;
 import org.example.menaandfeena_finalproject.DTO.In.PaymentRequestDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.PaymentInvoiceDTO;
+import org.example.menaandfeena_finalproject.Api.ApiException;
+import org.example.menaandfeena_finalproject.Model.Payment;
+import org.example.menaandfeena_finalproject.Repository.PaymentRepository;
 import org.example.menaandfeena_finalproject.Service.OrderService;
 import org.example.menaandfeena_finalproject.Service.PaymentService;
 import org.example.menaandfeena_finalproject.Service.PdfInvoiceService;
@@ -23,6 +26,8 @@ public class PaymentController {
 
     private final PaymentService paymentService;
     private final PdfInvoiceService pdfInvoiceService;
+    private final PaymentRepository paymentRepository;
+    private final OrderService orderService;
 
     @PostMapping("/card")
     public ResponseEntity<?> processPayment(@RequestBody @Valid PaymentRequestDTO paymentRequest) {
@@ -90,11 +95,23 @@ public class PaymentController {
 
     @GetMapping("/callback")
     public ResponseEntity<?> paymentCallback(@RequestParam String id,
-                                          @RequestParam String status,
+                                          @RequestParam(required = false) String status,
                                           @RequestParam(required = false) String message) {
 
-        paymentService.handlePaymentCallback(id, status);
-        return ResponseEntity.status(200).body(new ApiResponse("Payment callback handled successfully"));
+        Payment payment = paymentRepository.findPaymentByTransactionId(id);
+        if (payment == null) {
+            throw new ApiException("Payment not found");
+        }
+
+        Object callbackResult;
+        if (payment.getOrders() != null) {
+            callbackResult = orderService.handlePaymentCallback(payment);
+        } else {
+            paymentService.handlePaymentCallback(id);
+            callbackResult = new ApiResponse("Payment callback handled successfully");
+        }
+
+        return ResponseEntity.status(200).body(callbackResult);
     }
 
 

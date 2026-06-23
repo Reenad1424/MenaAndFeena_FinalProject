@@ -610,7 +610,8 @@ public class IssueReportService {
                 5. اقتراحات تحسين
                 اكتب باللغة العربية فقط، بطول تقريبي بين 150 و250 كلمة.
                 لا تضف JSON ولا جداول، فقط نص تحليلي منظم.
-                """;
+                اكتب عنوان كل قسم في سطر مستقل ينتهي بنقطتين، ثم فقرته تحته.
+                """ + PdfReportSupport.AI_PLAIN_ARABIC;
 
         String userContent = """
                 اسم الحي: %s
@@ -666,7 +667,7 @@ public class IssueReportService {
                     throw new RuntimeException(e);
                 }
             }, "Noto Naskh Arabic");
-            builder.withHtmlContent(buildMayorReportHtml(neighborhood.getName(), totalReports, openReports, inProgressReports, completedReports, urgentReports, nonUrgentReports, periodicReports, mostCommonCategory, mostAffectedStreet, mostAffectedDistrict, aiAnalysis), null);
+            builder.withHtmlContent(buildMayorReportHtml(neighborhood.getName(), totalReports, openReports, inProgressReports, completedReports, urgentReports, nonUrgentReports, periodicReports, mostCommonCategory, mostAffectedStreet, mostAffectedDistrict, aiAnalysis, reports), null);
             builder.toStream(outputStream);
             builder.run();
             pdfBytes = outputStream.toByteArray();
@@ -718,143 +719,139 @@ public class IssueReportService {
                 + "، لذلك يوصى بترتيبها أولاً ومتابعة المواقع الأكثر تكراراً بشكل مباشر. كما يفضل رفع وتيرة المتابعة الميدانية، توزيع فرق الصيانة حسب كثافة البلاغات، ومراجعة البلاغات المفتوحة يومياً حتى لا تتأخر المعالجة. هذا الملخص تم توليده تلقائياً لأن خدمة الذكاء الاصطناعي لم تُرجع تحليلاً صالحاً.";
     }
 
-    private String buildMayorReportHtml(String neighborhoodName, int totalReports, int openReports, int inProgressReports, int completedReports, int urgentReports, int nonUrgentReports, int periodicReports, String mostCommonCategory, String mostAffectedStreet, String mostAffectedDistrict, String aiAnalysis) {
+    private String statusAr(String status) {
+        if ("OPEN".equals(status)) return "مفتوح";
+        if ("IN_PROGRESS".equals(status)) return "قيد المعالجة";
+        if ("COMPLETED".equals(status)) return "مكتمل";
+        return status;
+    }
+
+    private String priorityAr(String priority) {
+        if ("URGENT".equals(priority)) return "عاجلة";
+        if ("NON_URGENT".equals(priority)) return "غير عاجلة";
+        if ("PERIODIC".equals(priority)) return "دورية";
+        return priority;
+    }
+
+    private String buildMayorReportHtml(String neighborhoodName, int totalReports, int openReports, int inProgressReports, int completedReports, int urgentReports, int nonUrgentReports, int periodicReports, String mostCommonCategory, String mostAffectedStreet, String mostAffectedDistrict, String aiAnalysis, List<IssueReport> reports) {
         String generatedAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"));
+        String logo = PdfReportSupport.logoBase64();
+        String logoTag = logo.isEmpty() ? "" : ("<img class=\"logo\" src=\"" + logo + "\" alt=\"logo\" />");
+
+        // صفوف جدول البلاغات التفصيلي — يستمر عبر الصفحات دون قطع الصف الواحد.
+        StringBuilder rows = new StringBuilder();
+        if (reports == null || reports.isEmpty()) {
+            rows.append("<tr><td colspan=\"7\" style=\"text-align:center;color:#9ca3af;\">لا توجد بلاغات مسجلة</td></tr>");
+        } else {
+            for (IssueReport r : reports) {
+                String created = r.getCreatedAt() == null ? "—" : r.getCreatedAt().format(ISSUE_REPORT_DATE_FORMAT);
+                rows.append("<tr>")
+                        .append("<td>").append(PdfReportSupport.esc(r.getId())).append("</td>")
+                        .append("<td>").append(PdfReportSupport.esc(r.getTitle())).append("</td>")
+                        .append("<td>").append(PdfReportSupport.esc(r.getCategory())).append("</td>")
+                        .append("<td>").append(PdfReportSupport.esc(priorityAr(r.getPriority()))).append("</td>")
+                        .append("<td>").append(PdfReportSupport.esc(statusAr(r.getStatus()))).append("</td>")
+                        .append("<td>").append(PdfReportSupport.esc(r.getDetectedStreetName())).append("</td>")
+                        .append("<td>").append(PdfReportSupport.esc(created)).append("</td>")
+                        .append("</tr>");
+            }
+        }
+
         return """
-                <!DOCTYPE html>
-                <html lang="ar" dir="rtl">
-                <head>
-                    <meta charset="UTF-8" />
-                    <style>
-                        * {
-                            font-family: 'Noto Naskh Arabic', sans-serif;
-                            box-sizing: border-box;
-                        }
-                        @page { margin: 0; }
-                        body {
-                            direction: rtl;
-                            unicode-bidi: embed;
-                            text-align: right;
-                            background: #FAE9CD;
-                            color: #333333;
-                            font-size: 14px;
-                            line-height: 1.8;
-                            padding: 35px 28px;
-                        }
-                        .title {
-                            color: #2e7d32;
-                            font-size: 30px;
-                            font-weight: bold;
-                            margin: 0 0 8px 0;
-                            text-align: center;
-                        }
-                        .subtitle {
-                            color: #777777;
-                            text-align: center;
-                            margin-bottom: 22px;
-                        }
-                        .line {
-                            height: 1px;
-                            background: #e5dfcf;
-                            margin: 20px 0;
-                        }
-                        .card {
-                            background: #fffdf8;
-                            border: 1px solid #eadfcb;
-                            border-radius: 18px;
-                            padding: 28px 30px;
-                        }
-                        h2 {
-                            color: #2e7d32;
-                            font-size: 18px;
-                            font-weight: bold;
-                            margin: 22px 0 10px 0;
-                            border-bottom: 1px solid #eadfcb;
-                            padding-bottom: 6px;
-                        }
-                        table {
-                            width: 100%%;
-                            border-collapse: collapse;
-                            direction: rtl;
-                            unicode-bidi: embed;
-                            margin-top: 8px;
-                        }
-                        th, td {
-                            border: 1px solid #eadfcb;
-                            padding: 10px;
-                            direction: rtl;
-                            unicode-bidi: embed;
-                            text-align: right;
-                        }
-                        th {
-                            background: #e8f5e9;
-                            color: #2e7d32;
-                            font-weight: bold;
-                            width: 45%%;
-                        }
-                        .analysis {
-                            background: #ffffff;
-                            border: 1px solid #eadfcb;
-                            padding: 16px;
-                            border-radius: 14px;
-                            line-height: 2;
-                            white-space: pre-line;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="title">تقرير بلاغات الحي الذكي</div>
-                    <div class="subtitle">تحليل شامل لبلاغات الحي بحسب الحالة والأولوية والمناطق الأكثر تأثراً</div>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<style>%s</style>
+</head>
+<body>
 
-                    <div class="line"></div>
+<div class="cover">
+    %s
+    <div class="platform">منصة منا وفينا</div>
+    <div class="bar"></div>
+    <div class="rtitle">تقرير بلاغات الحي</div>
+    <div class="rsub">تقرير رسمي لإدارة ومتابعة بلاغات الحي</div>
+    <div class="rmeta">الحي: %s<br/>تاريخ الإصدار: %s</div>
+</div>
 
-                    <div class="card">
-                        <div class="meta" style="color:#777777; text-align:center; margin-bottom:8px;">
-                            <div>اسم الحي: %s</div>
-                            <div>تاريخ التوليد: %s</div>
-                        </div>
+<div class="page-break"></div>
 
-                        <h2>ملخص الإحصائيات</h2>
-                        <table>
-                            <tr><th>إجمالي البلاغات</th><td>%d</td></tr>
-                            <tr><th>المفتوحة</th><td>%d</td></tr>
-                            <tr><th>قيد المعالجة</th><td>%d</td></tr>
-                            <tr><th>المكتملة</th><td>%d</td></tr>
-                        </table>
+<div class="section">
+    <div class="section-title">لوحة المؤشرات التنفيذية</div>
+    <table class="cards">
+        <tr>
+            <td><div class="card"><div class="num">%d</div><div class="lbl">إجمالي البلاغات</div></div></td>
+            <td><div class="card amber"><div class="num">%d</div><div class="lbl">مفتوحة</div></div></td>
+            <td><div class="card"><div class="num">%d</div><div class="lbl">قيد المعالجة</div></div></td>
+        </tr>
+        <tr>
+            <td><div class="card green"><div class="num">%d</div><div class="lbl">مكتملة</div></div></td>
+            <td><div class="card urgent"><div class="num">%d</div><div class="lbl">عاجلة</div></div></td>
+            <td></td>
+        </tr>
+    </table>
+</div>
 
-                        <h2>تحليل الأولويات</h2>
-                        <table>
-                            <tr><th>عاجلة</th><td>%d</td></tr>
-                            <tr><th>غير عاجلة</th><td>%d</td></tr>
-                            <tr><th>دورية</th><td>%d</td></tr>
-                        </table>
+<div class="section">
+    <div class="section-title">تحليل الأولويات والمناطق الأكثر تأثراً</div>
+    <table class="facts">
+        <tr><th>البلاغات العاجلة</th><td>%d</td></tr>
+        <tr><th>البلاغات غير العاجلة</th><td>%d</td></tr>
+        <tr><th>البلاغات الدورية</th><td>%d</td></tr>
+        <tr><th>أكثر تصنيف متكرر</th><td>%s</td></tr>
+        <tr><th>أكثر شارع متضرر</th><td>%s</td></tr>
+        <tr><th>أكثر حي فرعي متضرر</th><td>%s</td></tr>
+    </table>
+</div>
 
-                        <h2>المناطق الأكثر تأثراً</h2>
-                        <table>
-                            <tr><th>أكثر تصنيف متكرر</th><td>%s</td></tr>
-                            <tr><th>أكثر شارع متضرر</th><td>%s</td></tr>
-                            <tr><th>أكثر حي فرعي متضرر</th><td>%s</td></tr>
-                        </table>
+<div class="page-break"></div>
 
-                        <h2>التحليل الذكي</h2>
-                        <div class="analysis">%s</div>
-                    </div>
-                </body>
-                </html>
-                """.formatted(
-                html(neighborhoodName),
-                html(generatedAt),
+<div class="section">
+    <div class="section-title">التحليل التنفيذي الذكي</div>
+    <div class="ai">%s</div>
+</div>
+
+<div class="page-break"></div>
+
+<div class="section">
+    <div class="section-title">سجل البلاغات التفصيلي</div>
+    <table class="data">
+        <thead>
+            <tr>
+                <th>رقم البلاغ</th>
+                <th>العنوان</th>
+                <th>التصنيف</th>
+                <th>الأولوية</th>
+                <th>الحالة</th>
+                <th>الشارع</th>
+                <th>تاريخ الإنشاء</th>
+            </tr>
+        </thead>
+        <tbody>%s</tbody>
+    </table>
+</div>
+
+</body>
+</html>
+""".formatted(
+                PdfReportSupport.css(),
+                logoTag,
+                PdfReportSupport.esc(neighborhoodName),
+                PdfReportSupport.esc(generatedAt),
                 totalReports,
                 openReports,
                 inProgressReports,
                 completedReports,
                 urgentReports,
+                urgentReports,
                 nonUrgentReports,
                 periodicReports,
-                html(mostCommonCategory),
-                html(mostAffectedStreet),
-                html(mostAffectedDistrict),
-                html(aiAnalysis)
+                PdfReportSupport.esc(mostCommonCategory),
+                PdfReportSupport.esc(mostAffectedStreet),
+                PdfReportSupport.esc(mostAffectedDistrict),
+                PdfReportSupport.aiHtml(aiAnalysis),
+                rows.toString()
         );
     }
 

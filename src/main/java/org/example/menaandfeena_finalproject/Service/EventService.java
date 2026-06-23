@@ -7,6 +7,7 @@ import org.example.menaandfeena_finalproject.Api.ApiException;
 import org.example.menaandfeena_finalproject.DTO.In.EventInDTO;
 import org.example.menaandfeena_finalproject.DTO.In.EventScheduleInDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.EventFeatureOutDTO;
+import org.example.menaandfeena_finalproject.DTO.Out.EventOutDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.EventRecommendationOutDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.EventScheduleOutDTO;
 import org.example.menaandfeena_finalproject.DTO.Out.WeekendPlanItemDTO;
@@ -61,8 +62,8 @@ public class EventService {
     // صيغة الوقت المعتمدة لفقرات البرنامج (24 ساعة).
     private static final DateTimeFormatter SCHEDULE_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
-    public List<Event> getAllEvents() {
-        return eventRepository.findAll();
+    public List<EventOutDTO> getAllEvents() {
+        return mapEventsToOutDTO(eventRepository.findAll());
     }
 
 
@@ -131,34 +132,34 @@ public class EventService {
     }
 
 // Walaa
-    public List<Event> getUpcomingEvents() {
-        return eventRepository.findEventsByDateAfter(LocalDateTime.now());
+    public List<EventOutDTO> getUpcomingEvents() {
+        return mapEventsToOutDTO(eventRepository.findEventsByDateAfter(LocalDateTime.now()));
     }
 
 
 
 
   // Walaa
-  public List<Event> getPreviousEvents() {
-      return eventRepository.findEventsByDateBefore(LocalDateTime.now());
+  public List<EventOutDTO> getPreviousEvents() {
+      return mapEventsToOutDTO(eventRepository.findEventsByDateBefore(LocalDateTime.now()));
   }
 
 
   // Walaa
-  public List<Event> getEventsByDate(LocalDate date) {
+  public List<EventOutDTO> getEventsByDate(LocalDate date) {
       LocalDateTime startOfDay = date.atStartOfDay();
       LocalDateTime endOfDay = date.atTime(23, 59, 59);
-      return eventRepository.findEventsByDateBetween(startOfDay, endOfDay);
+      return mapEventsToOutDTO(eventRepository.findEventsByDateBetween(startOfDay, endOfDay));
 
   }
 
     // Walaa
-    public Event getEventById(Integer id) {
+    public EventOutDTO getEventById(Integer id) {
         Event event = eventRepository.findEventById(id);
         if (event == null) {
             throw new ApiException("Event not found");
         }
-        return event;
+        return mapEventToOutDTO(event);
     }
 
 
@@ -734,20 +735,43 @@ public class EventService {
 
 
 
-    // Walaa
-//    private EventOutDTO convertToOutDTO(Event event) {
-//        return new EventOutDTO(
-//                event.getId(),
-//                event.getTitle(),
-//                event.getDescription(),
-//                event.getDate(),
-//                event.getLocation(),
-//                event.getIsPaid(),
-//                event.getPrice(),
-//                event.getMaxParticipants(),
-//                event.getStatus()
-//        );
-//    }
+    private List<EventOutDTO> mapEventsToOutDTO(List<Event> events) {
+        List<EventOutDTO> out = new ArrayList<>();
+        for (Event event : events) {
+            out.add(mapEventToOutDTO(event));
+        }
+        return out;
+    }
+
+    private EventOutDTO mapEventToOutDTO(Event event) {
+        List<String> features = new ArrayList<>();
+        if (event.getFeatures() != null) {
+            for (EventFeature feature : event.getFeatures()) {
+                if (feature != null && feature.getName() != null) {
+                    features.add(feature.getName());
+                }
+            }
+        }
+
+        String neighborhoodName = event.getNeighborhood() != null ? event.getNeighborhood().getName() : null;
+
+        User creator = event.getCreator() != null ? event.getCreator() : event.getUser();
+        String creatorName = creator != null ? creator.getFullName() : null;
+
+        return new EventOutDTO(
+                event.getId(),
+                event.getTitle(),
+                event.getDescription(),
+                event.getDate(),
+                event.getLocation(),
+                event.getIsPaid(),
+                event.getMaxParticipants(),
+                event.getStatus(),
+                features,
+                neighborhoodName,
+                creatorName
+        );
+    }
 
 
 }

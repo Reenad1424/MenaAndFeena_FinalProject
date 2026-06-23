@@ -16,7 +16,9 @@ public class InitiativeDTO {
     private String description;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
-    private String status;
     private Integer maxParticipants;
+    private String status;
     private String category;
+    private String creatorName;
+    private String neighborhoodName;
 }

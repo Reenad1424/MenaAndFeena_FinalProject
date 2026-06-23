@@ -19,6 +19,4 @@ public class CandidateResponseDto {
     private Integer totalVotes;
 
     private String status;
-
-    private Boolean isWinner;
 }

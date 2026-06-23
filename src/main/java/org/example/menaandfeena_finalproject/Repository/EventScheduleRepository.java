@@ -10,6 +10,8 @@ import java.util.List;
 @Repository
 public interface EventScheduleRepository extends JpaRepository<EventSchedule, Integer> {
 
+    EventSchedule findEventScheduleById(Integer id);
+
     // فقرات البرنامج مرتبة حسب sortOrder ثم الوقت.
     List<EventSchedule> findByEvent_IdOrderBySortOrderAscTimeAsc(Integer eventId);
 

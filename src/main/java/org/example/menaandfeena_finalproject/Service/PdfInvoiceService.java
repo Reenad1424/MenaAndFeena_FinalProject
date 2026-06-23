@@ -153,22 +153,27 @@ table.details {
     border-collapse: collapse;
 }
 
-table.details th {
-    text-align: right;
-    color: #2e7d32;
-    font-weight: bold;
-    width: 38%%;
+table.details td {
     padding: 13px 0;
     border-bottom: 1px solid #f1ece0;
     vertical-align: top;
 }
 
-table.details td {
-    text-align: left;
+table.details td.label {
+    width: 35%%;
+    text-align: right;
+    color: #2e7d32;
+    font-weight: bold;
+    padding-left: 14px;
+    white-space: nowrap;
+}
+
+table.details td.value {
+    width: 65%%;
+    text-align: right;
+    direction: ltr;
     color: #555555;
-    padding: 13px 0;
-    border-bottom: 1px solid #f1ece0;
-    vertical-align: top;
+    word-break: break-word;
 }
 
 .thanks {
@@ -194,16 +199,16 @@ table.details td {
         <span class="status-badge">%s</span>
 
         <table class="details">
-            <tr><th>Event date</th><td>%s</td></tr>
-            <tr><th>Event time</th><td>%s</td></tr>
-            <tr><th>Event location</th><td>%s</td></tr>
-            <tr><th>Ticket status</th><td>%s</td></tr>
-            <tr><th>رقم العملية</th><td>%s</td></tr>
-            <tr><th>الفعالية</th><td>%s</td></tr>
-            <tr><th>المبلغ</th><td>%s</td></tr>
-            <tr><th>شركة البطاقة</th><td>%s</td></tr>
-            <tr><th>حامل البطاقة</th><td>%s</td></tr>
-            <tr><th>التاريخ</th><td>%s</td></tr>
+            <tr><td class="label">تاريخ الفعالية</td><td class="value">%s</td></tr>
+            <tr><td class="label">وقت الفعالية</td><td class="value">%s</td></tr>
+            <tr><td class="label">مكان الفعالية</td><td class="value">%s</td></tr>
+            <tr><td class="label">حالة التذكرة</td><td class="value">%s</td></tr>
+            <tr><td class="label">رقم العملية</td><td class="value">%s</td></tr>
+            <tr><td class="label">الفعالية</td><td class="value">%s</td></tr>
+            <tr><td class="label">المبلغ</td><td class="value">%s</td></tr>
+            <tr><td class="label">شركة البطاقة</td><td class="value">%s</td></tr>
+            <tr><td class="label">حامل البطاقة</td><td class="value">%s</td></tr>
+            <tr><td class="label">التاريخ</td><td class="value">%s</td></tr>
         </table>
     </div>
 

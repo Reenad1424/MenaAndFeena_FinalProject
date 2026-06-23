@@ -121,7 +121,6 @@ public class PaymentService {
     }
 
 
-
     // هذا فقط Wrapper واضح، يرجع بيانات الدفع بعد قراءتها بدل JSON الخام.
     public MoyasarChargeOutDTO getPaymentStatusDetails(String paymentId) {
         return fetchPayment(paymentId);
@@ -234,29 +233,25 @@ public class PaymentService {
         payment.setAmount(amountInHalalas);
         payment.setPlatformFee(platformFee);
         payment.setSellerAmount(amountInHalalas - platformFee);
-        payment.setStatus(result.getStatus().equalsIgnoreCase("paid") ? "PAID" : "PENDING");
+        payment.setStatus("INITIATED");
         payment.setTransactionId(result.getMoyasarPaymentId());
         payment.setPaymentUrl(result.getTransactionUrl());
 
-                payment.setDescription("Payment for event: " + event.getTitle());
+        payment.setDescription("Payment for event: " + event.getTitle());
         payment.setEventRegistration(registration);
 
         paymentRepository.save(payment);
 
-        if (result.getStatus().equalsIgnoreCase("paid")) {
-            registration.setStatus("CONFIRMED");
-            EventRegistration savedRegistration = eventRegistrationRepository.save(registration);
-            ticketService.createTicketIfMissing(savedRegistration);
-            trySendEventInvoice(payment);
+        if ("paid".equalsIgnoreCase(result.getStatus())) {
+            completePaidEventPayment(payment);
         }
 
         return result;
     }
 
 
-
-// Walaa
-    public void handlePaymentCallback(String paymentId, String status) {
+    // Walaa
+    public void handlePaymentCallback(String paymentId) {
 
         Payment payment = paymentRepository.findPaymentByTransactionId(paymentId);
 
@@ -264,27 +259,45 @@ public class PaymentService {
             throw new ApiException("Payment not found");
         }
 
-        if (status.equalsIgnoreCase("paid")) {
-            boolean newlyPaid = !"PAID".equalsIgnoreCase(payment.getStatus());
+        if (payment.getEventRegistration() == null) {
+            throw new ApiException("Payment is not linked to an event registration");
+        }
 
-            payment.setStatus("PAID");
+        MoyasarChargeOutDTO verifiedPayment = fetchPayment(paymentId);
+
+        if ("paid".equalsIgnoreCase(verifiedPayment.getStatus())) {
+            if (payment.getAmount() != null && verifiedPayment.getAmount() != null
+                    && !payment.getAmount().equals(verifiedPayment.getAmount())) {
+                throw new ApiException("Moyasar payment amount does not match the event payment amount");
+            }
+
+            completePaidEventPayment(payment);
+
+        } else if ("initiated".equalsIgnoreCase(verifiedPayment.getStatus())) {
+            payment.setStatus("INITIATED");
             paymentRepository.save(payment);
-
-            EventRegistration registration = payment.getEventRegistration();
-
-            if (registration != null) {
-                registration.setStatus("CONFIRMED");
-                EventRegistration savedRegistration = eventRegistrationRepository.save(registration);
-                ticketService.createTicketIfMissing(savedRegistration);
-            }
-
-            if (newlyPaid) {
-                trySendEventInvoice(payment);
-            }
 
         } else {
             payment.setStatus("FAILED");
             paymentRepository.save(payment);
+        }
+    }
+
+    private void completePaidEventPayment(Payment payment) {
+        boolean newlyPaid = !"PAID".equalsIgnoreCase(payment.getStatus());
+
+        payment.setStatus("PAID");
+        paymentRepository.save(payment);
+
+        EventRegistration registration = payment.getEventRegistration();
+        if (registration != null) {
+            registration.setStatus("CONFIRMED");
+            EventRegistration savedRegistration = eventRegistrationRepository.save(registration);
+            ticketService.createTicketIfMissing(savedRegistration);
+        }
+
+        if (newlyPaid) {
+            trySendEventInvoice(payment);
         }
     }
 
@@ -311,7 +324,7 @@ public class PaymentService {
 //    }
 
 
-// Walaa
+    // Walaa
     public PaymentInvoiceDTO getPaymentInvoice(String paymentId) {
         String rawJson = getPaymentStatus(paymentId);
 

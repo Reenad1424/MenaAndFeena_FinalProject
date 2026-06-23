@@ -405,6 +405,78 @@ public class OrderService {
         );
     }
 
+    @Transactional
+    public Object handlePaymentCallback(Payment payment) {
+        if (payment == null) {
+            throw new ApiException("Payment not found");
+        }
+
+        Orders order = payment.getOrders();
+        if (order == null) {
+            throw new ApiException("Payment is not linked to an order");
+        }
+
+        if ("PAID".equals(order.getStatus())) {
+            return buildOrderOutDTO(order);
+        }
+
+        String moyasarPaymentId = payment.getTransactionId();
+        if (moyasarPaymentId == null || moyasarPaymentId.startsWith("INIT-")) {
+            throw new ApiException("Moyasar payment id is missing");
+        }
+
+        MoyasarChargeOutDTO charge = paymentService.fetchPayment(moyasarPaymentId);
+        if (charge.getTransactionUrl() != null) {
+            payment.setPaymentUrl(charge.getTransactionUrl());
+        }
+
+        if ("paid".equalsIgnoreCase(charge.getStatus())) {
+            Integer expectedAmount = payment.getAmount() == null ? null : payment.getAmount() * 100;
+            if (expectedAmount != null && charge.getAmount() != null && !expectedAmount.equals(charge.getAmount())) {
+                throw new ApiException("Moyasar payment amount does not match the order amount");
+            }
+
+            return completePaidOrder(order, payment);
+        }
+
+        if ("initiated".equalsIgnoreCase(charge.getStatus())) {
+            payment.setStatus("INITIATED");
+            paymentRepository.save(payment);
+            return new OrderPaymentStatusOutDTO(
+                    order.getId(),
+                    payment.getId(),
+                    payment.getTransactionId(),
+                    "INITIATED",
+                    payment.getPaymentUrl(),
+                    "Payment is still pending 3DS completion."
+            );
+        }
+
+        if ("failed".equalsIgnoreCase(charge.getStatus())) {
+            payment.setStatus("FAILED");
+            paymentRepository.save(payment);
+            return new OrderPaymentStatusOutDTO(
+                    order.getId(),
+                    payment.getId(),
+                    payment.getTransactionId(),
+                    "FAILED",
+                    payment.getPaymentUrl(),
+                    "Payment failed. Order is still PENDING_PAYMENT."
+            );
+        }
+
+        payment.setStatus(charge.getStatus() == null ? payment.getStatus() : charge.getStatus().toUpperCase());
+        paymentRepository.save(payment);
+        return new OrderPaymentStatusOutDTO(
+                order.getId(),
+                payment.getId(),
+                payment.getTransactionId(),
+                payment.getStatus(),
+                payment.getPaymentUrl(),
+                "Payment is not completed yet. Moyasar status: " + charge.getStatus()
+        );
+    }
+
     private OrderOutDTO completePaidOrder(Orders order, Payment payment) {
         payment.setStatus("PAID");
         order.setStatus("PAID");

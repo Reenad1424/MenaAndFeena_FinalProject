@@ -211,6 +211,7 @@ public class ConfigSecurity {
                                 "/api/v1/announcement/**",
 
                                 "/api/v1/event/**",
+                                "/api/v1/event-schedules/**",
                                 "/api/v1/event-registration/**",
 
                                 "/api/v1/initiative/**",

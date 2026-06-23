@@ -3,6 +3,7 @@ package org.example.menaandfeena_finalproject.Service;
 import lombok.RequiredArgsConstructor;
 import org.example.menaandfeena_finalproject.Api.ApiException;
 import org.example.menaandfeena_finalproject.DTO.In.InitiativeInDTO;
+import org.example.menaandfeena_finalproject.DTO.Out.InitiativeDTO;
 import org.example.menaandfeena_finalproject.Model.Initiative;
 import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.InitiativeRepository;
@@ -16,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,8 +29,8 @@ public class InitiativeService {
 
     @Value("${app.upload.dir}")
     private String uploadDir;
-    public List<Initiative> getAllInitiatives() {
-        return initiativeRepository.findAll();
+    public List<InitiativeDTO> getAllInitiatives() {
+        return mapInitiativesToDTO(initiativeRepository.findAll());
     }
 
     public void addInitiative(InitiativeInDTO initiativeInDTO) {
@@ -71,22 +73,22 @@ public class InitiativeService {
 
 
 // Walaa
-    public List<Initiative> getInitiativesByCategory(String category) {
-        return initiativeRepository.findInitiativesByCategory(category);
+    public List<InitiativeDTO> getInitiativesByCategory(String category) {
+        return mapInitiativesToDTO(initiativeRepository.findInitiativesByCategory(category));
     }
 
 // Walaa
-public List<Initiative> getUpcomingInitiatives() {
-    return initiativeRepository.findInitiativesByDateAfter(LocalDate.now());
+public List<InitiativeDTO> getUpcomingInitiatives() {
+    return mapInitiativesToDTO(initiativeRepository.findInitiativesByDateAfter(LocalDate.now()));
 }
 
 // Walaa
-public Initiative getInitiativeById(Integer id) {
+public InitiativeDTO getInitiativeById(Integer id) {
     Initiative initiative = initiativeRepository.findInitiativeById(id);
     if (initiative == null) {
         throw new ApiException("Initiative not found");
     }
-    return initiative;
+    return mapToDTO(initiative);
 
 }
 
@@ -118,7 +120,7 @@ public void createInitiative(Integer userId, InitiativeInDTO initiativeInDTO) {
 
     // Uploads a single cover image for an initiative. The file is stored on disk under
     // uploads/initiatives/ and only its URL is saved on the Initiative record.
-    public Initiative uploadInitiativeImage(Integer userId, Integer initiativeId, MultipartFile image) {
+    public InitiativeDTO uploadInitiativeImage(Integer userId, Integer initiativeId, MultipartFile image) {
         User user = userRepository.findUserById(userId);
         if (user == null) {
             throw new ApiException("User not found");
@@ -159,10 +161,34 @@ public void createInitiative(Integer userId, InitiativeInDTO initiativeInDTO) {
             Files.copy(image.getInputStream(), filePath);
 
             initiative.setImageUrl("/uploads/initiatives/" + filename);
-            return initiativeRepository.save(initiative);
+            return mapToDTO(initiativeRepository.save(initiative));
         } catch (IOException e) {
             throw new ApiException("Could not upload initiative image");
         }
+    }
+
+    private List<InitiativeDTO> mapInitiativesToDTO(List<Initiative> initiatives) {
+        List<InitiativeDTO> dtos = new ArrayList<>();
+        for (Initiative initiative : initiatives) {
+            dtos.add(mapToDTO(initiative));
+        }
+        return dtos;
+    }
+
+    private InitiativeDTO mapToDTO(Initiative initiative) {
+        User creator = initiative.getCreator() != null ? initiative.getCreator() : initiative.getUser();
+
+        return new InitiativeDTO(
+                initiative.getId(),
+                initiative.getTitle(),
+                initiative.getDescription(),
+                initiative.getDate(),
+                initiative.getMaxParticipants(),
+                initiative.getStatus(),
+                initiative.getCategory(),
+                creator != null ? creator.getFullName() : null,
+                initiative.getNeighborhood() != null ? initiative.getNeighborhood().getName() : null
+        );
     }
 
 

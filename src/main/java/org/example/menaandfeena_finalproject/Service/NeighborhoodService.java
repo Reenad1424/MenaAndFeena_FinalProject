@@ -436,6 +436,10 @@ public class NeighborhoodService {
         dto.setStatus(initiative.getStatus());
         dto.setMaxParticipants(initiative.getMaxParticipants());
         dto.setCategory(initiative.getCategory());
+        dto.setCreatorName(initiative.getCreator() != null
+                ? initiative.getCreator().getFullName()
+                : initiative.getUser() != null ? initiative.getUser().getFullName() : null);
+        dto.setNeighborhoodName(initiative.getNeighborhood() != null ? initiative.getNeighborhood().getName() : null);
 
         return dto;
     }

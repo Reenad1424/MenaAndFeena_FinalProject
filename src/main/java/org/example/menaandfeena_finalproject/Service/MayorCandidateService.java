@@ -7,7 +7,6 @@ import org.example.menaandfeena_finalproject.Model.*;
 import org.example.menaandfeena_finalproject.Repository.*;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,8 +102,7 @@ public class MayorCandidateService {
                             candidate.getUser().getFullName(),
                             candidate.getUser().getGender(),
                             voteCount,
-                            candidate.getStatus(),
-                            "WINNER".equalsIgnoreCase(candidate.getStatus())
+                            candidate.getStatus()
                     );
 
             dtos.add(dto);
@@ -189,11 +187,6 @@ public class MayorCandidateService {
                         ? user.getNeighborhood().getRegisteredPopulation()
                         : 0;
 
-        int memberSinceYear =
-                user.getCreatedAt() != null
-                        ? user.getCreatedAt().getYear()
-                        : LocalDate.now().getYear();
-
         int totalVotes =
                 mayorVoteRepository.countByMayorCandidateId(candidate.getId());
 
@@ -207,7 +200,7 @@ public class MayorCandidateService {
                 candidate.getId(),
                 user.getFullName(),
                 neighborhoodName,
-                memberSinceYear,
+                user.getYearsInNeighborhood(),
                 candidate.getStatus(),
                 candidate.getAppliedAt(),
                 totalVotes,

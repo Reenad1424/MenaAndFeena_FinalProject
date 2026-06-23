@@ -19,7 +19,7 @@ public class CandidateDetailsDTO {
 
     private String neighborhoodName;
 
-    private Integer memberSinceYear;
+    private Integer yearsInNeighborhood;
 
     private String status;
 
