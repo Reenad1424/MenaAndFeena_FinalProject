@@ -152,6 +152,7 @@ https://www.figma.com/design/e3KckUskVxFWFs5o5K72JD/%D9%85%D9%86%D9%8B%D8%A7-%D9
 | Weekly Report          | GET    | `/api/v1/mayor-profile/weekly`       |
 | Performance Report     | GET    | `/api/v1/mayor-profile/performance`  |
 | Satisfaction Report    | GET    | `/api/v1/mayor-profile/satisfaction` |
+| Initiative Suggestions | GET    | `/api/v1/mayor-profile/initiative-suggestions` |
 
 ---
 
