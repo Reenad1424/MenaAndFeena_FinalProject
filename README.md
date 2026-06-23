@@ -32,10 +32,8 @@ http://menaandfeena-env.eba-dsbymcfp.eu-central-1.elasticbeanstalk.com/api/v1/us
 
 ## 📮 API Documentation
 
-**Postman Documentation:**
-*Add Postman Documentation Link Here*
+https://github.com/Reenad1424/MenaAndFeena_FinalProject/blob/main/API%20documentation.postman_collection%20(1).json
 
----
 
 ## 🛠 Technologies Used
 
