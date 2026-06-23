@@ -122,7 +122,6 @@ public class User implements UserDetails {
     private List<InquiryMessage> inquiryMessages;
 
 
-    //private LocalDate createdAt =  LocalDate.now();
 
     private String role = "USER";
 

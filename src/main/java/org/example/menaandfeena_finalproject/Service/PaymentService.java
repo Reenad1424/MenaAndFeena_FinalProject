@@ -302,29 +302,7 @@ public class PaymentService {
     }
 
     //Walaa
-//    public PaymentInvoiceDTO getPaymentInvoice(String paymentId) {
-//        MoyasarChargeOutDTO payment = fetchPayment(paymentId);
-//
-//        return new PaymentInvoiceDTO(
-//                payment.getMoyasarPaymentId(),
-//                payment.getStatus(),
-//                null,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null
-//        );
-//    }
 
-
-    // Walaa
     public PaymentInvoiceDTO getPaymentInvoice(String paymentId) {
         String rawJson = getPaymentStatus(paymentId);
 

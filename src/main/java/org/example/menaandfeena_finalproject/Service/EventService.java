@@ -467,18 +467,11 @@ public class EventService {
         }
 
         List<FamilyMember> familyMembers = familyMemberRepository.findByUserId(userId);
-        System.out.println("FAMILY SIZE = " + familyMembers.size());
-
-        for (FamilyMember member : familyMembers) {
-            System.out.println("MEMBER AGE = " + member.getAge());
-        }
         List<Event> upcomingEvents = eventRepository.findEventsByDateAfter(LocalDateTime.now());
 
         if (upcomingEvents.isEmpty()) {
             throw new ApiException("No upcoming events found");
         }
-
-       // return "ready";
         StringBuilder prompt = new StringBuilder();
 
         prompt.append("Family Members:\n");

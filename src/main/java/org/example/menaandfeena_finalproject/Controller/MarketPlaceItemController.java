@@ -32,7 +32,6 @@ public class MarketPlaceItemController {
         return ResponseEntity.status(200).body(marketPlaceItemService.suggestPrice(user.getId(), priceSuggestionInDTO));
     }
 
-    // TODO SECURITY: ADMIN/DEBUG general listing. User-facing listing should use /user/get for neighborhood isolation.
     @GetMapping("/get")
     public ResponseEntity<?> getAllMarketPlaceItems() {
         return ResponseEntity.status(200).body(marketPlaceItemService.getAllMarketPlaceItems());
@@ -48,7 +47,6 @@ public class MarketPlaceItemController {
         return ResponseEntity.status(200).body(marketPlaceItemService.getPersonalizedRecommendations(user.getId()));
     }
 
-    // TODO SECURITY: ADMIN/DEBUG product details. User-facing details should use /user/item/{id}.
     @GetMapping("/admin/{id}")
     public ResponseEntity<?> getMarketPlaceItemById(@PathVariable Integer id) {
         return ResponseEntity.status(200).body(marketPlaceItemService.getMarketPlaceItemById(id));
@@ -72,7 +70,6 @@ public class MarketPlaceItemController {
         return ResponseEntity.status(200).body(marketPlaceItemService.getSimilarProducts(marketPlaceItemId, user.getId()));
     }
 
-    // TODO SECURITY: ADMIN/DEBUG type filter. User-facing filter should use /user/type/{type}.
     @GetMapping("/type/{type}")
     public ResponseEntity<?> getMarketPlaceItemsByType(@PathVariable String type) {
         return ResponseEntity.status(200).body(marketPlaceItemService.getMarketPlaceItemsByType(type));

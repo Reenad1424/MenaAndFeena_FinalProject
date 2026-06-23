@@ -65,7 +65,6 @@ public class OrderController {
         return ResponseEntity.status(200).body(orderService.syncOrderPayment(orderId, user.getId()));
     }
 
-    // TODO SECURITY: ADMIN/DEBUG only. Normal users should use /my-orders or /my-sales.
     @GetMapping("/get")
     public ResponseEntity<?> getAllOrders() {
         return ResponseEntity.status(200).body(orderService.getAllOrders());
@@ -92,7 +91,6 @@ public class OrderController {
                 .body(pdfBytes);
     }
 
-    // TODO SECURITY: ADMIN/DEBUG only. Deleting orders manually can break payment, stock, and invoice history.
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteOrder(@PathVariable Integer id) {
         orderService.deleteOrder(id);

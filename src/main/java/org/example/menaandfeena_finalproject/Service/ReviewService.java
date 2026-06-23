@@ -72,9 +72,8 @@ public class ReviewService {
             throw new ApiException("Review not found");
         }
 
-              reviewRepository.delete(review);
+        reviewRepository.delete(review);
     }
-
 
 
 // Walaa
@@ -211,55 +210,38 @@ public class ReviewService {
     }
 
 
-// Walaa
-public List<ReviewOutDTO> getEventReviews(Integer eventId) {
+    // Walaa
+    public List<ReviewOutDTO> getEventReviews(Integer eventId) {
 
-    Event event = eventRepository.findEventById(eventId);
+        Event event = eventRepository.findEventById(eventId);
 
-    if (event == null) {
-        throw new ApiException("Event not found");
+        if (event == null) {
+            throw new ApiException("Event not found");
+        }
+
+        return reviewRepository.findByEvent_Id(eventId)
+                .stream()
+                .map(this::convertToOutDTO)
+                .toList();
     }
 
-    return reviewRepository.findByEvent_Id(eventId)
-            .stream()
-            .map(this::convertToOutDTO)
-            .toList();
-}
 
+    // Walaa
+    public List<ReviewOutDTO> getInitiativeReviews(Integer initiativeId) {
 
-// Walaa
-public List<ReviewOutDTO> getInitiativeReviews(Integer initiativeId) {
+        Initiative initiative = initiativeRepository.findInitiativeById(initiativeId);
+        if (initiative == null) {
+            throw new ApiException("Initiative not found");
+        }
+        return reviewRepository.findByInitiative_Id(initiativeId)
+                .stream()
+                .map(this::convertToOutDTO)
+                .toList();
 
-    Initiative initiative = initiativeRepository.findInitiativeById(initiativeId);
-    if (initiative == null) {
-        throw new ApiException("Initiative not found");
     }
-    return reviewRepository.findByInitiative_Id(initiativeId)
-            .stream()
-            .map(this::convertToOutDTO)
-            .toList();
-
-}
 
 // Walaa
 
-//    public List<ReviewOutDTO> getEventReviewsNewest(Integer eventId) {
-//
-//        Event event = eventRepository.findEventById(eventId);
-//
-//        if (event == null) {
-//            throw new ApiException("Event not found");
-//        }
-//
-//        return reviewRepository
-//                .findByEvent_IdOrderByCreatedAtDesc(eventId)
-//                .stream()
-//                .map(this::convertToOutDTO)
-//                .toList();
-//    }
-
-
-    //Walaa
 
     public List<ReviewOutDTO> getEventReviewsNewest(Integer eventId) {
 
@@ -275,19 +257,19 @@ public List<ReviewOutDTO> getInitiativeReviews(Integer initiativeId) {
                 .toList();
     }
 
-// Walaa
-   public Double getAverageRating(Integer eventId) {
+    // Walaa
+    public Double getAverageRating(Integer eventId) {
 
-    Event event = eventRepository.findEventById(eventId);
+        Event event = eventRepository.findEventById(eventId);
 
-    if (event == null) {
-        throw new ApiException("Event not found");
+        if (event == null) {
+            throw new ApiException("Event not found");
+        }
+
+        return reviewRepository.getAverageRatingByEventId(eventId);
     }
 
-    return reviewRepository.getAverageRatingByEventId(eventId);
-}
-
-// Walaa
+    // Walaa
     public Double getPositiveRatio(Integer eventId) {
 
         Event event = eventRepository.findEventById(eventId);
@@ -300,22 +282,21 @@ public List<ReviewOutDTO> getInitiativeReviews(Integer initiativeId) {
         if (totalReviews == 0) {
             return 0.0;
         }
-        Integer positiveReviews = reviewRepository.countByEvent_IdAndRatingGreaterThanEqual(eventId,4);
+        Integer positiveReviews = reviewRepository.countByEvent_IdAndRatingGreaterThanEqual(eventId, 4);
         return (positiveReviews * 100.0) / totalReviews;
 
     }
 
 
+    // Walaa
+    public Double getAverageRatingByInitiative(Integer initiativeId) {
+        Initiative initiative = initiativeRepository.findInitiativeById(initiativeId);
+        if (initiative == null) {
+            throw new ApiException("Initiative not found");
+        }
+        return reviewRepository.getAverageRatingByInitiativeId(initiativeId);
 
-// Walaa
-public Double getAverageRatingByInitiative(Integer initiativeId) {
-    Initiative initiative = initiativeRepository.findInitiativeById(initiativeId);
-    if (initiative == null) {
-        throw new ApiException("Initiative not found");
     }
-    return reviewRepository.getAverageRatingByInitiativeId(initiativeId);
-
-}
 
 // Walaa
 
@@ -336,7 +317,6 @@ public Double getAverageRatingByInitiative(Integer initiativeId) {
         return (positiveReviews * 100.0) / totalReviews;
 
     }
-
 
 
     public String getEventAISummary(Integer eventId) {
@@ -379,25 +359,25 @@ public Double getAverageRatingByInitiative(Integer initiativeId) {
 
         String aiSummary = openAIService.askAI(
                 """
-                You are an AI review analyst for a smart neighborhood platform.
-        
-                        Analyze the reviews and return ONLY this format:
+                        You are an AI review analyst for a smart neighborhood platform.
                         
-                        😊 Positive Trend:
-                           [one short sentence]
+                                Analyze the reviews and return ONLY this format:
                         
-                           ⚠ Common Complaint:
-                            [one short sentence]
+                                😊 Positive Trend:
+                                   [one short sentence]
                         
-                          💡 Recommendation:
-                            [one short sentence]
+                                   ⚠ Common Complaint:
+                                    [one short sentence]
                         
-                            Do not mention rating scores.
-                            Do not add extra explanations.
-                            Keep the response concise.
-        
-                Keep the response concise and dashboard-friendly.
-                """,
+                                  💡 Recommendation:
+                                    [one short sentence]
+                        
+                                    Do not mention rating scores.
+                                    Do not add extra explanations.
+                                    Keep the response concise.
+                        
+                        Keep the response concise and dashboard-friendly.
+                        """,
                 prompt
         );
 
@@ -406,8 +386,6 @@ public Double getAverageRatingByInitiative(Integer initiativeId) {
                 + "\n\n"
                 + aiSummary;
     }
-
-
 
 
 // Walaa

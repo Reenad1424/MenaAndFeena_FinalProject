@@ -141,7 +141,6 @@ public class ConfigSecurity {
                                 "/api/v1/payment/delete/**",
                                 "/api/v1/payment/get-status/**",
 
-                                "/api/v1/announcement/test-openai",
 
                                 "/api/v1/review/get",
                                 "/api/v1/review/add",

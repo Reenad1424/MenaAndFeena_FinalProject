@@ -83,12 +83,6 @@ public class EventController {
 
 
 //
-//    @PostMapping("/create/{userId}")
-//    public ResponseEntity<?> createEvent(@PathVariable Integer userId, @Valid @RequestBody EventInDTO eventInDTO) {
-//        eventService.createEvent(userId, eventInDTO);
-//        return ResponseEntity.status(200).body(new ApiResponse("Event created successfully"));
-//    }
-
     @PostMapping("/create")
     public ResponseEntity<?> createEvent(Authentication authentication,
                                          @Valid @RequestBody EventInDTO eventInDTO) {
@@ -104,16 +98,6 @@ public class EventController {
                                               @RequestParam("image") MultipartFile image) {
         return ResponseEntity.status(200).body(eventService.uploadEventImage(user.getId(), eventId, image));
     }
-
-
-
-//    @GetMapping("/recommend/{userId}")
-//    public ResponseEntity<?> recommendEvent(@PathVariable Integer userId) {
-//
-//        return ResponseEntity.status(200).body(eventService.recommendEventForUser(userId));
-//    }
-
-
     @GetMapping("/recommend")
     public ResponseEntity<?> recommendEvent(Authentication authentication) {
 

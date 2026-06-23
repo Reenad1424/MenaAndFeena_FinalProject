@@ -56,11 +56,6 @@ public class WhatsAppService {
                         request,
                         String.class
                 );
-
-        System.out.println(
-                "WHATSAPP RESPONSE = "
-                        + response.getBody()
-        );
     }
 
 
@@ -104,11 +99,6 @@ public class WhatsAppService {
                         request,
                         String.class
                 );
-
-        System.out.println(
-                "WHATSAPP DOCUMENT RESPONSE = "
-                        + response.getBody()
-        );
     }
 
 

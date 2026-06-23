@@ -23,7 +23,6 @@ public class CartController {
         return ResponseEntity.status(200).body(new ApiResponse("Cart added"));
     }
 
-    // ADMIN/DEBUG
     @GetMapping("/get")
     public ResponseEntity<?> getAllCarts() {
         return ResponseEntity.status(200).body(cartService.getAllCarts());
@@ -34,7 +33,6 @@ public class CartController {
         return ResponseEntity.status(200).body(cartService.viewCart(user.getId()));
     }
 
-    // ADMIN/DEBUG
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteCart(@PathVariable Integer id) {
         cartService.deleteCart(id);

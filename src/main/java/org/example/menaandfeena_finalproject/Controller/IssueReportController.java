@@ -19,7 +19,6 @@ public class IssueReportController {
 
     private final IssueReportService issueReportService;
 
-    // ADMIN/DEBUG
     @GetMapping("/get-all")
     public ResponseEntity<?> getAll() {
         return ResponseEntity.status(200).body(issueReportService.getAll());
@@ -31,25 +30,21 @@ public class IssueReportController {
         return ResponseEntity.status(200).body(issueReportService.createIssueReport(user.getId(), issueReportInDTO));
     }
 
-    // ADMIN/DEBUG
     @GetMapping("/admin/{id}")
     public ResponseEntity<?> getIssueReportById(@PathVariable Integer id) {
         return ResponseEntity.status(200).body(issueReportService.getIssueReportById(id));
     }
 
-    // ADMIN/DEBUG
     @GetMapping("/status/{status}")
     public ResponseEntity<?> getIssueReportsByStatus(@PathVariable String status) {
         return ResponseEntity.status(200).body(issueReportService.getIssueReportsByStatus(status));
     }
 
-    // ADMIN/DEBUG
     @GetMapping("/priority/{priority}")
     public ResponseEntity<?> getIssueReportsByPriority(@PathVariable String priority) {
         return ResponseEntity.status(200).body(issueReportService.getIssueReportsByPriority(priority));
     }
 
-    // ADMIN/DEBUG
     @GetMapping("/category/{category}")
     public ResponseEntity<?> getIssueReportsByCategory(@PathVariable String category) {
         return ResponseEntity.status(200).body(issueReportService.getIssueReportsByCategory(category));
@@ -116,13 +111,11 @@ public class IssueReportController {
         return ResponseEntity.status(200).body(new ApiResponse("Issue report PDF sent to mayor email"));
     }
 
-    // ADMIN/DEBUG
     @GetMapping("/admin/neighborhood/{neighborhoodId}")
     public ResponseEntity<?> getIssueReportsByNeighborhood(@PathVariable Integer neighborhoodId) {
         return ResponseEntity.status(200).body(issueReportService.getIssueReportsByNeighborhood(neighborhoodId));
     }
 
-    // ADMIN/DEBUG
     @GetMapping("/search")
     public ResponseEntity<?> searchIssueReports(@RequestParam String keyword) {
         return ResponseEntity.status(200).body(issueReportService.searchIssueReports(keyword));
@@ -140,7 +133,6 @@ public class IssueReportController {
         return ResponseEntity.status(200).body(new ApiResponse("Issue report completed successfully"));
     }
 
-    // ADMIN/DEBUG
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         issueReportService.delete(id);
