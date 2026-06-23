@@ -19,8 +19,7 @@ The platform also provides a community marketplace for buying, renting, and exch
 ## 📊 System Diagrams
 
 ### Class Diagram
-
-*Add Class Diagram Image Here*
+https://github.com/Reenad1424/MenaAndFeena_FinalProject/blob/main/classDiagram.png
 
 ### Use Case Diagram
 
