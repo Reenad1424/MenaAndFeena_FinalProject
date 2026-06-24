@@ -41,21 +41,6 @@ public class PaymentController {
                 .body(paymentService.getPaymentStatus(id));
     }
 
-//    @GetMapping("/invoice/{id}")
-//    public ResponseEntity<?> getPaymentInvoice(@PathVariable String id) {
-//
-//        return ResponseEntity.status(200).body(paymentService.getPaymentInvoice(id));
-//    }
-
-
-// original
-//    @GetMapping("/get-status/{id}")
-//    public ResponseEntity<?> getPaymentStatus(@PathVariable String id) {
-//
-//        return ResponseEntity.status(200)
-//                .body(paymentService.getPaymentStatus(id));
-//    }
-
     @GetMapping("/get")
     public ResponseEntity<?> getAllPayments() {
         return ResponseEntity.status(200).body(paymentService.getAllPayments());
@@ -67,17 +52,6 @@ public class PaymentController {
         return ResponseEntity.status(200).body(new ApiResponse("Payment deleted"));
     }
 
-
-
- // Walaa
-//    @PostMapping("/pay-event/{registrationId}")
-//    public ResponseEntity<?> payEventRegistration(@PathVariable Integer registrationId,
-//                                               @RequestBody @Valid OrderPaymentRequestDTO card) {
-//
-//        return ResponseEntity.status(200).body(paymentService.payEventRegistration(registrationId, card));
-//    }
-
-
     @PostMapping("/pay-event/{registrationId}")
     public ResponseEntity<?> payEventRegistration(Authentication authentication,
                                                   @PathVariable Integer registrationId,
@@ -88,10 +62,6 @@ public class PaymentController {
         return ResponseEntity.status(200)
                 .body(paymentService.payEventRegistration(user.getId(), registrationId, card));
     }
-
-
-
-// Walaa
 
     @GetMapping("/callback")
     public ResponseEntity<?> paymentCallback(@RequestParam String id,

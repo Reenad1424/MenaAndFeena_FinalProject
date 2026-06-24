@@ -89,8 +89,6 @@ public class AnnouncementService {
         announcementRepository.delete(announcement);
     }
 
-    //Walaa
-
     public void createAnnouncement(Integer userId, AnnouncementInDTO announcementInDTO) {
 
         User user = userRepository.findUserById(userId);
@@ -103,24 +101,12 @@ public class AnnouncementService {
 
         announcement.setTitle(announcementInDTO.getTitle());
         announcement.setContent(announcementInDTO.getContent());
-
-//        String aiResult = openAIService.askAI(
-//                "You are a moderation system. Return only REJECTED if the text contains drugs, narcotics, weapons, scams, fraud, insults, offensive language, adult content, or prohibited sales. Return only APPROVED otherwise.",
-//                "Title: " + announcementInDTO.getTitle() +
-//                        "\nContent: " + announcementInDTO.getContent()
-//        );
-//       System.out.println("AI RESULT = " + aiResult);
-
         announcement.setUser(user);
-        announcement.setStatus("PENDING");  // عشان الAi لازم يراجعه
+        announcement.setStatus("PENDING");
         announcement.setCreatedAt(LocalDate.now());
 
         announcementRepository.save(announcement);
-        // return aiResult.trim().toUpperCase();
     }
-
-
-    // Walaa
 
     public void moderateAnnouncement(Integer announcementId, Integer userId) {
 
@@ -174,12 +160,9 @@ public class AnnouncementService {
 
                 List<User> residents = userRepository.findByNeighborhoodId(neighborhoodId);
 
-                System.out.println("IMPORTANCE = " + importanceResult);
-                System.out.println("RESIDENTS COUNT = " + residents.size());
-
-                String message = "🚨 Important neighborhood announcement\n\n" +
-                                "Title: " + announcement.getTitle() + "\n" +
-                                "Content: " + announcement.getContent();
+                String message = "\uD83D\uDEA8 Important neighborhood announcement\n\n" +
+                        "Title: " + announcement.getTitle() + "\n" +
+                        "Content: " + announcement.getContent();
 
                 for (User resident : residents) {
                     if (resident.getPhone() != null) {
@@ -189,34 +172,10 @@ public class AnnouncementService {
                         );
                     }
                 }
-
             }
-
-
-
-
-
-
-
-
-
-
-
         }
-
-
-
-
-
-
-
-
-
-
     }
 
-
-    // Walaa
     public List<AnnouncementOutDTO> searchAnnouncements(String keyword) {
 
         return announcementRepository
@@ -226,10 +185,7 @@ public class AnnouncementService {
                 .toList();
     }
 
-
-//Walaa
-
-    public AnnouncementOutDTO getAnnouncementById(Integer id) {  // عرض تفاصيل الاعلان
+    public AnnouncementOutDTO getAnnouncementById(Integer id) {
 
         Announcement announcement = announcementRepository.findAnnouncementById(id);
 
@@ -240,9 +196,7 @@ public class AnnouncementService {
         return convertToOutDTO(announcement);
     }
 
-
-    // Walaa
-    public PublisherContactOutDTO getPublisherContact(Integer announcementId) { // نجيب صاحب الاعلان
+    public PublisherContactOutDTO getPublisherContact(Integer announcementId) {
 
         Announcement announcement = announcementRepository.findAnnouncementById(announcementId);
         if (announcement == null) {
@@ -258,7 +212,6 @@ public class AnnouncementService {
         );
     }
 
-    //Walaa
     private AnnouncementOutDTO convertToOutDTO(Announcement announcement) {
 
         return new AnnouncementOutDTO(
@@ -268,28 +221,6 @@ public class AnnouncementService {
                 announcement.getStatus(),
                 announcement.getCreatedAt(),
                 announcement.getUser().getFullName()
-        );
-    }
-
-//Walaa
-//public String testAI() {
-//    return geminiService.moderateAnnouncement(
-//            "بيع أثاث مستعمل",
-//            "طاولة وكراسي بحالة ممتازة للتواصل"
-//    );
-//}
-
-
-    public String testOpenAI() {
-
-        return openAIService.askAI(
-//                "Act as a strict announcement moderation system for a neighborhood platform. " +
-//                        "Reject only if the announcement contains insults, offensive language, scam, fraud, illegal/prohibited sales, or inappropriate content. " +
-//                        "Otherwise approve it. " +
-//                        "Return only one word: APPROVED or REJECTED.",
-//                "Title: بيع أثاث مستعمل\nContent: طاولة وكراسي بحالة ممتازة للتواصل"
-                "You are a moderation system. Return only REJECTED if the text contains drugs. Return only APPROVED otherwise.",
-                "أبيع مخدرات للتواصل"
         );
     }
 

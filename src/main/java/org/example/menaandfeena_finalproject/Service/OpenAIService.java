@@ -53,7 +53,6 @@ public class OpenAIService {
             return messageResult.get("content").toString();
 
         } catch (Exception ex) {
-            System.out.println("❌ [OPENAI EXCEPTION]: " + ex.getMessage());
             return "ERROR_FALLBACK";
         }
     }

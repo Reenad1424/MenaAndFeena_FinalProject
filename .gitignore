@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Generated PDFs
+*.pdf
+
+# Postman collections
+*.postman_collection.json
+
+# Postman build folder
+_postman_build/
+
+
+# Local application config
+src/main/resources/application.properties

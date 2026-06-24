@@ -242,10 +242,6 @@ public class UserService {
             );
 
         } catch (Exception e) {
-
-            System.out.println(
-                    "WhatsApp sending failed: " + e.getMessage()
-            );
         }
 
         openElectionRoundIfNeighborhoodReady(neighborhood);
@@ -652,12 +648,6 @@ public class UserService {
                         message
                 );
             } catch (Exception e) {
-                System.out.println(
-                        "Election WhatsApp failed for user "
-                                + resident.getId()
-                                + ": "
-                                + e.getMessage()
-                );
             }
         }
     }

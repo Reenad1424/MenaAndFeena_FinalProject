@@ -8,6 +8,7 @@ import org.example.menaandfeena_finalproject.Model.User;
 import org.example.menaandfeena_finalproject.Repository.FamilyMemberRepository;
 import org.example.menaandfeena_finalproject.Repository.UserRepository;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -37,7 +38,6 @@ public class FamilyMemberService {
         familyMember.setUser(user);
         familyMemberRepository.save(familyMember);
     }
-
 
 
     public void update(Integer userId, Integer id, FamilyMemberInDTO dto) {

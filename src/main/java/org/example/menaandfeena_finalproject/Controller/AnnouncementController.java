@@ -29,15 +29,6 @@ public class AnnouncementController {
         return ResponseEntity.status(200).body(announcementService.getMyAnnouncements(user.getId()));
     }
 
-//    @PutMapping("/update/{id}/{userId}")
-//    public ResponseEntity<?> updateAnnouncement(@PathVariable Integer id, @PathVariable Integer userId, @Valid @RequestBody AnnouncementInDTO announcementInDTO) {
-//
-//        announcementService.updateAnnouncement(id, userId, announcementInDTO);
-//        return ResponseEntity.status(200).body(new ApiResponse("Announcement updated successfully"));
-//    }
-
-
-
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateAnnouncement(Authentication authentication,
                                                 @PathVariable Integer id,
@@ -53,13 +44,6 @@ public class AnnouncementController {
 
 
 
-//    @DeleteMapping("/delete/{id}/{userId}")
-//    public ResponseEntity<?> deleteAnnouncement(@PathVariable Integer id, @PathVariable Integer userId) {
-//        announcementService.deleteAnnouncement(id, userId);
-//        return ResponseEntity.status(200).body(new ApiResponse("Announcement deleted successfully"));
-//    }
-
-
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteAnnouncement(Authentication authentication,
                                                 @PathVariable Integer id) {
@@ -70,14 +54,6 @@ public class AnnouncementController {
 
         return ResponseEntity.status(200).body(new ApiResponse("Announcement deleted successfully"));
     }
-
-
-//    @PostMapping("/create/{userId}")
-//    public ResponseEntity<?> createAnnouncement(@PathVariable Integer userId, @Valid @RequestBody AnnouncementInDTO announcementInDTO) {
-//        announcementService.createAnnouncement(userId, announcementInDTO);
-//        return ResponseEntity.status(200).body(new ApiResponse("Announcement created successfully"));
-//
-//    }
 
 
     @PostMapping("/create")
@@ -106,15 +82,6 @@ public class AnnouncementController {
 
 
 
-//    @PostMapping("/create/{userId}")
-//    public ResponseEntity<?> createAnnouncement(@PathVariable Integer userId,
-//                                             @Valid @RequestBody AnnouncementInDTO announcementInDTO) {
-//
-//        String result = announcementService.createAnnouncement(userId, announcementInDTO);
-//
-//        return ResponseEntity.status(200).body(new ApiResponse(result));
-//    }
-
     @GetMapping("/search")
     public ResponseEntity<?> searchAnnouncements(@RequestParam String keyword) {
         return ResponseEntity.status(200).body(announcementService.searchAnnouncements(keyword));
@@ -130,18 +97,6 @@ public class AnnouncementController {
     @GetMapping("/contact-publisher/{announcementId}")
     public ResponseEntity<?> getPublisherContact(@PathVariable Integer announcementId) {
         return ResponseEntity.status(200).body(announcementService.getPublisherContact(announcementId));
-    }
-
-
-//    @GetMapping("/test-ai")
-//    public ResponseEntity<?> testAI() {
-//        return ResponseEntity.status(200).body(announcementService.testAI());
-//    }
-
-
-    @GetMapping("/test-openai")
-    public ResponseEntity<?> testOpenAI() {
-        return ResponseEntity.status(200).body(announcementService.testOpenAI());
     }
 
 

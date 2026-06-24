@@ -26,7 +26,6 @@ public class MarketPlaceItemImageController {
         return ResponseEntity.status(200).body(marketPlaceItemImageService.uploadProductImageFile(user.getId(), marketPlaceItemId, image));
     }
 
-    // TODO SECURITY: ADMIN/DEBUG general listing.
     @GetMapping("/get")
     public ResponseEntity<?> getAllMarketPlaceItemImages() {
         return ResponseEntity.status(200).body(marketPlaceItemImageService.getAllMarketPlaceItemImages());

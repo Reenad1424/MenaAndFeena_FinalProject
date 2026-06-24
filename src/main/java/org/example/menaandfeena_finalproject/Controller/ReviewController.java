@@ -42,16 +42,6 @@ public class ReviewController {
         return ResponseEntity.status(200).body(new ApiResponse("Review deleted successfully"));
 
     }
-
-
-//    @PostMapping("/add-event-review/{userId}/{eventId}")
-//    public ResponseEntity<?> addEventReview(@PathVariable Integer userId, @PathVariable Integer eventId,
-//                                         @Valid @RequestBody ReviewInDTO reviewInDTO) {
-//        reviewService.addEventReview(userId, eventId, reviewInDTO);
-//        return ResponseEntity.status(200).body(new ApiResponse("Event review added successfully"));
-//    }
-
-
     @PostMapping("/add-event-review/{eventId}")
     public ResponseEntity<?> addEventReview(Authentication authentication,
                                             @PathVariable Integer eventId,
@@ -63,21 +53,6 @@ public class ReviewController {
 
         return ResponseEntity.status(200).body(new ApiResponse("Event review added successfully"));
     }
-
-
-
-
-
-//    @PostMapping("/add-initiative-review/{userId}/{initiativeId}")
-//    public ResponseEntity<?> addInitiativeReview(@PathVariable Integer userId, @PathVariable Integer initiativeId,
-//                                              @Valid @RequestBody ReviewInDTO reviewInDTO) {
-//        reviewService.addInitiativeReview(userId, initiativeId, reviewInDTO);
-//        return ResponseEntity.status(200).body(new ApiResponse("Initiative review added successfully"));
-//    }
-
-
-
-
     @PostMapping("/add-initiative-review/{initiativeId}")
     public ResponseEntity<?> addInitiativeReview(Authentication authentication,
                                                  @PathVariable Integer initiativeId,

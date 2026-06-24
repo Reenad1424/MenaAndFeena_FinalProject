@@ -11,9 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class MoyasarChargeOutDTO {
 
-//    private String status;
-//    private Integer amount;
-//    private String transactionUrl;
 
     private String moyasarPaymentId;
     private String status;

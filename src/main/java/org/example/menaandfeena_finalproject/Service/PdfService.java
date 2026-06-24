@@ -49,7 +49,6 @@ public class PdfService {
             return file;
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("PDF ERROR : " + e.getMessage(), e);
         }
     }
