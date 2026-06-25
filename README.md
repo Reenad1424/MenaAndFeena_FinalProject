@@ -32,7 +32,7 @@ http://menaandfeena-env.eba-dsbymcfp.eu-central-1.elasticbeanstalk.com/api/v1/us
 
 ## 📮 API Documentation
 
-https://github.com/Reenad1424/MenaAndFeena_FinalProject/blob/main/API%20documentation.postman_collection%20(1).json
+https://documenter.getpostman.com/view/54224562/2sBXwwoobu
 
 # 🎨 Figma Design:
 
